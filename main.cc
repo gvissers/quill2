@@ -3,7 +3,7 @@
 
 int main()
 {
-	std::ifstream is("basis/STO-3G.turbomole");
+	std::ifstream is("basis/STO-3G.molpro");
 	if (!is.good())
 	{
 		std::cerr << "Failed to open file\n";
@@ -11,7 +11,7 @@ int main()
 	}
 
 	BasisSet set;
-	set.read(is);
+	set.read<BasisSet::Molpro>(is);
 	std::cout << set << "\n";
 
 	return 0;

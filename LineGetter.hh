@@ -37,7 +37,7 @@ class LineGetter
 		 * \param line_nr  The initial line number
 		 * \param buf_size Size of the line buffer
 		 */
-		LineGetter(std::istream& is, char cmt, int line_nr=0,
+		LineGetter(std::istream& is, char cmt='\0', int line_nr=0,
 			size_t buf_size=256):
 			_is(is), _buf(new char[buf_size]),
 			_buf_size(buf_size), _line_nr(line_nr), _cmt(cmt) {}
@@ -68,6 +68,11 @@ class LineGetter
 		 */
 		const char* next(bool except=true);
 
+		//! Set the comment character to \a cmt
+		void setComment(char cmt)
+		{
+			_cmt = cmt;
+		}
 		/*!
 		 * \brief Change the buffer size
 		 *

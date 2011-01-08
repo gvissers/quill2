@@ -1,83 +1,12 @@
 #include <sstream>
+#include <cstdio>
+#include <util.hh>
 #include "BasisSet.hh"
 #include "Deleter.hh"
 #include "CGTO.hh"
 
-void BasisSet::read(std::istream& is, Format format)
-{
-	switch (format)
-	{
-		case Auto:
-			readAuto(is);
-			break;
-		case Turbomole:
-			readTurbomole(is);
-			break;
-		default:
-			throw UnknownFormat(format);
-	}
-}
-
-
-std::ostream& BasisSet::print(std::ostream& os) const
-{
-	os << "BasisSet (\n";
-	for (BFMap::const_iterator elem_it = _elements.begin();
-		elem_it != _elements.end(); ++elem_it)
-	{
-		os << elem_it->first << " (\n";
-		for (BFList::const_iterator fun_it = elem_it->second.begin();
-			fun_it != elem_it->second.end(); ++fun_it)
-		{
-			os << **fun_it << "\n";
-		}
-		os << ")\n";
-	}
-	return os << ")";
-}
-
-void BasisSet::readAuto(std::istream& is)
-{
-	readTurbomole(is);
-}
-
-void BasisSet::readTurbomole(std::istream& is)
-{
-	const char* line;
-	LineGetter getter(is, '#');
-
-	try
-	{
-		line = getter.next();
-		if (std::strcmp(line, "$basis") != 0)
-			throw ParseError(getter.lineNumber(), Turbomole,
-				"Expected \"$basis\"");
-
-		line = getter.next();
-		if (std::strcmp(line, "*") != 0)
-			throw ParseError(getter.lineNumber(), Turbomole,
-				"Expected \"*\"");
-		while (true)
-		{
-			line = getter.next();
-			if (std::strcmp(line, "$end") == 0)
-				break;
-
-			readTurbomoleElement(getter);
-		}
-
-		if (std::strcmp(getter.line(), "$end") != 0)
-			throw ParseError(getter.lineNumber(), Turbomole,
-				"Expected \"$end\"");
-	}
-	catch (const LineGetter::UnexpectedEOF&)
-	{
-		throw ParseError(getter.lineNumber(), Turbomole,
-			"Unexpected end of file");
-	}
-}
-
-void BasisSet::readTurbomoleElement(LineGetter& getter)
+template<>
+void BasisSet::readElement<BasisSet::Turbomole>(LineGetter& getter)
 {
 	std::string elem, name;
 	std::istringstream is;
@@ -104,6 +33,151 @@ void BasisSet::readTurbomoleElement(LineGetter& getter)
 		AbstractBF* f = readTurbomoleBF(getter);
 		elem_funs.push_back(f);
 	}
+}
+
+template<>
+void BasisSet::readElement<BasisSet::Molpro>(LineGetter& getter)
+{
+	const char* line = getter.line();
+	Li::Vector<std::string> fields = Li::explode(",", line);
+	if (fields.size() < 3)
+		throw ParseError(getter.lineNumber(), Molpro,
+			"Expected shell, element name, and primitive widths");
+
+	std::string shell = Li::strip(fields[0]);
+	std::string elem = ucFirst(Li::strip(fields[1]));
+	std::vector<double> widths;
+	std::transform(fields.begin()+2, fields.end(),
+		std::back_inserter(widths), Li::fromString<double>);
+
+	std::vector<double> weights;
+	std::vector< std::pair<double, double> > ww;
+	BFList& elem_funs = _elements[elem];
+	while (true)
+	{
+		line = getter.next();
+		fields = Li::explode(",", line);
+		if (fields.size() < 3 || Li::strip(fields[0]) != "c")
+			break;
+
+		int istart, iend;
+		if (std::sscanf(fields[1].c_str(), "%d.%d", &istart, &iend) != 2)
+			throw ParseError(getter.lineNumber(), Molpro,
+				"Expected start end end indices of primitive widths");
+		if (istart < 1 || istart > int(widths.size())
+			|| iend < istart || iend > int(widths.size()))
+			throw ParseError(getter.lineNumber(), Molpro,
+				"Invalid primitive index");
+
+		weights.clear();
+		std::transform(fields.begin()+2, fields.end(),
+			std::back_inserter(weights), Li::fromString<double>);
+
+		ww.clear();
+		std::transform(weights.begin(), weights.end(),
+			widths.begin()+(istart-1), std::back_inserter(ww),
+			std::make_pair<double, double>);
+
+		AbstractBF *bf = contractedGaussian(shell[0], ww);
+		elem_funs.push_back(bf);
+	}
+}
+
+template<>
+void BasisSet::read<BasisSet::Auto>(std::istream& is)
+{
+}
+
+template<>
+void BasisSet::read<BasisSet::Turbomole>(std::istream& is)
+{
+	const char* line;
+	LineGetter getter(is, '#');
+
+	try
+	{
+		line = getter.next();
+		if (std::strcmp(line, "$basis") != 0)
+			throw ParseError(getter.lineNumber(), Turbomole,
+				"Expected \"$basis\"");
+
+		line = getter.next();
+		if (std::strcmp(line, "*") != 0)
+			throw ParseError(getter.lineNumber(), Turbomole,
+				"Expected \"*\"");
+		while (true)
+		{
+			line = getter.next();
+			if (std::strcmp(line, "$end") == 0)
+				break;
+
+			readElement<Turbomole>(getter);
+		}
+
+		if (std::strcmp(getter.line(), "$end") != 0)
+			throw ParseError(getter.lineNumber(), Turbomole,
+				"Expected \"$end\"");
+	}
+	catch (const LineGetter::UnexpectedEOF&)
+	{
+		throw ParseError(getter.lineNumber(), Turbomole,
+			"Unexpected end of file");
+	}
+}
+
+template<>
+void BasisSet::read<BasisSet::Molpro>(std::istream& is)
+{
+	const char* line;
+	LineGetter getter(is, '!');
+
+	try
+	{
+		line = getter.next();
+		if (strcmp(line, "basis={") != 0)
+			throw ParseError(getter.lineNumber(), Molpro,
+				"Expected \"basis={\"");
+
+		line = getter.next();
+		while (true)
+		{
+			if (strcmp(getter.line(), "}") == 0)
+				break;
+
+			readElement<Molpro>(getter);
+		}
+
+		if (std::strcmp(getter.line(), "}") != 0)
+			throw ParseError(getter.lineNumber(), Turbomole,
+				"Expected \"}\"");
+	}
+	catch (const LineGetter::UnexpectedEOF&)
+	{
+		throw ParseError(getter.lineNumber(), Molpro,
+			"Unexpected end of file");
+	}
+}
+
+void BasisSet::read(std::istream& is)
+{
+	read<Auto>(is);
+}
+
+std::ostream& BasisSet::print(std::ostream& os) const
+{
+	os << "BasisSet (\n";
+	for (BFMap::const_iterator elem_it = _elements.begin();
+		elem_it != _elements.end(); ++elem_it)
+	{
+		os << elem_it->first << " (\n";
+		for (BFList::const_iterator fun_it = elem_it->second.begin();
+			fun_it != elem_it->second.end(); ++fun_it)
+		{
+			os << **fun_it << "\n";
+		}
+		os << ")\n";
+	}
+	return os << ")";
 }
 
 AbstractBF* BasisSet::readTurbomoleBF(LineGetter& getter)
@@ -134,21 +208,7 @@ AbstractBF* BasisSet::readTurbomoleBF(LineGetter& getter)
 		ww.push_back(std::make_pair(weight, width));
 	}
 
-	AbstractBF *bf;
-	switch (shell)
-	{
-		case 's': bf = new CGTO<0>(ww); break;
-		case 'p': bf = new CGTO<1>(ww); break;
-		case 'd': bf = new CGTO<2>(ww); break;
-		case 'f': bf = new CGTO<3>(ww); break;
-		case 'g': bf = new CGTO<4>(ww); break;
-		case 'h': bf = new CGTO<5>(ww); break;
-		case 'i': bf = new CGTO<6>(ww); break;
-		default:
-			throw ParseError(getter.lineNumber(), Turbomole,
-				std::string("Unknown shell \'") + shell + "'");
-	}
-	return bf;
+	return contractedGaussian(shell, ww);
 }
 
 void BasisSet::clear()
@@ -161,4 +221,19 @@ void BasisSet::clear()
 	}
 }
 
+AbstractBF* BasisSet::contractedGaussian(char shell,
+	const std::vector< std::pair<double, double> >& ww)
+{
+	switch (shell)
+	{
+		case 's': return new CGTO<0>(ww);
+		case 'p': return new CGTO<1>(ww);
+		case 'd': return new CGTO<2>(ww);
+		case 'f': return new CGTO<3>(ww);
+		case 'g': return new CGTO<4>(ww);
+		case 'h': return new CGTO<5>(ww);
+		case 'i': return new CGTO<6>(ww);
+		default: throw UnknownShell(shell);
+	}
+}
 
