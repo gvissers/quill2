@@ -1,9 +1,16 @@
 #ifndef BASISSET_HH
 #define BASISSET_HH
 
+/*!
+ * \file BasisSet.hh
+ * \brief definition of the BasisSet class
+ */
+
+#include <vector>
 #include <map>
 #include <Exception.hh>
 #include "AbstractBF.hh"
+#include "LineGetter.hh"
 
 /*!
  * \brief Class representing a basis set
@@ -14,8 +21,10 @@
 class BasisSet
 {
 	public:
+		//! Typedef for a list of basis functions
+		typedef std::vector<AbstractBF*> BFList;
 		//! Typedef for the basis function map
-		typedef std::map<std::string, AbstractBF*> BFMap;
+		typedef std::map<std::string, BFList> BFMap;
 		//! Enumeration type for recognised basis set formats
 		enum Format
 		{
@@ -26,13 +35,14 @@ class BasisSet
 		};
 
 		struct UnknownFormat;
+		struct ParseError;
 
 		/*!
 		 * \brief Constructor
 		 *
 		 * Create a new and empty basis set
 		 */
-		BasisSet(): _functions() {}
+		BasisSet(): _elements() {}
 
 		/*!
 		 * \brief Read a basis set
@@ -48,17 +58,31 @@ class BasisSet
 		//! Clear this basis set, removing all basis function definitions
 		void clear();
 
+		/*!
+		 * \brief Print a basis set
+		 *
+		 * Print a textual representation of this basis set on
+		 * output stream \a os.
+		 * \param os The output stream to print on
+		 * \return The updated output stream
+		 */
+		std::ostream& print(std::ostream& os) const;
+
 	private:
 		//! Map from element name to basis function
-		BFMap _functions;
+		BFMap _elements;
 
 		//! Read a basis set definition from \a is, trying to determine the format automatically
 		void readAuto(std::istream& is);
 		//! Read a basis set definition from \a is in Turbomole format
 		void readTurbomole(std::istream& is);
+		//! Read an element definition in Turbomole format
+		void readTurbomoleElement(LineGetter& getter);
+		//! Read a single basis function in Turbomole format
+		AbstractBF* readTurbomoleBF(LineGetter& getter);
 };
 
-//! Exception thrown when a file format is not known
+//! %Exception thrown when a file format is not known
 struct BasisSet::UnknownFormat: public Li::Exception
 {
 	//! Constructor
@@ -68,5 +92,27 @@ struct BasisSet::UnknownFormat: public Li::Exception
 	//! The format value that was unknown
 	int format;
 };
+
+//! %Exception thrown when we fail to parse an input file
+struct BasisSet::ParseError: public Li::Exception
+{
+	//! Constructor
+	ParseError(int line, Format format, const std::string& msg):
+		Exception(msg), line(line), format(format) {}
+
+	//! The line number where the error occurred
+	int line;
+	//! The format in which we were trying to read the input
+	Format format;
+};
+
+namespace {
+
+inline std::ostream& operator<<(std::ostream& os, const BasisSet& set)
+{
+	return set.print(os);
+}
+
+} // namespace
 
 #endif // BASISSET_HH

@@ -1,6 +1,11 @@
 #ifndef ABSTRACTBF_HH
 #define ABSTRACTBF_HH
 
+/*!
+ * \file AbstractBF.hh
+ * \definition of the AbstractBF class
+ */
+
 #include <iostream>
 
 /*!
@@ -11,6 +16,8 @@
  */
 struct AbstractBF
 {
+	//! Destructor
+	virtual ~AbstractBF() {}
 	/*!
 	 * \brief Print a basis function
 	 *

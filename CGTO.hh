@@ -1,6 +1,11 @@
 #ifndef CGTO_HH
 #define CGTO_HH
 
+/*!
+ * \file CGTO.hh
+ * \brief Definition of the CGTO class
+ */
+
 #include "Eigen/Dense"
 #include "AbstractBF.hh"
 
@@ -23,32 +28,20 @@ class CGTO: public AbstractBF
 		/*!
 		 * \brief Constructor
 		 *
-		 * Create a new, empty, contracted GTO.
+		 * Create a new contracted GTO using the weights and widths
+		 * in \a ww. In each element of \a ww, the first number is
+		 * the weight of the primitive, and  the second number is
+		 * the width.
+		 * \param ww The weights and widths of the primitives
 		 */
-		CGTO(): _cws() {}
-
-		/*!
-		 * \brief Add a function
-		 *
-		 * Add a primitive GTO with weight \a weight and width \a width
-		 * to this contraction.	
-		 * \param weight The weight of the GTO in this contraction
-		 * \param width  The width ($\alpha$) of the primitive GTO
-		 */
-		void add(double weight, double width)
-		{
-			int nf = size();
-			_cws.conservativeResize(Eigen::NoChange, nf+1);
-			_cws(0, nf) = weight;
-			_cws(1, nf) = width;
-		}
+		CGTO(const std::vector< std::pair<double, double> >& ww);
 
 		//! Return the number of functions in this contraction
-		int size() const { return _cws.cols(); }
+		int size() const { return _weights.size(); }
 		//! Return the weight of the \a i'th primitive
-		int weight(int i) const { return _cws(0, i); }
+		double weight(int i) const { return _weights[i]; }
 		//! Return the width of the \a i'th primitive
-		int width(int i) const { return _cws(1, i); }
+		double width(int i) const { return _widths[i]; }
 
 		/*!
 		 * \brief Print a basis function
@@ -61,9 +54,22 @@ class CGTO: public AbstractBF
 		std::ostream& print(std::ostream& os) const;
 
 	private:
-		//! Weights and widths of the primitive GTOs in this contraction
-		Eigen::Matrix<double, 2, Eigen::Dynamic> _cws;
+		//! Weights of the primitive GTOs in this contraction
+		Eigen::VectorXd _weights;
+		//! Widths of the primitive GTOs in this contraction
+		Eigen::VectorXd _widths;
 };
+
+template <int l>
+CGTO<l>::CGTO(const std::vector< std::pair<double, double> >& ww):
+	_weights(ww.size()), _widths(ww.size())
+{
+	for (size_t i = 0; i < ww.size(); i++)
+	{
+		_weights[i] = ww[i].first;
+		_widths[i] = ww[i].second;
+	}
+}
 
 template <int l>
 std::ostream& CGTO<l>::print(std::ostream& os) const
