@@ -6,6 +6,7 @@
  * \brief Definition of the PeriodicTable class
  */
 
+#include <vector>
 #include <map>
 #include <Singleton.hh>
 #include "Element.hh"
@@ -18,8 +19,14 @@
 class PeriodicTable: public Li::Singleton<PeriodicTable>
 {
 	public:
+		//! Local typedef for the list of elements
+		typedef std::vector<Element> ElementList;
+		//! Local typedef for the map from element symbol to information
+		typedef std::map<std::string, Element*> SymbolElementMap;
+		//! Local typedef for the map from element number to information
+		typedef std::map<int, Element*> NumberElementMap;
 		//! Local typedef for the map from element name to information
-		typedef std::map<std::string, Element> ElementMap;
+		typedef std::map<std::string, Element*> NameElementMap;
 
 		struct UnknownElement;
 
@@ -56,26 +63,27 @@ class PeriodicTable: public Li::Singleton<PeriodicTable>
 		 */
 		std::ostream& print(std::ostream& os) const;
 
-		//! Return a read-only reference to an element
+		//! Find an element by symbol
 		const Element& operator[](const std::string& elem) const;
-		//! Return a read-write reference to an element
-		Element& operator[](const std::string& elem);
 
 		/*!
 		 * \brief Insert a new element
 		 *
-		 * Insert a new element, overwriting any old element with
-		 * the same symbol.
+		 * Insert a new element. If an element with the same symbol
+		 * already exists, it will we replaced.
 		 * \param elem The element to insert into the table
 		 */
-		void insert(const Element& elem)
-		{
-			_elements.insert(std::make_pair(elem.symbol(), elem));
-		}
+		void insert(const Element& elem);
 
 	private:
-		//! The elements in the periodic table
-		ElementMap _elements;
+		//! The list of known elements
+		ElementList _elements;
+		//! Map from symbol to element
+		SymbolElementMap _by_symbol;
+		//! Map from number to element
+		NumberElementMap _by_number;
+		//! Map from name to element
+		NameElementMap _by_name;
 };
 
 /*!
