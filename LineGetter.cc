@@ -15,7 +15,7 @@ const char* LineGetter::next(bool except)
 		if (_is.fail())
 			throw ReadFailure();
 		_line_nr++;
-		if (_buf[0] && _buf[0] != _cmt)
+		if (_buf[0] && _cmt.find(_buf[0]) != std::string::npos)
 			break;
 	}
 	return _buf;

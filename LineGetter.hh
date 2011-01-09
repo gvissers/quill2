@@ -28,17 +28,17 @@ class LineGetter
 		 * \brief Constructor
 		 *
 		 * Create a new LineGetter extracting lines from input stream
-		 * \a is, using comment character \a cmt, starting with line
+		 * \a is, using comment characters \a cmt, starting with line
 		 * number \a line, and having a text buffer of \a buf_size
 		 * characters.
 		 * \param is       The input stream to read from
-		 * \param cmt      The comment character. Lines starting with
-		 *    this character are ignored.
+		 * \param cmt      The comment characters. Lines starting with
+		 *    one of these characters are ignored.
 		 * \param line_nr  The initial line number
 		 * \param buf_size Size of the line buffer
 		 */
-		LineGetter(std::istream& is, char cmt='\0', int line_nr=0,
-			size_t buf_size=256):
+		LineGetter(std::istream& is, const std::string& cmt="",
+			int line_nr=0, size_t buf_size=256):
 			_is(is), _buf(new char[buf_size]),
 			_buf_size(buf_size), _line_nr(line_nr), _cmt(cmt) {}
 		//! Destructor
@@ -68,8 +68,8 @@ class LineGetter
 		 */
 		const char* next(bool except=true);
 
-		//! Set the comment character to \a cmt
-		void setComment(char cmt)
+		//! Set the comment characters to \a cmt
+		void setComment(const std::string& cmt)
 		{
 			_cmt = cmt;
 		}
@@ -86,14 +86,14 @@ class LineGetter
 	private:
 		//! The input stream to read from
 		std::istream& _is;
-		//! The data buffer hold the current line
+		//! The data buffer holding the current line
 		char *_buf;
 		//! Size of the data buffer
 		size_t _buf_size;
 		//! The current line number
 		int _line_nr;
 		//! The comment character
-		char _cmt;
+		std::string _cmt;
 };
 
 //! %Exception thrown when we fail to read from an input stream
