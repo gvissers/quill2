@@ -30,12 +30,14 @@ class BasisSet
 		{
 			//! Try to detect format automatically
 			Auto,
-			//! Turbomole format
-			Turbomole,
+			//! Dalton format
+			Dalton,
+			//! Molcas format
+			Molcas,
 			//! Molpro format
 			Molpro,
-			//! Dalton format
-			Dalton
+			//! Turbomole format
+			Turbomole
 		};
 
 		struct UnknownFormat;

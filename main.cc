@@ -1,26 +1,23 @@
 #include <fstream>
-#include "BasisSet.hh"
+#include "PeriodicTable.hh"
 
 int main()
 {
-	std::ifstream is("basis/STO-3G.dalton");
-	if (!is.good())
-	{
-		std::cerr << "Failed to open file\n";
-		return 1;
-	}
-
 	try
 	{
-		BasisSet set;
-		set.read<BasisSet::Dalton>(is);
-		std::cout << set << "\n";
+		PeriodicTable table("data/elements.dat");
+		std::cout << PeriodicTable::getSingleton() << "\n";
 	}
-	catch (const BasisSet::ParseError& e)
+	catch (const Li::Exception& e)
 	{
-		std::cerr << "Parse error on line " << e.line << ": "
-			<< e.what() << "\nBacktrace:\n" << e.backtrace()
+		std::cerr << "Exception: " << e.what()
+			<< "\nBacktrace:\n" << e.backtrace()
 			<< "\n";
+		return 1;
+	}
+	catch (const std::exception& e)
+	{
+		std::cerr << "Exception: " << e.what() << "\n";
 		return 1;
 	}
 

@@ -1,6 +1,11 @@
 #ifndef SUPPORT_HH
 #define SUPPORT_HH
 
+/*!
+ * \file support.hh
+ * \brief Various support and macros for Quill
+ */
+
 #include <string>
 
 #define NON_COPYABLE(class_name) \

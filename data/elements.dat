@@ -1,0 +1,68 @@
+# Atomic masses taken from NIST web site:
+# http://physics.nist.gov/PhysRefData/Elements/index.html
+# Masses are Standard atomic weights as listed by NIST
+# July 2, 2006
+#
+# Covalent radii from WebElements:
+# http://www.webelements.com/
+#
+# Van der Waals radii from A. Bondi, J. Phys. Chem. 68, 441 (1964)
+# July 20, 2006
+#
+# Format: Symbol, full name, element number, mass (in amu),
+#         whether the atom forms hydrogen bonds,
+#         covalent radius (in Å), optional Van der Waals radius (in Å).
+H, Hydrogen, 1, 1.00794, 0, 0.37, 1.20
+He, Helium, 2, 4.002602, 0, 0.32, 1.40
+Li, Lithium, 3, 6.941, 0, 1.34
+Be, Beryllium, 4, 9.012182, 0, 0.90
+B, Boron, 5, 10.811, 0, 0.82
+C, Carbon, 6, 12.0107, 0, 0.77, 1.70
+N, Nitrogen, 7, 14.0067, 1, 0.75, 1.55
+O, Oxygen, 8, 15.9994, 1, 0.73, 1.52
+F, Fluorine, 9, 18.9984032, 1, 0.71, 1.47
+Ne, Neon, 10, 20.1797, 0, 0.69, 1.54
+Na, Sodium, 11, 22.989770, 0, 1.54
+Mg, Magnesium, 12, 24.3050, 0, 1.30
+Al, Aluminum, 13, 26.981538, 0, 1.18
+Si, Silicon, 14, 28.0855 0,, 1.11, 2.10
+P, Phosphorus, 15, 30.973761, 1, 1.06, 1.80
+S, Sulfur, 16, 32.065, 1, 1.02, 1.80
+Cl, Chlorine, 17, 35.453, 1, 0.99, 1.75
+Ar, Argon, 18, 39.948, 0, 0.97, 1.88
+K, Potassium, 19, 39.0983, 0, 1.96
+Ca, Calcium, 20, 40.078, 0, 1.74
+Sc, Scandium, 21, 44.955910, 0, 1.44
+Ti, Titanium, 22, 47.867, 0, 1.36
+V, Vanadium, 23, 50.9415, 0, 1.25
+Cr, Chromium, 24, 51.9961, 0, 1.27
+Mn, Manganese, 25, 54.938049, 0, 1.39
+Fe, Iron, 26, 55.845, 0, 1.25
+Co, Cobalt, 27, 58.933200, 0, 1.26
+Ni, Nickel, 28, 58.6934, 0, 1.21
+Cu, Copper, 29, 63.546, 0, 1.38
+Zn, Zinc, 30, 65.409, 0, 1.31
+Ga, Gallium, 31, 69.723, 0, 1.26
+Ge, Germanium, 32, 72.64, 0, 1.22
+As, Arsenic, 33, 74.92160, 0, 1.19, 1.85
+Se, Selenium, 34, 78.96, 0, 1.16, 1.90
+Br, Bromine, 35, 79.904, 0, 1.14, 1.85
+Kr, Krypton, 36, 83.798, 0, 1.10, 2.02
+Rb, Rubidium, 37, 85.4678, 0, 2.11
+Sr, Strontium, 38, 87.62, 0, 1.92
+Y, Yttrium, 39, 88.90585, 0, 1.62
+Zr, Zirconium, 40, 91.224, 0, 1.48
+Nb, Niobium, 41, 92.90638, 0, 1.37
+Mo, Molybdenum, 42, 95.94, 0, 1.45
+Tc, Technetium, 43, 98, 0, 1.56
+Ru, Ruthenium, 44, 101.07, 0, 1.26
+Rh, Rhodium, 45, 102.90550, 0, 1.35
+Pd, Palladium, 46, 106.42, 0, 1.31
+Ag, Silver, 47, 107.8682, 0, 1.53
+Cd, Cadmium, 48, 112.411, 0, 1.48
+In, Indium, 49, 114.818, 0, 1.44
+Sn, Tin, 50, 118.710, 0, 1.41
+Sb, Antimony, 51, 121.760, 0, 1.38
+Te, Tellurium, 52, 127.60, 0, 1.35, 2.06
+I, Iodine, 53, 126.90447, 0, 1.33, 1.98
+Xe, Xenon, 54, 131.293, 0, 1.30, 2.16

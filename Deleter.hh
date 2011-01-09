@@ -1,6 +1,11 @@
 #ifndef DELETER_HH
 #define DELETER_HH
 
+/*!
+ * \file Deleter.hh
+ * \brief Definitions of the Deleter and ArrayDeleter classes
+ */
+
 #include <functional>
 
 /*!
