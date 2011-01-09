@@ -250,19 +250,19 @@ void BasisSet::read(std::istream& is)
 
 std::ostream& BasisSet::print(std::ostream& os) const
 {
-	os << "BasisSet (\n";
+	os << "BasisSet (\n" << indent;
 	for (BFMap::const_iterator elem_it = _elements.begin();
 		elem_it != _elements.end(); ++elem_it)
 	{
-		os << elem_it->first << " (\n";
+		os << elem_it->first << " (\n" << indent;
 		for (BFList::const_iterator fun_it = elem_it->second.begin();
 			fun_it != elem_it->second.end(); ++fun_it)
 		{
 			os << **fun_it << "\n";
 		}
-		os << ")\n";
+		os << dedent << ")\n";
 	}
-	return os << ")";
+	return os << dedent << ")";
 }
 
 AbstractBF* BasisSet::readTurbomoleBF(LineGetter& getter)

@@ -3,6 +3,7 @@
 #include "PeriodicTable.hh"
 #include "constants.hh"
 #include "exceptions.hh"
+#include "IndentingStreambuf.hh"
 
 SINGLETON_OBJECT(PeriodicTable);
 
@@ -72,11 +73,11 @@ Element& PeriodicTable::operator[](const std::string& elem)
 
 std::ostream& PeriodicTable::print(std::ostream& os) const
 {
-	os << "PeriodicTable (\n";
+	os << "PeriodicTable (\n" << indent;
 	for (ElementMap::const_iterator it = _elements.begin();
 		it != _elements.end(); ++it)
 	{
 		os << it->second << "\n";
 	}
-	return os << ")";
+	return os << dedent << ")";
 }

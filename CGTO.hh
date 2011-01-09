@@ -8,6 +8,7 @@
 
 #include "Eigen/Dense"
 #include "AbstractBF.hh"
+#include "IndentingStreambuf.hh"
 
 /*!
  * \brief Contracted Gaussian Type Orbital
@@ -74,10 +75,10 @@ CGTO<l>::CGTO(const std::vector< std::pair<double, double> >& ww):
 template <int l>
 std::ostream& CGTO<l>::print(std::ostream& os) const
 {
-	os << "CGTO<" << l << "> (\n";
+	os << "CGTO<" << l << "> (\n" << indent;
 	for (int i = 0; i < size(); i++)
 		os << weight(i) << " " << width(i) << "\n";
-	return os << ")";
+	return os << dedent << ")";
 }
 
 #endif // CGTO_HH

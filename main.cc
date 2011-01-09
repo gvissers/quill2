@@ -1,12 +1,18 @@
 #include <fstream>
 #include "PeriodicTable.hh"
+#include "IndentingStreambuf.hh"
 
 int main()
 {
 	try
 	{
 		PeriodicTable table("data/elements.dat");
+		IndentingStreambuf ind_sb(std::cout.rdbuf());
+		std::streambuf *old_sb = std::cout.rdbuf(&ind_sb);
+
 		std::cout << PeriodicTable::getSingleton() << "\n";
+
+		std::cout.rdbuf(old_sb);
 	}
 	catch (const Li::Exception& e)
 	{
