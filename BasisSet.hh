@@ -33,7 +33,9 @@ class BasisSet
 			//! Turbomole format
 			Turbomole,
 			//! Molpro format
-			Molpro
+			Molpro,
+			//! Dalton format
+			Dalton
 		};
 
 		struct UnknownFormat;

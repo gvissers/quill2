@@ -84,6 +84,78 @@ void BasisSet::readElement<BasisSet::Molpro>(LineGetter& getter)
 }
 
 template<>
+void BasisSet::readElement<BasisSet::Dalton>(LineGetter& getter)
+{
+	static std::string last_elem;
+	static char last_shell;
+
+	std::string elem;
+	char shell;
+	int nprim, nbf;
+
+	const char* line = getter.line();
+	std::istringstream is(line);
+	is >> elem >> nprim >> nbf;
+	if (is.fail())
+		throw ParseError(getter.lineNumber(), Dalton,
+			"Expected element name, number of primitives, and number of contractions");
+	elem = ucFirst(elem);
+
+	if (elem != last_elem)
+	{
+		shell = last_shell = 's';
+		last_elem = elem;
+	}
+	else
+	{
+		switch (last_shell)
+		{
+			case 's': shell = last_shell = 'p'; break;
+			case 'p': shell = last_shell = 'd'; break;
+			case 'd': shell = last_shell = 'f'; break;
+			case 'f': shell = last_shell = 'g'; break;
+			case 'g': shell = last_shell = 'h'; break;
+			case 'h': shell = last_shell = 'i'; break;
+			default:
+				throw ParseError(getter.lineNumber(), Dalton,
+					"Orbital shell is higher than supported");
+		}
+	}
+
+	std::vector< std::vector< std::pair<double, double> > > wws(nbf);
+	for (int iprim = 0; iprim < nprim; iprim++)
+	{
+		double width;
+
+		line = getter.next();
+		is.clear();
+		is.str(line);
+
+		is >> width;
+		if (!is.good())
+			throw ParseError(getter.lineNumber(), Dalton,
+				"Expected width of primitive");
+		for (int ibf = 0; ibf < nbf; ibf++)
+		{
+			double weight;
+			is >> weight;
+			if (!is.good())
+				throw ParseError(getter.lineNumber(), Dalton,
+					"Expected contraction coefficient");
+			if (weight != 0.0)
+				wws[ibf].push_back(std::make_pair(weight, width));
+		}
+	}
+
+	BFList& elem_funs = _elements[elem];
+	for (int ibf = 0; ibf < nbf; ibf++)
+	{
+		AbstractBF *bf = contractedGaussian(shell, wws[ibf]);
+		elem_funs.push_back(bf);
+	}
+}
+
+template<>
 void BasisSet::read<BasisSet::Auto>(std::istream& is)
 {
 }
@@ -155,6 +227,19 @@ void BasisSet::read<BasisSet::Molpro>(std::istream& is)
 	{
 		throw ParseError(getter.lineNumber(), Molpro,
 			"Unexpected end of file");
+	}
+}
+
+template<>
+void BasisSet::read<BasisSet::Dalton>(std::istream& is)
+{
+	LineGetter getter(is, '!');
+	while (true)
+	{
+		const char* line = getter.next(false);
+		if (!line) break;
+
+		readElement<Dalton>(getter);
 	}
 }
 
