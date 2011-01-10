@@ -8,6 +8,7 @@
 
 #include <vector>
 #include <map>
+#include <sstream>
 #include <Singleton.hh>
 #include "Element.hh"
 
@@ -66,7 +67,16 @@ class PeriodicTable: public Li::Singleton<PeriodicTable>
 		std::ostream& print(std::ostream& os) const;
 
 		//! Find an element by symbol
-		const Element& operator[](const std::string& elem) const;
+		const Element& operator[](const std::string& elem) const
+		{
+			return findBySymbol(elem);
+		}
+		//! Find an element by symbol
+		const Element& findBySymbol(const std::string& elem) const;
+		//! Find an element by atomic number
+		const Element& findByNumber(int number) const;
+		//! Find an element by name
+		const Element& findByName(const std::string& name) const;
 
 		/*!
 		 * \brief Insert a new element
@@ -95,7 +105,14 @@ struct PeriodicTable::UnknownElement: public Li::Exception
 {
 	//! Constructor
 	UnknownElement(const std::string& elem):
-		Exception("Unknown element '" + elem + "'") {}
+		Exception("Unknown element \"" + elem + "\"") {}
+	//! Constructor
+	UnknownElement(int number): Exception()
+	{
+		std::ostringstream os;
+		os << number;
+		setMsg("Unknown element " + number);
+	}
 };
 
 namespace {

@@ -1,5 +1,5 @@
 #include <fstream>
-#include <sstream>
+#include <utfstring.hh>
 #include "PeriodicTable.hh"
 #include "Deleter.hh"
 #include "constants.hh"
@@ -61,11 +61,27 @@ void PeriodicTable::read(std::istream& is)
 	}
 }
 
-const Element& PeriodicTable::operator[](const std::string& elem) const
+const Element& PeriodicTable::findBySymbol(const std::string& elem) const
 {
 	SymbolElementMap::const_iterator it = _by_symbol.find(elem);
 	if (it == _by_symbol.end())
 		throw UnknownElement(elem);
+	return *it->second;
+}
+
+const Element& PeriodicTable::findByNumber(int number) const
+{
+	NumberElementMap::const_iterator it = _by_number.find(number);
+	if (it == _by_number.end())
+		throw UnknownElement(number);
+	return *it->second;
+}
+
+const Element& PeriodicTable::findByName(const std::string& name) const
+{
+	NameElementMap::const_iterator it = _by_name.find(Li::toLower(name));
+	if (it == _by_name.end())
+		throw UnknownElement(name);
 	return *it->second;
 }
 
@@ -89,8 +105,8 @@ void PeriodicTable::insert(const Element& elem)
 		elem_ptr = it->second;
 		if (elem_ptr->number() != elem.number())
 			_by_number.erase(elem_ptr->number());
-		if (elem_ptr->name() != elem.name())
-			_by_name.erase(elem_ptr->name());
+		if (Li::toLower(elem_ptr->name()) != Li::toLower(elem.name()))
+			_by_name.erase(Li::toLower(elem_ptr->name()));
 		*elem_ptr = elem;
 	}
 	else
@@ -100,5 +116,5 @@ void PeriodicTable::insert(const Element& elem)
 		_by_symbol.insert(std::make_pair(elem.symbol(), elem_ptr));
 	}
 	_by_number.insert(std::make_pair(elem.number(), elem_ptr));
-	_by_name.insert(std::make_pair(elem.name(), elem_ptr));
+	_by_name.insert(std::make_pair(Li::toLower(elem.name()), elem_ptr));
 }

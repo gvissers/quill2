@@ -11,7 +11,9 @@ int main()
 		std::streambuf *old_sb = std::cout.rdbuf(&ind_sb);
 
 		std::cout << PeriodicTable::getSingleton() << "\n\n"
-			<< table["Cl"] << "\n";
+			<< table["Cl"] << "\n"
+			<< table.findByNumber(12) << "\n"
+			<< table.findByName("soDIUM") << "\n";
 
 		std::cout.rdbuf(old_sb);
 	}
