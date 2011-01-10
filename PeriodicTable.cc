@@ -42,7 +42,7 @@ void PeriodicTable::read(std::istream& is)
 
 		ss >> symbol >> name >> nr >> comma >> mass >> comma
 			>> H_bonding >> comma >> covrad;
-		if (!ss.good()) // bad line
+		if (ss.fail()) // bad line
 			continue;
 
 		if (symbol[symbol.size()-1] == ',')
