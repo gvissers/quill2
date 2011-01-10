@@ -1,6 +1,7 @@
 #include <fstream>
 #include <sstream>
 #include "PeriodicTable.hh"
+#include "Deleter.hh"
 #include "constants.hh"
 #include "exceptions.hh"
 #include "IndentingStreambuf.hh"
@@ -15,6 +16,11 @@ PeriodicTable::PeriodicTable(const std::string& fname):
 		throw NoFile(fname);
 	read(is);
 	is.close();
+}
+
+PeriodicTable::~PeriodicTable()
+{
+	std::for_each(_elements.begin(), _elements.end(), Deleter<Element>());
 }
 
 void PeriodicTable::read(std::istream& is)
@@ -69,7 +75,7 @@ std::ostream& PeriodicTable::print(std::ostream& os) const
 	for (ElementList::const_iterator it = _elements.begin();
 		it != _elements.end(); ++it)
 	{
-		os << *it << "\n";
+		os << **it << "\n";
 	}
 	return os << dedent << ")";
 }
@@ -89,8 +95,8 @@ void PeriodicTable::insert(const Element& elem)
 	}
 	else
 	{
-		_elements.push_back(elem);
-		elem_ptr = &_elements.back();
+		elem_ptr = new Element(elem);
+		_elements.push_back(elem_ptr);
 		_by_symbol.insert(std::make_pair(elem.symbol(), elem_ptr));
 	}
 	_by_number.insert(std::make_pair(elem.number(), elem_ptr));

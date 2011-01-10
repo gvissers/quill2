@@ -164,7 +164,7 @@ template<>
 void BasisSet::read<BasisSet::Turbomole>(std::istream& is)
 {
 	const char* line;
-	LineGetter getter(is, '#');
+	LineGetter getter(is, "#");
 
 	try
 	{
@@ -201,7 +201,7 @@ template<>
 void BasisSet::read<BasisSet::Molpro>(std::istream& is)
 {
 	const char* line;
-	LineGetter getter(is, '!');
+	LineGetter getter(is, "!");
 
 	try
 	{
@@ -233,7 +233,7 @@ void BasisSet::read<BasisSet::Molpro>(std::istream& is)
 template<>
 void BasisSet::read<BasisSet::Dalton>(std::istream& is)
 {
-	LineGetter getter(is, '!');
+	LineGetter getter(is, "!");
 	while (true)
 	{
 		const char* line = getter.next(false);

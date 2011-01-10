@@ -20,7 +20,7 @@ class PeriodicTable: public Li::Singleton<PeriodicTable>
 {
 	public:
 		//! Local typedef for the list of elements
-		typedef std::vector<Element> ElementList;
+		typedef std::vector<Element*> ElementList;
 		//! Local typedef for the map from element symbol to information
 		typedef std::map<std::string, Element*> SymbolElementMap;
 		//! Local typedef for the map from element number to information
@@ -45,6 +45,8 @@ class PeriodicTable: public Li::Singleton<PeriodicTable>
 		 * \exception NoFile throw when file \a fname cannot be opened
 		 */
 		PeriodicTable(const std::string& fname);
+		//! Destructor
+		~PeriodicTable();
 
 		/*!
 		 * \brief Read element data

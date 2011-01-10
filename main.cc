@@ -10,7 +10,8 @@ int main()
 		IndentingStreambuf ind_sb(std::cout.rdbuf());
 		std::streambuf *old_sb = std::cout.rdbuf(&ind_sb);
 
-		std::cout << PeriodicTable::getSingleton() << "\n";
+		std::cout << PeriodicTable::getSingleton() << "\n\n"
+			<< table["Cl"] << "\n";
 
 		std::cout.rdbuf(old_sb);
 	}
