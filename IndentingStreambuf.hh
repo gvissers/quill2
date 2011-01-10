@@ -32,7 +32,7 @@ class IndentingStreambuf: public std::streambuf
 		IndentingStreambuf(std::streambuf* buf,
 			const std::string& indent="\t", int level=0):
 			std::streambuf(), _buf(buf), _indent(indent),
-			_level(level) {}
+			_level(level), _indent_now(true) {}
 
 		//! Increase the indentation level with one
 		void indent() { _level++; }
