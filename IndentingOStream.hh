@@ -3,44 +3,49 @@
 
 /*!
  * \file IndentingOStream.hh
- * \brief Definition of the IndentingOStream class
+ * \brief Manipulators for an indenting output stream
  */
 
-#include "IndentingStreambuf.hh"
+#include "FilteringOStream.hh"
+#include "Indenter.hh"
+
+//! Typedef for an indenting stream buffer
+typedef FilteringOBuf<Indenter> IndentingOBuf;
+//! Typedef for an indenting output stream
+typedef FilteringOStream<Indenter> IndentingOStream;
+
+namespace {
 
 /*!
- * \brief An indenting output stream
+ * \brief Increase the indentation level
  *
- * Class IndentingOStream is an output stream which uses an IndentingStreambuf
- * filtering stream buffer to easily indent output. Example use:
- * [code]
- * IndentingOStream os(std::cout.rdbuf());
- * os << "level 0\n" << indent << "level 1\n" << "another level 1\n"
- * 	<< indent << "level 2\n" << dedent << "yet another level 1\n"
- * 	<< dedent << "final level 0\n";
- * [/code]
+ * When output stream \a os is using an IndentingOBuf for its stream
+ * buffer, this stream manipulator will increase the indentation level by one.
+ * \param os The output stream for which to increase indentation
+ * \return The output stream with updated stream buffer
  */
-class IndentingOStream: public std::ostream
+inline std::ostream& indent(std::ostream& os)
 {
-	public:
-		/*!
-		 * \brief Constructor
-		 *
-		 * Create a new IndentingOstream which will put its filtered
-		 * output on stream buffer \a buf, indenting lines with
-		 * indentation string \a indent, starting at indentation level
-		 * \a level.
-		 * \param buf    The stream buffer to write to
-		 * \param indent The indentation string
-		 * \param level  The initial indentation level
-		 */
-		IndentingOStream(std::streambuf *buf,
-			const std::string& indent="\t", int level=0):
-			std::ostream(&_buf), _buf(buf, indent, level) {}
+	IndentingOBuf *buf = dynamic_cast<IndentingOBuf*>(os.rdbuf());
+	if (buf) buf->filter()->indent();
+	return os;
+}
 
-	private:
-		//! The filtering stream buffer
-		IndentingStreambuf _buf;
-};
+/*!
+ * \brief Decrease the indentation level
+ *
+ * When output stream \a os is using an IndentingOBuf for its stream
+ * buffer, this stream manipulator will decrease the indentation level by one.
+ * \param os The output stream for which to decrease indentation
+ * \return The output stream with updated stream buffer
+ */
+inline std::ostream& dedent(std::ostream& os)
+{
+	IndentingOBuf *buf = dynamic_cast<IndentingOBuf*>(os.rdbuf());
+	if (buf) buf->filter()->dedent();
+	return os;
+}
+
+} // namespace
 
 #endif // INDENTINGOSTREAM_HH

@@ -113,7 +113,7 @@ class BasisSet
 struct BasisSet::UnknownFormat: public Li::Exception
 {
 	//! Constructor
-	UnknownFormat(int format): Exception("Unknown absis set format"),
+	UnknownFormat(int format): Exception("Unknown basis set format"),
 		format(format) {}
 
 	//! The format value that was unknown

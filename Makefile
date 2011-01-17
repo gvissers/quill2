@@ -4,8 +4,8 @@ CXXFLAGS = -Wall -W -ggdb $(INCLUDES)
 LDFLAGS = -L /home/ge/Programs/lithium/lib -lli_base \
 	-Wl,-rpath=/home/ge/Programs/lithium/lib
 
-OBJS = main.o BasisSet.o Element.o IndentingStreambuf.o LineGetter.o \
-	PeriodicTable.o support.o
+OBJS = main.o BasisSet.o Element.o Geometry.o Indenter.o \
+	JobFilter.o LineGetter.o PeriodicTable.o support.o
 
 all: main
 
@@ -17,7 +17,7 @@ clean:
 
 %.d: %.cc *.hh
 	set -e;\
-	$(CXX) -MM -MG $(CXXFLAGS) $< | sed 's/\($*\).o[ :]*/\1.o $@: /g' > $@
+	$(CXX) -MM $(CXXFLAGS) $< | sed 's/\($*\).o[ :]*/\1.o $@: /g' > $@
 
 ifneq "$(MAKECMDGOALS)" "clean"
 -include $(OBJS:.o=.d)

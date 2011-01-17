@@ -1,6 +1,6 @@
-#include "IndentingStreambuf.hh"
+#include "Indenter.hh"
 
-IndentingStreambuf::int_type IndentingStreambuf::overflow(int_type c)
+Indenter::int_type Indenter::operator()(std::streambuf *sb, int_type c)
 {
 	if (traits_type::eq_int_type(c, traits_type::eof()))
 		return c;
@@ -11,10 +11,13 @@ IndentingStreambuf::int_type IndentingStreambuf::overflow(int_type c)
 	else if (_indent_now)
 	{
 		for (int i = 0; i < _level; i++)
-			_buf->sputn(_indent.data(), _indent.size());
+		{
+			std::streamsize n = _indent.size();
+			if (sb->sputn(_indent.data(), n) < n)
+				return traits_type::eof();
+		}
 		_indent_now = false;
 	}
-	_buf->sputc(c);
-	return c;
+	return sb->sputc(c);
 }
 

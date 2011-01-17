@@ -44,6 +44,8 @@ class LineGetter
 		//! Destructor
 		~LineGetter() { delete[] _buf; }
 
+		//! Return The input stream we are reading from
+		std::istream& stream() { return _is; }
 		//! Return the current line number
 		int lineNumber() const { return _line_nr; }
 		//! Return the current line
