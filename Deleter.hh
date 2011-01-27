@@ -31,10 +31,13 @@
 template <class T>
 struct Deleter: public std::unary_function<T*, void>
 {
+	//! Delete object \a t
 	void operator()(T *t) const { delete t; }
 };
 
 /*!
+ * \brief Class for deleting arrays
+ *
  * Struct ArrayDeleter can be used in combination with STL iterator
  * functions to delete a collection of arrays. Example use:
  * \code
@@ -56,7 +59,8 @@ struct Deleter: public std::unary_function<T*, void>
 template <class T>
 struct ArrayDeleter: public std::unary_function<T*, void>
 {
-	void operator()(T *t) const { delete[] t; }
+	//! Delete array \a at
+	void operator()(T *at) const { delete[] at; }
 };
 
 #endif // DELETER_HH

@@ -1,6 +1,11 @@
 #ifndef FILTERINGOSTREAM_HH
 #define FILTERINGOSTREAM_HH
 
+/*!
+ * \file FilteringOStream.hh
+ * \brief Definition of the FilteringOStream class
+ */
+
 #include "FilteringOBuf.hh"
 
 /*!

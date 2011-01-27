@@ -7,6 +7,8 @@ LDFLAGS = -L /home/ge/Programs/lithium/lib -lli_base \
 OBJS = main.o BasisSet.o Element.o Geometry.o Indenter.o \
 	JobFilter.o JobIStream.o LineGetter.o PeriodicTable.o support.o
 
+.PHONY: doc
+
 all: main
 
 main: $(OBJS)
@@ -14,6 +16,9 @@ main: $(OBJS)
 
 clean:
 	\rm -f *.o *.d main
+
+doc:
+	doxygen
 
 %.d: %.cc *.hh
 	set -e;\

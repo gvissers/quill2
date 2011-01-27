@@ -145,7 +145,7 @@ namespace {
  * \brief Apply a stream manipulator
  *
  * Apply stream manipulator \a f to input stream \a jis. This function is
- * a specialization for a JobIstream of the extraction operator for stream 
+ * a specialization for a JobIStream of the extraction operator for stream
  * manipulators.
  * \param jis The JobIStream to manipulate
  * \param f   The function to apply to \a jis
@@ -161,11 +161,11 @@ inline JobIStream& operator>>(JobIStream& jis, JobIStream& (*f)(JobIStream&))
  *
  * Stream manipulator for line extraction for a JobIStream. In principle,
  * one could do things like (disregarding error checking)
- * [code]
+ * \code
  * int i;
  * std::string s;
  * jis >> getline >> i >> s;
- * [/code]
+ * \endcode
  * to extract an integer and  string from the next line in input stream \a jis.
  * \param jis The JobIStream from which to extract the next line
  * \return The update input stream

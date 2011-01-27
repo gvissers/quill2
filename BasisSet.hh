@@ -3,12 +3,11 @@
 
 /*!
  * \file BasisSet.hh
- * \brief definition of the BasisSet class
+ * \brief Definition of the BasisSet class
  */
 
 #include <vector>
 #include <map>
-#include <Exception.hh>
 #include "AbstractBF.hh"
 #include "LineGetter.hh"
 
@@ -66,8 +65,8 @@ class BasisSet
 		 * Try to read the basis set definition from input stream \a is,
 		 * asuming format \a format. If \a format is \c Auto, try to
 		 * determine the format from the file contents.
-		 * \param format The input format to use
-		 * \param is     The input stream to read from
+		 * \tparam format The input format to use
+		 * \param is      The input stream to read from
 		 */
 		template <Format format>
 		void read(std::istream& is);
@@ -147,6 +146,14 @@ struct BasisSet::UnknownShell: public Li::Exception
 
 namespace {
 
+/*!
+ * \brief Print a basis set
+ *
+ * Write a textual representation of basis set \a set to output stream \a os.
+ * \param os  The output stream to print on
+ * \param set The basis set to print
+ * \return The updated output stream
+ */
 inline std::ostream& operator<<(std::ostream& os, const BasisSet& set)
 {
 	return set.print(os);
