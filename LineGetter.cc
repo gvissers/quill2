@@ -1,5 +1,6 @@
 #include <cstring>
 #include "LineGetter.hh"
+#include "exceptions.hh"
 
 const char* LineGetter::next(bool except)
 {

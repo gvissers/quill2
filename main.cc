@@ -1,8 +1,7 @@
 #include <fstream>
 #include "PeriodicTable.hh"
 #include "IndentingOStream.hh"
-#include "FilteringIStream.hh"
-#include "JobFilter.hh"
+#include "JobIStream.hh"
 
 int main()
 {
@@ -19,9 +18,9 @@ int main()
 
 	is.clear();
 	is.str(line);
-	FilteringIStream<JobFilter> fis(is);
+	JobIStream fis(is);
 	i = j = k = -1;
-	fis >> i >> j >> k;
+	fis >> getline >> i >> j >> k;
 	std::cout << "i = " << i << ", j = " << j << ", k = " << k << "\n";
 
 	try

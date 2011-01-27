@@ -8,7 +8,6 @@
 
 #include <vector>
 #include <map>
-#include <sstream>
 #include <Singleton.hh>
 #include "Element.hh"
 
@@ -28,8 +27,6 @@ class PeriodicTable: public Li::Singleton<PeriodicTable>
 		typedef std::map<int, Element*> NumberElementMap;
 		//! Local typedef for the map from element name to information
 		typedef std::map<std::string, Element*> NameElementMap;
-
-		struct UnknownElement;
 
 		/*!
 		 * \brief Constructor
@@ -66,6 +63,12 @@ class PeriodicTable: public Li::Singleton<PeriodicTable>
 		 */
 		std::ostream& print(std::ostream& os) const;
 
+		//! Check if an element with symbol \a elem is known
+		bool exists(const std::string& elem) const
+		{
+			return _by_symbol.find(elem) != _by_symbol.end();
+		}
+
 		//! Find an element by symbol
 		const Element& operator[](const std::string& elem) const
 		{
@@ -96,23 +99,6 @@ class PeriodicTable: public Li::Singleton<PeriodicTable>
 		NumberElementMap _by_number;
 		//! Map from name to element
 		NameElementMap _by_name;
-};
-
-/*!
- * \brief %Exception thrown when trying to look up an element not in the table
- */
-struct PeriodicTable::UnknownElement: public Li::Exception
-{
-	//! Constructor
-	UnknownElement(const std::string& elem):
-		Exception("Unknown element \"" + elem + "\"") {}
-	//! Constructor
-	UnknownElement(int number): Exception()
-	{
-		std::ostringstream os;
-		os << number;
-		setMsg("Unknown element " + number);
-	}
 };
 
 namespace {

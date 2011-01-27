@@ -6,6 +6,8 @@
  * \brief Definition of the FilteringIBuf clas
  */
 
+#include <iostream>
+
 /*!
  * \brief Class for filtering input streams
  *

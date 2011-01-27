@@ -22,7 +22,6 @@ class LineGetter
 
 	public:
 		struct ReadFailure;
-		struct UnexpectedEOF;
 
 		/*!
 		 * \brief Constructor
@@ -103,13 +102,6 @@ struct LineGetter::ReadFailure: public Li::Exception
 {
 	//! Constructor
 	ReadFailure(): Exception("Read failure") {}
-};
-
-//! %Exception thrown when end of file was reached unexepectedly
-struct LineGetter::UnexpectedEOF: public Li::Exception
-{
-	//! Constructor
-	UnexpectedEOF(): Exception("unexpected end of file") {}
 };
 
 #endif // LINEGETTER_HH

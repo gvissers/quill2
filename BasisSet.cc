@@ -4,6 +4,7 @@
 #include "BasisSet.hh"
 #include "Deleter.hh"
 #include "CGTO.hh"
+#include "exceptions.hh"
 
 template<>
 void BasisSet::readElement<BasisSet::Turbomole>(LineGetter& getter)
@@ -190,7 +191,7 @@ void BasisSet::read<BasisSet::Turbomole>(std::istream& is)
 			throw ParseError(getter.lineNumber(), Turbomole,
 				"Expected \"$end\"");
 	}
-	catch (const LineGetter::UnexpectedEOF&)
+	catch (const UnexpectedEOF&)
 	{
 		throw ParseError(getter.lineNumber(), Turbomole,
 			"Unexpected end of file");
@@ -223,7 +224,7 @@ void BasisSet::read<BasisSet::Molpro>(std::istream& is)
 			throw ParseError(getter.lineNumber(), Turbomole,
 				"Expected \"}\"");
 	}
-	catch (const LineGetter::UnexpectedEOF&)
+	catch (const UnexpectedEOF&)
 	{
 		throw ParseError(getter.lineNumber(), Molpro,
 			"Unexpected end of file");
