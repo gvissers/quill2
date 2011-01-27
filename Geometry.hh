@@ -25,15 +25,17 @@ class Geometry
 		struct Nucleus
 		{
 			//! Element symbol of the nucleus
-			std::string element;
+			std::string symbol;
 			//! Position of the nucleus
 			Eigen::Vector3d position;
 
 			//! Constructor
-			Nucleus(const std::string& element, double x,
+			Nucleus(const std::string& symbol, double x,
 				double y, double z):
-				element(element), position(x, y, z) {}
+				symbol(symbol), position(x, y, z) {}
 		};
+		//! Local typedef for the list of nuclei
+		typedef std::vector<Nucleus> NucleusList;
 
 		/*!
 		 * \brief Constructor
@@ -42,6 +44,15 @@ class Geometry
 		 */
 		Geometry(): _nuclei() {}
 
+		/*!
+		 * \brief Print this Geometry
+		 *
+		 * Write a textual representation of this Geometry to output
+		 * stream \a os.
+		 * \param os The output stream to write to
+		 * \return The updated output stream
+		 */
+		std::ostream& print(std::ostream& os) const;
 		/*!
 		 * \brief Read this Geometry
 		 *
@@ -55,7 +66,7 @@ class Geometry
 
 	private:
 		//! The list of nuclei in the system
-		std::vector<Nucleus> _nuclei;
+		NucleusList _nuclei;
 
 		/*!
 		 * \brief Read a geometry in XYZ format
@@ -93,6 +104,18 @@ class Geometry
 namespace {
 
 /*!
+ * \brief Print a Geometry
+ *
+ * Write a textual representation of Geometry \a geom to output stream \a os.
+ * \param os   The output stream to write to
+ * \param geom The Geometry object to print
+ * \return The updated output stream
+ */
+inline std::ostream& operator<<(std::ostream& os, const Geometry& geom)
+{
+	return geom.print(os);
+}
+/*!
  * \brief Read a Geometry
  *
  * Read the nuclei and their positions from input stream \a is and store them
@@ -101,7 +124,7 @@ namespace {
  * \param geom Place to store the geometry
  * \return The updated input stream
  */
-JobIStream& operator>>(JobIStream& is, Geometry& geom)
+inline JobIStream& operator>>(JobIStream& is, Geometry& geom)
 {
 	return geom.scan(is);
 }

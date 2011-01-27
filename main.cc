@@ -1,37 +1,23 @@
 #include <fstream>
 #include "PeriodicTable.hh"
+#include "Geometry.hh"
 #include "IndentingOStream.hh"
-#include "JobIStream.hh"
 
 int main()
 {
-	int i, j, k;
-	std::string line("1 , 2,3,,4");
-	std::cout << "line = \"" << line << "\"\n";
-
-	std::istringstream is;
-	is.clear();
-	is.str(line);
-	i = j = k = -1;
-	is >> i >> j >> k;
-	std::cout << "i = " << i << ", j = " << j << ", k = " << k << "\n";
-
-	is.clear();
-	is.str(line);
-	JobIStream fis(is);
-	i = j = k = -1;
-	fis >> getline >> i >> j >> k;
-	std::cout << "i = " << i << ", j = " << j << ", k = " << k << "\n";
-
 	try
 	{
 		PeriodicTable table("data/elements.dat");
-		IndentingOStream os(std::cout);
 
-		os << PeriodicTable::getSingleton() << "\n\n"
-			<< table["Cl"] << "\n"
-			<< table.findByNumber(12) << "\n"
-			<< table.findByName("soDIUM") << "\n";
+		std::string job("C 0 0 0\nH 1 1 1\nH -1 -1 1\nH -1 1 -1\nH 1 -1 -1");
+		std::istringstream iss(job);
+		JobIStream jis(iss);
+
+		Geometry geom;
+		jis >> geom;
+
+		IndentingOStream os(std::cout);
+		os << geom << "\n";
 	}
 	catch (const Li::Exception& e)
 	{

@@ -20,9 +20,13 @@ void JobIStream::getLine()
 
 std::string JobIStream::nextLine()
 {
-	std::string line;
+	if (_input.eof())
+		return std::string();
+
+	// Loop while line is empty
 	while (true)
 	{
+		std::string line;
 		std::getline(_input, line);
 		if (_input.fail())
 			throw ReadFailure();

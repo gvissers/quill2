@@ -12,9 +12,10 @@
  * \brief Proxy class for FilteringOBuf
  *
  * Class FilteringOBufUser embeds a FilteringOBuf stream buffer object.
- * It acts as a parent class for FilteringOStream, aloowing it to fully
+ * It acts as a parent class for FilteringOStream, allowing it to fully
  * initialize the filtering stream buffer before constructing its
  * std::ostream interface.
+ * \tparam Filter The filter function to apply to the stream data
  */
 template <typename Filter>
 class FilteringOBufUser
@@ -40,6 +41,7 @@ class FilteringOBufUser
  *
  * Class FilteringOStream is an output stream that uses applies a filter
  * object to the output data before it is being written.
+ * \tparam Filter The filter function to apply to the stream data
  */
 template <typename Filter>
 struct FilteringOStream: private FilteringOBufUser<Filter>, public std::ostream

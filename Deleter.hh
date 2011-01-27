@@ -24,11 +24,12 @@
  * // are now invalid). When obj_vec is still to be used, always clear it.
  * obj_vec.clear();
  * \endcode
+ * \tparam T the type of the object to delete
  * \note For freeing data associated with an array (allocated with
  * \c new[]) use an ArrayDeleter instead of a Deleter.
  * \sa ArrayDeleter
  */
-template <class T>
+template <typename T>
 struct Deleter: public std::unary_function<T*, void>
 {
 	//! Delete object \a t
@@ -50,13 +51,14 @@ struct Deleter: public std::unary_function<T*, void>
  * // Remove the (now invalid) pointers from the vector
  * matrix.clear();
  * \endcode
+ * \tparam T the element type of the array to delete
  * \note The template argument to the ArrayDeleter class is the type
  * of an element in the array, not that of the array itself.
  * \note For deleting "normal" objects (i.e. not allocated with \c new[]),
  * use a Deleter object, not an ArrayDeleter.
  * \sa Deleter
  */
-template <class T>
+template <typename T>
 struct ArrayDeleter: public std::unary_function<T*, void>
 {
 	//! Delete array \a at

@@ -12,9 +12,10 @@
  * \brief Proxy class for FilteringIBuf
  *
  * Class FilteringIBufUser embeds a FilteringIBuf stream buffer object.
- * It acts as a parent class for FilteringIStream, aloowing it to fully
+ * It acts as a parent class for FilteringIStream, allowing it to fully
  * initialize the filtering stream buffer before constructing its
  * std::istream interface.
+ * \tparam Filter The filter function to apply to the stream data
  */
 template <typename Filter>
 class FilteringIBufUser
@@ -40,6 +41,7 @@ class FilteringIBufUser
  *
  * Class FilteringIStream is an input stream that uses applies a filter
  * object to the incoming data before it is parsed.
+ * \tparam Filter The filter function to apply to the stream data
  */
 template <typename Filter>
 struct FilteringIStream: private FilteringIBufUser<Filter>, public std::istream

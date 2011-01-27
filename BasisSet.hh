@@ -87,7 +87,7 @@ class BasisSet
 		BFMap _elements;
 
 		//! Read an element definition in format \a format
-		template<Format format>
+		template <Format format>
 		void readElement(LineGetter& getter);
 		//! Read a single basis function in Turbomole format
 		AbstractBF* readTurbomoleBF(LineGetter& getter);

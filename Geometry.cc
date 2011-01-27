@@ -1,7 +1,22 @@
 #include "Geometry.hh"
 #include "PeriodicTable.hh"
+#include "IndentingOStream.hh"
 #include "exceptions.hh"
 #include "support.hh"
+
+std::ostream& Geometry::print(std::ostream& os) const
+{
+	os << "Geometry (\n" << indent;
+	for (NucleusList::const_iterator nit = _nuclei.begin();
+		nit != _nuclei.end(); ++nit)
+	{
+		os << nit->symbol << " " << nit->position.x() << " "
+			<< nit->position.y() << " "
+			<< nit->position.z() << "\n";
+	}
+	os << dedent << ")";
+	return os;
+}
 
 JobIStream& Geometry::scan(JobIStream& is)
 {

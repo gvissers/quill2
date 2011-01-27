@@ -66,7 +66,7 @@ class JobIStream: public IStringStreamUser, public std::istream
 		 * Create a new JobIstream object for rading a job from
 		 * input stream \a is.
 		 */
-		JobIStream(std::istream& is):
+		explicit JobIStream(std::istream& is):
 			IStringStreamUser(),
 			std::istream(stringstream().rdbuf()),
 			_lines(), _input(is) {}

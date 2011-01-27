@@ -14,7 +14,8 @@
  * which operates on the underlying stream buffer.
  * Based on the ideas of James Kanze, available from
  * http://lists.boost.org/Archives/boost/att-49459/fltrsbf1.htm
-*/
+ * \tparam Filter The filter function to apply to the stream data
+ */
 template <typename Filter>
 class FilteringOBuf: public std::streambuf
 {

@@ -15,12 +15,14 @@
  *
  * Class CGTO represents a contraction of primitive (cartesian) Gaussian
  * type orbitals, each of the form
- * * \f[
+ * \f[
  * G(x,y,z) = (x-x_c)^i (y-y_c)^j (z-z_c)^k
  *            \exp(-\alpha * |{\bf r}-{\bf r}_c|^2)
  * \f]
- * Here, the angular momentum quantum numbers $i$, $j$, and $k$ add up to
- * the template parameter \a l, the total angular momentum of the orbital.
+ * Here, the angular momentum quantum numbers \f$i\f$, \f$j\f$, and \f$k\f$
+ * add up to the template parameter \a l, the total angular momentum of the
+ * orbital.
+ * \tparam l The total angular momentum of the orbital
  */
 template <int l>
 class CGTO: public AbstractBF
