@@ -1,4 +1,5 @@
 #include <fstream>
+#include <algorithm>
 #include <utfstring.hh>
 #include "PeriodicTable.hh"
 #include "Deleter.hh"
