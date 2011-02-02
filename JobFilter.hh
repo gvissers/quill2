@@ -6,7 +6,7 @@
  * \brief Definition of the JobFilter class
  */
 
-#include <iostream>
+#include "IBufFilter.hh"
 
 /*!
  * \brief Class for filtering job files
@@ -16,16 +16,9 @@
  * will strip out comments (indicated by a '#' character), and will replace
  * comma characters by a space.
  */
-class JobFilter
+class JobFilter: public IBufFilter
 {
 	public:
-		//! Local typedef for character or error code
-		typedef std::streambuf::int_type int_type;
-		//! Local typedef for the type of a character
-		typedef std::streambuf::char_type char_type;
-		//! Local typedef for character traits
-		typedef std::streambuf::traits_type traits_type;
-
 		//! Constructor
 		JobFilter(): _string_open('\0'), _escaped(false) {}
 

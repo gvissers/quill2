@@ -2,20 +2,26 @@
 
 void LineIStream::getLine()
 {
-	if (_lines.empty())
+	if (!_lines.empty())
+	{
+		clear();
+		stream().str(_lines.front());
+		_lines.pop_front();
+	}
+	else
 	{
 		std::string line = nextLine();
 		if (line.empty())
 		{
 			setstate(eofbit);
-			return;
 		}
-		_lines.push_back(line);
+		else
+		{
+			clear();
+			stream().str(line);
+		}
 	}
 
-	clear();
-	stream().str(_lines.front());
-	_lines.pop_front();
 }
 
 std::string LineIStream::nextLine()
@@ -28,9 +34,12 @@ std::string LineIStream::nextLine()
 	{
 		std::string line;
 		std::getline(_input, line);
+		if (_input.eof())
+			return std::string();
 		if (_input.fail())
 			throw ReadFailure();
-		if (!line.empty() || _input.eof())
+		_line_nr++;
+		if (!line.empty())
 			return line;
 	}
 }

@@ -6,8 +6,7 @@
  * \brief Definition of the JobIStream class
  */
 
-#include "LineIStream.hh"
-#include "FilteringIStream.hh"
+#include "FilteringLineIStream.hh"
 #include "JobFilter.hh"
 
 /*!
@@ -18,19 +17,6 @@
  * with the possibility of placing lines back on the stream, and automatically
  * filters out comments and empty lines.
  */
-struct JobIStream: public IStreamUser< FilteringIStream<JobFilter> >,
-	public LineIStream
-{
-	/*!
-	 * \brief Constructor
-	 *
-	 * Create a new JobIstream object for reading a job from
-	 * input stream \a is.
-	 */
-	explicit JobIStream(std::istream& is):
-		IStreamUser< FilteringIStream<JobFilter> >(is.rdbuf()),
-		LineIStream(IStreamUser< FilteringIStream<JobFilter> >::stream())
-		{}
-};
+typedef FilteringLineIStream<JobFilter> JobIStream;
 
 #endif // JOBISTREAM_HH

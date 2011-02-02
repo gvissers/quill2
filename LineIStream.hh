@@ -8,8 +8,8 @@
 
 #include <list>
 #include <sstream>
-#include <Exception.hh>
 #include "IStreamUser.hh"
+#include "exceptions.hh"
 
 /*!
  * \brief Class for reading files line by line
@@ -29,12 +29,16 @@ class LineIStream: public IStreamUser<std::istringstream>, public std::istream
 		 *
 		 * Create a new LineIstream object for reading from
 		 * input stream \a is.
+		 * \param is      The input stream to read from
+		 * \param line_nr The line number to start with
 		 */
-		explicit LineIStream(std::istream& is):
+		explicit LineIStream(std::istream& is, int line_nr=0):
 			IStreamUser<std::istringstream>(),
 			std::istream(rdbuf()),
-			_lines(), _input(is) {}
+			_lines(), _line_nr(line_nr), _input(is) {}
 
+		//! Return the current line number
+		int lineNumber() const { return _line_nr; }
 		//! Return the line currently being processed
 		std::string line() const { return stream().str(); }
 
@@ -77,6 +81,7 @@ class LineIStream: public IStreamUser<std::istringstream>, public std::istream
 		void ungetLine(const std::string& line)
 		{
 			_lines.push_back(line);
+			_line_nr--;
 		}
 
 		//! Return the string buffer associated with the current line
@@ -85,6 +90,8 @@ class LineIStream: public IStreamUser<std::istringstream>, public std::istream
 	private:
 		//! Buffer of lines
 		std::list<std::string> _lines;
+		//! The current line number
+		int _line_nr;
 		//! The stream from which we read lines
 		std::istream& _input;
 
@@ -137,11 +144,28 @@ inline LineIStream& operator>>(LineIStream& jis,
  * \endcode
  * to extract an integer and  string from the next line in input stream \a jis.
  * \param jis The LineIStream from which to extract the next line
- * \return The update input stream
+ * \return The updated input stream
  */
 inline LineIStream& getline(LineIStream& jis)
 {
 	jis.getLine();
+	return jis;
+}
+
+/*!
+ * \brief Retrieve a new line from a line input stream
+ *
+ * Stream manipulator for line extraction for a LineIStream. The difference
+ * with the getline manipulator is that expectline will throw an UnexpectedEOF
+ * excpetion when no more lines are available.
+ * \param jis The LineIStream from which to extract the next line
+ * \return The updated input stream
+ * \exception UnexpectedEOF when no more lines are available
+ */
+inline LineIStream& expectline(LineIStream& jis)
+{
+	jis.getLine();
+	if (jis.eof()) throw UnexpectedEOF();
 	return jis;
 }
 

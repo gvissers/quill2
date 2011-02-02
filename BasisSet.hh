@@ -9,7 +9,8 @@
 #include <vector>
 #include <map>
 #include "AbstractBF.hh"
-#include "LineGetter.hh"
+#include "FilteringLineIStream.hh"
+#include "CommentFilter.hh"
 
 /*!
  * \brief Class representing a basis set
@@ -88,9 +89,9 @@ class BasisSet
 
 		//! Read an element definition in format \a format
 		template <Format format>
-		void readElement(LineGetter& getter);
+		void readElement(FilteringLineIStream<CommentFilter>& fis);
 		//! Read a single basis function in Turbomole format
-		AbstractBF* readTurbomoleBF(LineGetter& getter);
+		AbstractBF* readTurbomoleBF(FilteringLineIStream<CommentFilter>& fis);
 
 		/*!
 		 * \brief Create a contracted Gaussian

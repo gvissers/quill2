@@ -4,8 +4,8 @@ CXXFLAGS = -Wall -W -ggdb $(INCLUDES)
 LDFLAGS = -L /home/ge/Programs/lithium/lib -lli_base \
 	-Wl,-rpath=/home/ge/Programs/lithium/lib
 
-OBJS = main.o BasisSet.o Element.o Geometry.o Indenter.o \
-	JobFilter.o LineGetter.o LineIStream.o PeriodicTable.o support.o
+OBJS = main.o BasisSet.o CommentFilter.o Element.o Geometry.o Indenter.o \
+	JobFilter.o LineIStream.o PeriodicTable.o support.o
 
 .PHONY: doc
 

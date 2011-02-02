@@ -36,6 +36,20 @@ class IStreamUser
 		 * \param sb The stream buffer of the embedded stream
 		 */
 		IStreamUser(std::streambuf* sb): _is(sb) {}
+		/*!
+		 * \brief Constructor
+		 *
+		 * Create a new IStreamUser object, embedding a filtering
+		 * EmbeddedIstream which uses \a sb for its stream buffer
+		 * and filter object \a filter. The embedded type
+		 * \a EmbeddedIStream should be a FilteringIStream.
+		 * \param sb     The stream buffer of the embedded stream
+		 * \param filter The filter object to apply to apply to
+		 *    incoming data.
+		 */
+		template <typename Filter>
+		IStreamUser(std::streambuf* sb, Filter *filter):
+			_is(sb, filter) {}
 
 		//! Return the embedded \c istringstream
 		EmbeddedIStream& stream() { return _is; }

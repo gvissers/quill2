@@ -1,78 +1,95 @@
 #include <sstream>
 #include <cstdio>
 #include <util.hh>
+#include <tr1/functional>
 #include "BasisSet.hh"
 #include "Deleter.hh"
 #include "CGTO.hh"
 #include "exceptions.hh"
+#include "support.hh"
+
+using namespace std::tr1::placeholders;
 
 template<>
-void BasisSet::readElement<BasisSet::Turbomole>(LineGetter& getter)
+void BasisSet::readElement<BasisSet::Turbomole>(FilteringLineIStream<CommentFilter>& fis)
 {
-	std::string elem, name;
-	std::istringstream is;
+	std::string elem, name, sep;
 
-	const char* line = getter.line();
-	is.str(line);
-	is >> elem >> name;
-	if (is.fail())
-		throw ParseError(getter.lineNumber(), Turbomole,
+	fis >> expectline >> elem >> name;
+	if (fis.fail())
+		throw ParseError(fis.lineNumber(), Turbomole,
 			"Element name and basis name expected");
 	elem = ucFirst(elem);
 
-	line = getter.next();
-	if (std::strcmp(line, "*") != 0)
-		throw ParseError(getter.lineNumber(), Turbomole,
+	fis >> expectline >> sep;
+	if (sep != "*")
+		throw ParseError(fis.lineNumber(), Turbomole,
 			"Expected \"*\"");
 	BFList& elem_funs = _elements[elem];
 	while (true)
 	{
-		line = getter.next();
-		if (std::strcmp(line, "*") == 0)
+		fis >> expectline >> sep;
+		if (sep == "*")
 			break;
+		fis.ungetLastLine();
 
-		AbstractBF* f = readTurbomoleBF(getter);
+		AbstractBF* f = readTurbomoleBF(fis);
 		elem_funs.push_back(f);
 	}
 }
 
 template<>
-void BasisSet::readElement<BasisSet::Molpro>(LineGetter& getter)
+void BasisSet::readElement<BasisSet::Molpro>(FilteringLineIStream<CommentFilter>& fis)
 {
-	const char* line = getter.line();
-	Li::Vector<std::string> fields = Li::explode(",", line);
-	if (fields.size() < 3)
-		throw ParseError(getter.lineNumber(), Molpro,
-			"Expected shell, element name, and primitive widths");
-
-	std::string shell = Li::strip(fields[0]);
-	std::string elem = ucFirst(Li::strip(fields[1]));
+	std::string shell, elem;
 	std::vector<double> widths;
-	std::transform(fields.begin()+2, fields.end(),
-		std::back_inserter(widths), Li::fromString<double>);
+
+	fis >> expectline >> shell >> elem;
+	if (fis.fail())
+		throw ParseError(fis.lineNumber(), Molpro,
+			"Expected shell, element name, and primitive widths");
+	elem = ucFirst(elem);
+	while (!fis.eof())
+	{
+		double width;
+		fis >> width;
+		if (!fis.fail())
+			widths.push_back(width);
+	}
 
 	std::vector<double> weights;
 	std::vector< std::pair<double, double> > ww;
+	char ch;
 	BFList& elem_funs = _elements[elem];
 	while (true)
 	{
-		line = getter.next();
-		fields = Li::explode(",", line);
-		if (fields.size() < 3 || Li::strip(fields[0]) != "c")
+		fis >> expectline >> ch;
+		if (ch != 'c')
+		{
+			fis.ungetLastLine();
 			break;
+		}
 
 		int istart, iend;
-		if (std::sscanf(fields[1].c_str(), "%d.%d", &istart, &iend) != 2)
-			throw ParseError(getter.lineNumber(), Molpro,
+		fis >> istart >> ch >> iend;
+		if (fis.fail() || ch !='.')
+			throw ParseError(fis.lineNumber(), Molpro,
 				"Expected start end end indices of primitive widths");
 		if (istart < 1 || istart > int(widths.size())
 			|| iend < istart || iend > int(widths.size()))
-			throw ParseError(getter.lineNumber(), Molpro,
+			throw ParseError(fis.lineNumber(), Molpro,
 				"Invalid primitive index");
 
 		weights.clear();
-		std::transform(fields.begin()+2, fields.end(),
-			std::back_inserter(weights), Li::fromString<double>);
+		for (int i = istart; i <= iend; i++)
+		{
+			double weight;
+			fis >> weight;
+			if (fis.fail())
+				throw ParseError(fis.lineNumber(), Molpro,
+					"Expected primitive weight");
+			weights.push_back(weight);
+		}
 
 		ww.clear();
 		std::transform(weights.begin(), weights.end(),
@@ -85,7 +102,7 @@ void BasisSet::readElement<BasisSet::Molpro>(LineGetter& getter)
 }
 
 template<>
-void BasisSet::readElement<BasisSet::Dalton>(LineGetter& getter)
+void BasisSet::readElement<BasisSet::Dalton>(FilteringLineIStream<CommentFilter>& fis)
 {
 	static std::string last_elem;
 	static char last_shell;
@@ -94,11 +111,9 @@ void BasisSet::readElement<BasisSet::Dalton>(LineGetter& getter)
 	char shell;
 	int nprim, nbf;
 
-	const char* line = getter.line();
-	std::istringstream is(line);
-	is >> elem >> nprim >> nbf;
-	if (is.fail())
-		throw ParseError(getter.lineNumber(), Dalton,
+	fis >> expectline >> elem >> nprim >> nbf;
+	if (fis.fail())
+		throw ParseError(fis.lineNumber(), Dalton,
 			"Expected element name, number of primitives, and number of contractions");
 	elem = ucFirst(elem);
 
@@ -118,7 +133,7 @@ void BasisSet::readElement<BasisSet::Dalton>(LineGetter& getter)
 			case 'g': shell = last_shell = 'h'; break;
 			case 'h': shell = last_shell = 'i'; break;
 			default:
-				throw ParseError(getter.lineNumber(), Dalton,
+				throw ParseError(fis.lineNumber(), Dalton,
 					"Orbital shell is higher than supported");
 		}
 	}
@@ -128,20 +143,16 @@ void BasisSet::readElement<BasisSet::Dalton>(LineGetter& getter)
 	{
 		double width;
 
-		line = getter.next();
-		is.clear();
-		is.str(line);
-
-		is >> width;
-		if (!is.good())
-			throw ParseError(getter.lineNumber(), Dalton,
+		fis >> expectline >> width;
+		if (!fis.good())
+			throw ParseError(fis.lineNumber(), Dalton,
 				"Expected width of primitive");
 		for (int ibf = 0; ibf < nbf; ibf++)
 		{
 			double weight;
-			is >> weight;
-			if (!is.good())
-				throw ParseError(getter.lineNumber(), Dalton,
+			fis >> weight;
+			if (!fis.good())
+				throw ParseError(fis.lineNumber(), Dalton,
 					"Expected contraction coefficient");
 			if (weight != 0.0)
 				wws[ibf].push_back(std::make_pair(weight, width));
@@ -164,36 +175,33 @@ void BasisSet::read<BasisSet::Auto>(std::istream& is)
 template<>
 void BasisSet::read<BasisSet::Turbomole>(std::istream& is)
 {
-	const char* line;
-	LineGetter getter(is, "#");
+	std::string str;
+	CommentFilter filter('#');
+	FilteringLineIStream<CommentFilter> fis(is, &filter);
 
 	try
 	{
-		line = getter.next();
-		if (std::strcmp(line, "$basis") != 0)
-			throw ParseError(getter.lineNumber(), Turbomole,
+		fis >> expectline >> str;
+		if (str != "$basis")
+			throw ParseError(fis.lineNumber(), Turbomole,
 				"Expected \"$basis\"");
-
-		line = getter.next();
-		if (std::strcmp(line, "*") != 0)
-			throw ParseError(getter.lineNumber(), Turbomole,
+		fis >> expectline >> str;
+		if (str != "*")
+			throw ParseError(fis.lineNumber(), Turbomole,
 				"Expected \"*\"");
 		while (true)
 		{
-			line = getter.next();
-			if (std::strcmp(line, "$end") == 0)
+			fis >> expectline >> str;
+			if (str == "$end")
 				break;
 
-			readElement<Turbomole>(getter);
+			fis.ungetLastLine();
+			readElement<Turbomole>(fis);
 		}
-
-		if (std::strcmp(getter.line(), "$end") != 0)
-			throw ParseError(getter.lineNumber(), Turbomole,
-				"Expected \"$end\"");
 	}
 	catch (const UnexpectedEOF&)
 	{
-		throw ParseError(getter.lineNumber(), Turbomole,
+		throw ParseError(fis.lineNumber(), Turbomole,
 			"Unexpected end of file");
 	}
 }
@@ -201,32 +209,34 @@ void BasisSet::read<BasisSet::Turbomole>(std::istream& is)
 template<>
 void BasisSet::read<BasisSet::Molpro>(std::istream& is)
 {
-	const char* line;
-	LineGetter getter(is, "!");
+	std::string str;
+	CommentFilter filter('!');
+	FilteringLineIStream<CommentFilter> fis(is, &filter);
 
 	try
 	{
-		line = getter.next();
-		if (strcmp(line, "basis={") != 0)
-			throw ParseError(getter.lineNumber(), Molpro,
+		fis >> expectline;
+		str = fis.line();
+		std::string::iterator it = std::remove_if(str.begin(), str.end(), 
+			std::tr1::bind(std::isspace<char>, _1, std::locale()));
+		str.erase(it, str.end());
+		if (str != "basis={")
+			throw ParseError(fis.lineNumber(), Molpro,
 				"Expected \"basis={\"");
 
-		line = getter.next();
 		while (true)
 		{
-			if (strcmp(getter.line(), "}") == 0)
+			fis >> expectline >> str;
+			if (str == "}")
 				break;
 
-			readElement<Molpro>(getter);
+			fis.ungetLastLine();
+			readElement<Molpro>(fis);
 		}
-
-		if (std::strcmp(getter.line(), "}") != 0)
-			throw ParseError(getter.lineNumber(), Turbomole,
-				"Expected \"}\"");
 	}
 	catch (const UnexpectedEOF&)
 	{
-		throw ParseError(getter.lineNumber(), Molpro,
+		throw ParseError(fis.lineNumber(), Molpro,
 			"Unexpected end of file");
 	}
 }
@@ -234,13 +244,15 @@ void BasisSet::read<BasisSet::Molpro>(std::istream& is)
 template<>
 void BasisSet::read<BasisSet::Dalton>(std::istream& is)
 {
-	LineGetter getter(is, "!");
+	CommentFilter filter('!');
+	FilteringLineIStream<CommentFilter> fis(is, &filter);
 	while (true)
 	{
-		const char* line = getter.next(false);
-		if (!line) break;
+		fis >> getline;
+		if (fis.eof()) break;
 
-		readElement<Dalton>(getter);
+		fis.ungetLastLine();
+		readElement<Dalton>(fis);
 	}
 }
 
@@ -266,16 +278,14 @@ std::ostream& BasisSet::print(std::ostream& os) const
 	return os << dedent << ")";
 }
 
-AbstractBF* BasisSet::readTurbomoleBF(LineGetter& getter)
+AbstractBF* BasisSet::readTurbomoleBF(FilteringLineIStream<CommentFilter>& fis)
 {
 	int nr_prim;
 	char shell;
 
-	const char *line = getter.line();
-	std::istringstream is(line);
-	is >> nr_prim >> shell;
-	if (is.fail())
-		throw ParseError(getter.lineNumber(), Turbomole,
+	fis >> expectline >> nr_prim >> shell;
+	if (fis.fail())
+		throw ParseError(fis.lineNumber(), Turbomole,
 			"Number of primitives and shell expected");
 
 	std::vector< std::pair<double, double> > ww;
@@ -283,14 +293,10 @@ AbstractBF* BasisSet::readTurbomoleBF(LineGetter& getter)
 	{
 		double width, weight;
 
-		line = getter.next();
-		is.clear();
-		is.str(line);
-		is >> width >> weight;
-		if (is.fail())
-			throw ParseError(getter.lineNumber(), Turbomole,
+		fis >> expectline >> width >> weight;
+		if (fis.fail())
+			throw ParseError(fis.lineNumber(), Turbomole,
 				"Width and weight of primitive expected");
-
 		ww.push_back(std::make_pair(weight, width));
 	}
 
