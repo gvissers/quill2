@@ -8,7 +8,7 @@
 
 #include <vector>
 #include <map>
-#include "AbstractBF.hh"
+#include "AbstractBFDef.hh"
 #include "FilteringLineIStream.hh"
 #include "CommentFilter.hh"
 
@@ -22,7 +22,7 @@ class BasisSet
 {
 	public:
 		//! Typedef for a list of basis functions
-		typedef std::vector<AbstractBF*> BFList;
+		typedef std::vector<AbstractBFDef*> BFList;
 		//! Typedef for the basis function map
 		typedef std::map<std::string, BFList> BFMap;
 		//! Enumeration type for recognised basis set formats
@@ -91,7 +91,7 @@ class BasisSet
 		template <Format format>
 		void readElement(FilteringLineIStream<CommentFilter>& fis);
 		//! Read a single basis function in Turbomole format
-		AbstractBF* readTurbomoleBF(FilteringLineIStream<CommentFilter>& fis);
+		AbstractBFDef* readTurbomoleBF(FilteringLineIStream<CommentFilter>& fis);
 
 		/*!
 		 * \brief Create a contracted Gaussian
@@ -105,7 +105,7 @@ class BasisSet
 		 * \exception UknownShell thrown when \a shell is not
 		 *    recognised.
 		 */
-		static AbstractBF* contractedGaussian(char shell,
+		static AbstractBFDef* contractedGaussian(char shell,
 			const std::vector< std::pair<double, double> >& ww);
 };
 

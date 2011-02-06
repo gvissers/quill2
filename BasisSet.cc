@@ -4,7 +4,7 @@
 #include <tr1/functional>
 #include "BasisSet.hh"
 #include "Deleter.hh"
-#include "CGTO.hh"
+#include "CGTODef.hh"
 #include "exceptions.hh"
 #include "support.hh"
 #include "manipulators.hh"
@@ -33,7 +33,7 @@ void BasisSet::readElement<BasisSet::Turbomole>(FilteringLineIStream<CommentFilt
 			break;
 		fis.ungetLastLine();
 
-		AbstractBF* f = readTurbomoleBF(fis);
+		AbstractBFDef* f = readTurbomoleBF(fis);
 		elem_funs.push_back(f);
 	}
 }
@@ -95,7 +95,7 @@ void BasisSet::readElement<BasisSet::Molpro>(FilteringLineIStream<CommentFilter>
 			widths.begin()+(istart-1), std::back_inserter(ww),
 			std::make_pair<double, double>);
 
-		AbstractBF *bf = contractedGaussian(shell[0], ww);
+		AbstractBFDef *bf = contractedGaussian(shell[0], ww);
 		elem_funs.push_back(bf);
 	}
 }
@@ -160,7 +160,7 @@ void BasisSet::readElement<BasisSet::Dalton>(FilteringLineIStream<CommentFilter>
 	BFList& elem_funs = _elements[elem];
 	for (int ibf = 0; ibf < nbf; ibf++)
 	{
-		AbstractBF *bf = contractedGaussian(shell, wws[ibf]);
+		AbstractBFDef *bf = contractedGaussian(shell, wws[ibf]);
 		elem_funs.push_back(bf);
 	}
 }
@@ -274,7 +274,7 @@ std::ostream& BasisSet::print(std::ostream& os) const
 	return os << dedent << ")";
 }
 
-AbstractBF* BasisSet::readTurbomoleBF(FilteringLineIStream<CommentFilter>& fis)
+AbstractBFDef* BasisSet::readTurbomoleBF(FilteringLineIStream<CommentFilter>& fis)
 {
 	int nr_prim;
 	char shell;
@@ -305,22 +305,22 @@ void BasisSet::clear()
 		it != _elements.end(); ++it)
 	{
 		std::for_each(it->second.begin(), it->second.end(),
-			Deleter<AbstractBF>());
+			Deleter<AbstractBFDef>());
 	}
 }
 
-AbstractBF* BasisSet::contractedGaussian(char shell,
+AbstractBFDef* BasisSet::contractedGaussian(char shell,
 	const std::vector< std::pair<double, double> >& ww)
 {
 	switch (shell)
 	{
-		case 's': return new CGTO<0>(ww);
-		case 'p': return new CGTO<1>(ww);
-		case 'd': return new CGTO<2>(ww);
-		case 'f': return new CGTO<3>(ww);
-		case 'g': return new CGTO<4>(ww);
-		case 'h': return new CGTO<5>(ww);
-		case 'i': return new CGTO<6>(ww);
+		case 's': return new CGTODef<0>(ww);
+		case 'p': return new CGTODef<1>(ww);
+		case 'd': return new CGTODef<2>(ww);
+		case 'f': return new CGTODef<3>(ww);
+		case 'g': return new CGTODef<4>(ww);
+		case 'h': return new CGTODef<5>(ww);
+		case 'i': return new CGTODef<6>(ww);
 		default: throw UnknownShell(shell);
 	}
 }
