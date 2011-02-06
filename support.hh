@@ -7,6 +7,11 @@
  */
 
 #include <string>
+#include <algorithm>
+#include <tr1/functional>
+#include <cmath>
+
+using namespace std::tr1::placeholders;
 
 #define NON_COPYABLE(class_name) \
 	private:\
@@ -14,6 +19,49 @@
 		class_name& operator=(const class_name&);\
 
 // NON_COPYABLE
+
+
+/*!
+ * \brief Remove characters from a string
+ *
+ * Remove all characters fmatchinf condition \a cond from string \a str, and
+ * return the updated string.
+ * \tparam Cond The type of the condition
+ * \param str  The string from which to remove characters
+ * \param cond The condition to match
+ * \return The string with matching characters removed
+ */
+template <typename Cond>
+std::string& remove(std::string& str, Cond cond)
+{
+	std::string::iterator new_end = std::remove_if(str.begin(), str.end(),
+		cond);
+	str.erase(new_end, str.end());
+	return str;
+}
+/*!
+ * \brief Remove characters from the end of a string
+ *
+ * Remove characters at the end of string \a str matching condition \a cond.
+ * \tparam Cond The type of the condition
+ * \param str  The string from which to remove characters
+ * \param cond The condition to match
+ * \return The trimmed string
+ */
+template <typename Cond>
+std::string& rtrim(std::string& str, Cond cond)
+{
+	// Okay, the tr1::bind christmas tree below is rather sick. The problem
+	// is that we need to negate the condition in order to find the
+	// last character *not* matching it. However, std::not1 will only
+	// work on objects that define a type argument_type, which Cond
+	// does not necessarily do (most notably, when Cond itself is the
+	// result of a tr1::bind).
+	std::string::reverse_iterator it = std::find_if(str.rbegin(), str.rend(),
+		std::tr1::bind(std::logical_not<bool>(), std::tr1::bind(cond, _1)));
+	str.erase(it.base(), str.end());
+	return str;
+}
 
 /*!
  * \brief Create a string with only the first character upper case
@@ -24,5 +72,31 @@
  * \return string with only the first character in upper case
  */
 std::string ucFirst(const std::string& str);
+/*!
+ * \brief Convert to string with only the first character upper case
+ *
+ * Change the case of the characters in \a str such that only the first
+ * character is in upper case.
+ * \param str The string to transform
+ * \return reference to the updated string
+ */
+std::string& toUCFirst(std::string& str);
+
+namespace
+{
+
+//! Convert an angle in degrees to radians
+inline double degToRad(double a)
+{
+	return a * M_PI / 180;
+}
+
+//! Convert an angle in radians to degrees
+inline double radToDeg(double a)
+{
+	return a * 180 / M_PI;
+}
+
+} // namespace
 
 #endif // SUPPORT_HH

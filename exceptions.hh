@@ -51,4 +51,19 @@ struct ParseError: public Li::Exception
 	ParseError(const std::string& msg): Exception("Parse error: " + msg) {}
 };
 
+/*!
+ * %Exception thrown when trying to access an element in an array or map
+ * using an index not present in the container.
+ */
+struct InvalidIndex: public Li::Exception
+{
+	//! Constructor
+	InvalidIndex(int i): Exception()
+	{
+		std::ostringstream os;
+		os << "Invalid index " << i;
+		setMsg(os.str());
+	}
+};
+
 #endif // EXCEPTIONS_HH

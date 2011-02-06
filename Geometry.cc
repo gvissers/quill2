@@ -1,84 +1,59 @@
 #include "Geometry.hh"
 #include "PeriodicTable.hh"
 #include "IndentingOStream.hh"
+#include "XYZMatrix.hh"
+#include "ZMatrix.hh"
+#include "manipulators.hh"
 #include "exceptions.hh"
-#include "support.hh"
+
+void Geometry::setAtom(int idx, const std::string& symbol,
+	double x, double y, double z)
+{
+	if (idx < 0 || idx > size())
+		throw Li::Exception("Invalid atom index");
+
+	const Element& elem = PeriodicTable::getSingleton().findBySymbol(symbol);
+
+	_positions.col(idx) << x, y, z;
+	_masses(idx) = elem.mass();
+	_charges(idx) = elem.number();
+}
 
 std::ostream& Geometry::print(std::ostream& os) const
 {
 	os << "Geometry (\n" << indent;
-	for (NucleusList::const_iterator nit = _nuclei.begin();
-		nit != _nuclei.end(); ++nit)
-	{
-		os << nit->symbol << " " << nit->position.x() << " "
-			<< nit->position.y() << " "
-			<< nit->position.z() << "\n";
-	}
+	for (int i = 0; i < size(); i++)
+		os << _charges(i) << "\t" << _masses(i) << "\t"
+			<< _positions.col(i).transpose() << "\n";
 	os << dedent << ")";
 	return os;
 }
 
 JobIStream& Geometry::scan(JobIStream& is)
 {
-	std::string elem;
-	double x, y, z;
-
 	is >> getline;
 	if (is.eof())
 		throw UnexpectedEOF();
 
-	is >> elem >> x >> y >> z;
-	bool failed = is.fail();
-	is.ungetLastLine();
-	return failed ? scanZMatrix(is) : scanXYZ(is);
-}
-
-JobIStream& Geometry::scanXYZ(JobIStream& is)
-{
-	bool ok;
-
-	scanXYZLine(is, true);
-	do
-	{
-		ok = scanXYZLine(is);
-	} while (ok);
-
-	return is;
-}
-
-bool Geometry::scanXYZLine(JobIStream& is, bool except)
-{
 	std::string elem;
 	double x, y, z;
-
-	is >> getline;
-	if (is.eof())
-	{
-		if (except) throw UnexpectedEOF();
-		return false;
-	}
-
-	is >> elem >> x >> y >> z;
-	if (is.fail())
+	is >> element(elem, false) >> x >> y >> z;
+	if (!is.fail())
 	{
 		is.ungetLastLine();
-		if (except) throw ParseError();
-		return false;
-	}
 
-	elem = ucFirst(elem);
-	if (!PeriodicTable::getSingleton().exists(elem))
+		XYZMatrix mat;
+		is >> mat;
+		mat.fillGeometry(this);
+	}
+	else
 	{
 		is.ungetLastLine();
-		if (except) throw UnknownElement(elem);
-		return false;
+
+		ZMatrix mat;
+		is >> mat;
+		mat.fillGeometry(this);
 	}
 
-	_nuclei.push_back(Nucleus(elem, x, y, z));
-	return true;
-}
-
-JobIStream& Geometry::scanZMatrix(JobIStream& is)
-{
 	return is;
 }

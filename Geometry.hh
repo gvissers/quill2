@@ -6,46 +6,83 @@
  * \brief Definition of the Geometry class
  */
 
-#include <string>
-#include <vector>
-#include <Eigen/Core>
+#include "Eigen/Core"
 #include "JobIStream.hh"
+#include "exceptions.hh"
 
 /*!
- * \brief Class for a system's geometry
+ * \brief The geometry of the system
  *
- * Class geometry holds a number of nuclei that each hold their own positions.
- * It describes the current geometry of the molecule or other system that
- * is being computed.
+ * Class Geometry hold the positions and atom types of the nuclei in the
+ * system.
  */
 class Geometry
 {
 	public:
-		//! Struct describing a nucleus
-		struct Nucleus
-		{
-			//! Element symbol of the nucleus
-			std::string symbol;
-			//! Position of the nucleus
-			Eigen::Vector3d position;
-
-			//! Constructor
-			Nucleus(const std::string& symbol, double x,
-				double y, double z):
-				symbol(symbol), position(x, y, z) {}
-		};
-		//! Local typedef for the list of nuclei
-		typedef std::vector<Nucleus> NucleusList;
-
 		/*!
 		 * \brief Constructor
 		 *
-		 * Create a new Geometry without any nuclei.
+		 * Create a new, empty Geometry
 		 */
-		Geometry(): _nuclei() {}
+		Geometry(): _positions(), _masses(), _charges() {}
+
+		//! Return the number of atoms in the Geometry
+		int size() const { return _positions.cols(); }
+
+		//! Return the position of atom \a idx
+		Eigen::Vector3d position(int idx) const
+		{
+#ifdef DEBUG
+			checkIndex(idx);
+#endif
+			return _positions.col(idx);
+		}
 
 		/*!
-		 * \brief Print this Geometry
+		 * \brief Change the size of the Geometry
+		 *
+		 * Change the number of atoms in the Geometry to \a n. Any
+		 * information currently in the Geomtery will be lost.
+		 */
+		void resize(int n)
+		{
+			_positions.resize(3, n);
+			_masses.resize(n);
+			_charges.resize(n);
+		}
+		/*!
+		 * \brief Set an atom
+		 *
+		 * On position \a idx in this Geometry, place an atom with
+		 * element symbol \a symbol at position (\a x, \a y, \a z).
+		 * Any previous atom with the same index will be overwritten.
+		 * \param idx    The index of the atom in this Geometry
+		 * \param symbol The element symbol of the atom
+		 * \param x      The x-coordinate of the atom
+		 * \param y      The y-coordinate of the atom
+		 * \param z      The z-coordinate of the atom
+		 * \exception UnknownElement throw when the element symbol
+		 *    cannot be found in the periodic table.
+		 */
+		void setAtom(int idx, const std::string& symbol, double x,
+			double y, double z);
+		/*!
+		 * \brief Update the position of an atom
+		 *
+		 * Set the position of the atom at index \a idx to \a pos.
+		 * \param idx The index of the atom in this Geometry
+		 * \param pos The new position of the atom
+		 */
+		void setPosition(int idx, const Eigen::Vector3d& pos)
+		{
+#ifdef DEBUG
+			checkIndex(idx);
+#endif
+			_positions.col(idx) = pos;
+		}
+
+		/*!
+		 * \brief print this Geometry
 		 *
 		 * Write a textual representation of this Geometry to output
 		 * stream \a os.
@@ -54,74 +91,57 @@ class Geometry
 		 */
 		std::ostream& print(std::ostream& os) const;
 		/*!
-		 * \brief Read this Geometry
+		 * \brief Read a Geometry
 		 *
-		 * Read the nuclei and their positions from input stream \a is.
-		 * The input can be in XYZ or Z-matrix format.
+		 * Read a description of this geometry from input stream \a is.
+		 * The geometry can be given either in XYZ coordinates, or
+		 * in Z-matrix format.
 		 * \param is The input stream to read from
 		 * \return The updated input stream
-		 * \exception UnexpectedEOF thrown when no data is available
 		 */
 		JobIStream& scan(JobIStream& is);
 
 	private:
-		//! The list of nuclei in the system
-		NucleusList _nuclei;
+		//! The positions of the atoms
+		Eigen::MatrixXd _positions;
+		//! The mass of the atoms
+		Eigen::VectorXd _masses;
+		//! The charges of the atoms
+		Eigen::VectorXi _charges;
 
-		/*!
-		 * \brief Read a geometry in XYZ format
-		 *
-		 * Read a geometry in XYZ format from input stream \a is.
-		 * When not a single element can be read, an exception is
-		 * thrown.
-		 * \param is The input stream to read from
-		 * \return The updated input stream
-		 * \exception UnexpectedEOF  thrown when end of file was
-		 *    reached before a line of input could be read
-		 * \exception ParseError     thrown when the first line read
-		 *    does not describe an element.
-		 * \exception UnknownElement thrown when the element symbol
-		 *    is not recognised by Quill.
-		 */
-		JobIStream& scanXYZ(JobIStream& is);
-		/*!
-		 * \brief Read a single XYZ line
-		 *
-		 * Read a single XYZ line from input stream \a is. When failing
-		 * to parse a line, the result depends on the value of
-		 * \a except: if \a except is \c true, an exception is thrown,
-		 * otherwise \c false is returned.
-		 * \param is The input stream to read from
-		 * \param except Whether to throw an exception when failing
-		 *    to read an element.
-		 * \return \c true when an element was successfully read,
-		 *    \c false otherwise.
-		 */
-		bool scanXYZLine(JobIStream& is, bool except=false);
-		JobIStream& scanZMatrix(JobIStream& is);
+#ifdef DEBUG
+		//! Check if \a idx is a valid atom index
+		void checkIndex(int idx) const
+		{
+			if (idx < 0 || idx >= size())
+				throw InvalidIndex(idx);
+		}
+#endif
 };
 
 namespace {
 
 /*!
- * \brief Print a Geometry
+ * \brief print a Geometry
  *
  * Write a textual representation of Geometry \a geom to output stream \a os.
  * \param os   The output stream to write to
- * \param geom The Geometry object to print
+ * \param geom The Geometry to print
  * \return The updated output stream
  */
 inline std::ostream& operator<<(std::ostream& os, const Geometry& geom)
 {
 	return geom.print(os);
 }
+
 /*!
  * \brief Read a Geometry
  *
- * Read the nuclei and their positions from input stream \a is and store them
- * in Geometry \a geom. The input can be in XYZ or Z-matrix format.
+ * Read a description of a geometry from input stream \a is and store it
+ * in \a geom. The geometry can be given either in XYZ coordinates, or in
+ * Z-matrix format.
  * \param is   The input stream to read from
- * \param geom Place to store the geometry
+ * \param geom The Geomtery to read
  * \return The updated input stream
  */
 inline JobIStream& operator>>(JobIStream& is, Geometry& geom)

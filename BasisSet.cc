@@ -7,6 +7,7 @@
 #include "CGTO.hh"
 #include "exceptions.hh"
 #include "support.hh"
+#include "manipulators.hh"
 
 using namespace std::tr1::placeholders;
 
@@ -15,11 +16,10 @@ void BasisSet::readElement<BasisSet::Turbomole>(FilteringLineIStream<CommentFilt
 {
 	std::string elem, name, sep;
 
-	fis >> expectline >> elem >> name;
+	fis >> expectline >> element(elem, false) >> name;
 	if (fis.fail())
 		throw ParseError(fis.lineNumber(), Turbomole,
 			"Element name and basis name expected");
-	elem = ucFirst(elem);
 
 	fis >> expectline >> sep;
 	if (sep != "*")
@@ -44,11 +44,10 @@ void BasisSet::readElement<BasisSet::Molpro>(FilteringLineIStream<CommentFilter>
 	std::string shell, elem;
 	std::vector<double> widths;
 
-	fis >> expectline >> shell >> elem;
+	fis >> expectline >> shell >> element(elem, false);
 	if (fis.fail())
 		throw ParseError(fis.lineNumber(), Molpro,
 			"Expected shell, element name, and primitive widths");
-	elem = ucFirst(elem);
 	while (!fis.eof())
 	{
 		double width;
@@ -111,11 +110,10 @@ void BasisSet::readElement<BasisSet::Dalton>(FilteringLineIStream<CommentFilter>
 	char shell;
 	int nprim, nbf;
 
-	fis >> expectline >> elem >> nprim >> nbf;
+	fis >> expectline >> element(elem, false) >> nprim >> nbf;
 	if (fis.fail())
 		throw ParseError(fis.lineNumber(), Dalton,
 			"Expected element name, number of primitives, and number of contractions");
-	elem = ucFirst(elem);
 
 	if (elem != last_elem)
 	{
@@ -217,9 +215,7 @@ void BasisSet::read<BasisSet::Molpro>(std::istream& is)
 	{
 		fis >> expectline;
 		str = fis.line();
-		std::string::iterator it = std::remove_if(str.begin(), str.end(), 
-			std::tr1::bind(std::isspace<char>, _1, std::locale()));
-		str.erase(it, str.end());
+		remove(str, std::tr1::bind(std::isspace<char>, _1, std::locale()));
 		if (str != "basis={")
 			throw ParseError(fis.lineNumber(), Molpro,
 				"Expected \"basis={\"");

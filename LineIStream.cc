@@ -34,7 +34,7 @@ std::string LineIStream::nextLine()
 	{
 		std::string line;
 		std::getline(_input, line);
-		if (_input.eof())
+		if (_input.eof() && line.empty())
 			return std::string();
 		if (_input.fail())
 			throw ReadFailure();
