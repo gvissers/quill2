@@ -9,14 +9,15 @@
 void Geometry::setAtom(int idx, const std::string& symbol,
 	double x, double y, double z)
 {
-	if (idx < 0 || idx > size())
-		throw Li::Exception("Invalid atom index");
-
+#ifdef DEBUG
+	checkIndex(idx);
+#endif
 	const Element& elem = PeriodicTable::getSingleton().findBySymbol(symbol);
 
 	_positions.col(idx) << x, y, z;
 	_masses(idx) = elem.mass();
 	_charges(idx) = elem.number();
+	_symbols[idx] = symbol;
 }
 
 std::ostream& Geometry::print(std::ostream& os) const
@@ -24,6 +25,7 @@ std::ostream& Geometry::print(std::ostream& os) const
 	os << "Geometry (\n" << indent;
 	for (int i = 0; i < size(); i++)
 		os << _charges(i) << "\t" << _masses(i) << "\t"
+			<< _symbols[i] << "\t"
 			<< _positions.col(i).transpose() << "\n";
 	os << dedent << ")";
 	return os;

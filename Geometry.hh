@@ -6,6 +6,7 @@
  * \brief Definition of the Geometry class
  */
 
+#include <vector>
 #include "Eigen/Core"
 #include "JobIStream.hh"
 #include "exceptions.hh"
@@ -24,7 +25,7 @@ class Geometry
 		 *
 		 * Create a new, empty Geometry
 		 */
-		Geometry(): _positions(), _masses(), _charges() {}
+		Geometry(): _positions(), _masses(), _charges(), _symbols() {}
 
 		//! Return the number of atoms in the Geometry
 		int size() const { return _positions.cols(); }
@@ -49,6 +50,7 @@ class Geometry
 			_positions.resize(3, n);
 			_masses.resize(n);
 			_charges.resize(n);
+			_symbols.resize(n);
 		}
 		/*!
 		 * \brief Set an atom
@@ -108,6 +110,8 @@ class Geometry
 		Eigen::VectorXd _masses;
 		//! The charges of the atoms
 		Eigen::VectorXi _charges;
+		//! The atom symbols
+		std::vector<std::string> _symbols;
 
 #ifdef DEBUG
 		//! Check if \a idx is a valid atom index
