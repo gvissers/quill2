@@ -7,6 +7,7 @@
  */
 
 #include <iostream>
+#include "Basis.hh"
 
 /*!
  * \brief Abstract basis function definition
@@ -19,6 +20,17 @@ struct AbstractBFDef
 {
 	//! Destructor
 	virtual ~AbstractBFDef() {}
+
+	/*!
+	 * \brief Expand this basis function definition
+	 *
+	 * Expand this definition, adding basis function for position \a pos
+	 * to basis \a basis.
+	 * \param pos   Position on which the functions are centered
+	 * \param basis The basis to which the functions are added
+	 */
+	virtual void expand(const Eigen::Vector3d& pos, Basis *basis) const = 0;
+
 	/*!
 	 * \brief Print a basis function definition
 	 *

@@ -30,12 +30,16 @@ class Geometry
 		//! Return the number of atoms in the Geometry
 		int size() const { return _positions.cols(); }
 
+		//! Return the element symbol of atom \a idx
+		const std::string& symbol(int idx) const
+		{
+			checkIndex(idx);
+			return _symbols[idx];
+		}
 		//! Return the position of atom \a idx
 		Eigen::Vector3d position(int idx) const
 		{
-#ifdef DEBUG
 			checkIndex(idx);
-#endif
 			return _positions.col(idx);
 		}
 
@@ -77,9 +81,7 @@ class Geometry
 		 */
 		void setPosition(int idx, const Eigen::Vector3d& pos)
 		{
-#ifdef DEBUG
 			checkIndex(idx);
-#endif
 			_positions.col(idx) = pos;
 		}
 
@@ -113,14 +115,23 @@ class Geometry
 		//! The atom symbols
 		std::vector<std::string> _symbols;
 
-#ifdef DEBUG
-		//! Check if \a idx is a valid atom index
+		/*!
+		 * \brief Check if an atom index is valid
+		 *
+		 * Check if \a idx is a valid atom index in this Geometry. The
+		 * check is only performed if the program is compiled with the
+		 * DEBUG symbol defined.
+		 * \param idx The atom index to check
+		 * \exception InvalidIndex thrown when the index is out
+		 *    of bounds
+		 */
 		void checkIndex(int idx) const
 		{
+#ifdef DEBUG
 			if (idx < 0 || idx >= size())
 				throw InvalidIndex(idx);
-		}
 #endif
+		}
 };
 
 namespace {

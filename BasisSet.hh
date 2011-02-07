@@ -11,6 +11,7 @@
 #include "AbstractBFDef.hh"
 #include "FilteringLineIStream.hh"
 #include "CommentFilter.hh"
+#include "Geometry.hh"
 
 /*!
  * \brief Class representing a basis set
@@ -43,6 +44,7 @@ class BasisSet
 		struct UnknownFormat;
 		struct ParseError;
 		struct UnknownShell;
+		struct NoFunctions;
 
 		/*!
 		 * \brief Constructor
@@ -50,6 +52,17 @@ class BasisSet
 		 * Create a new and empty basis set
 		 */
 		BasisSet(): _elements() {}
+
+		/*!
+		 * \brief Expand this basis set
+		 *
+		 * Apply the functions definitions in this basis set to the
+		 * atoms in geometry \a geom, creating a basis to use for
+		 * the calculation.
+		 * \param geom  The geometry of the system
+		 * \param basis The basis set to fill
+		 */
+		void expand(const Geometry& geom, Basis *basis) const;
 
 		/*!
 		 * \brief Print a basis set
@@ -70,7 +83,7 @@ class BasisSet
 		 * \param is      The input stream to read from
 		 */
 		template <Format format>
-		void read(std::istream& is);
+		void scan(std::istream& is);
 		/*!
 		 * \brief Read a basis set
 		 *
@@ -78,7 +91,7 @@ class BasisSet
 		 * trying to determine the format from the file contents.
 		 * \param is     The input stream to read from
 		 */
-		void read(std::istream& is);
+		void scan(std::istream& is);
 
 		//! Clear this basis set, removing all basis function definitions
 		void clear();
@@ -143,6 +156,13 @@ struct BasisSet::UnknownShell: public Li::Exception
 
 	//! The shell code that was not recognised
 	char shell;
+};
+
+//! %Exception thrown when no basis functions are defined for an element
+struct BasisSet::NoFunctions: public Li::Exception
+{
+	NoFunctions(const std::string& elem):
+		Exception("No basis functions defined for element \""  + elem + "\"") {}
 };
 
 namespace {

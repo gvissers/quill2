@@ -9,9 +9,8 @@
 void Geometry::setAtom(int idx, const std::string& symbol,
 	double x, double y, double z)
 {
-#ifdef DEBUG
 	checkIndex(idx);
-#endif
+
 	const Element& elem = PeriodicTable::getSingleton().findBySymbol(symbol);
 
 	_positions.col(idx) << x, y, z;

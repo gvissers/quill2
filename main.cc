@@ -5,32 +5,35 @@
 #include "BasisSet.hh"
 #include "XYZMatrix.hh"
 #include "ZMatrix.hh"
+#include "CGTO.hh"
+#include "Basis.hh"
 
 int main()
 {
 	try
 	{
 		PeriodicTable table("data/elements.dat");
+		IndentingOStream os(std::cout);
 
 		std::string job("C 0 0 0\nH 1 1 1\nH -1 -1 1\nH -1 1 -1\nH 1 -1 -1");
 		std::istringstream iss(job);
 		JobIStream jis(iss);
 
-		IndentingOStream os(std::cout);
-
 		Geometry geom;
 		jis >> geom;
-
 		os << geom << "\n";
-/*
+
 		BasisSet set;
 		std::ifstream is("basis_sets/STO-3G.molpro");
 		if (!is.good())
 			throw Li::Exception("Failed to open basis set");
-		set.read<BasisSet::Molpro>(is);
-		IndentingOStream os(std::cout);
+		set.scan<BasisSet::Molpro>(is);
 		os << set << "\n";
-*/
+
+		Basis basis;
+		set.expand(geom, &basis);
+		os << basis << "\n";
+
 /*
 		std::string mat = "C\n"
 			"H   1 1.089000\n"
@@ -52,6 +55,16 @@ int main()
 
 		IndentingOStream os(std::cout);
 		os << geom << "\n";
+*/
+/*
+		Eigen::Vector3d weights, widths;
+		weights << 0.15432897, 0.53532814, 0.44463454;
+		widths << 6.36242139, 1.15892300, 0.31364979;
+
+		CGTO<0,0,0> bf(weights, widths, Eigen::Vector3d::Zero());
+		IndentingOStream os(std::cout);
+		os << bf << "\n";
+		os << bf.eval(Eigen::Vector3d::Ones());
 */
 	}
 	catch (const Li::Exception& e)

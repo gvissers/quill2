@@ -8,6 +8,7 @@
 
 #include "Eigen/Dense"
 #include "AbstractBFDef.hh"
+#include "CGTODefExpander.hh"
 #include "IndentingOStream.hh"
 
 /*!
@@ -16,18 +17,18 @@
  * Class CGTODef defines a contraction of primitive (cartesian) Gaussian
  * type orbitals, each of the form
  * \f[
- * G(x,y,z) = (x-x_c)^i (y-y_c)^j (z-z_c)^k
+ * G(x,y,z) = (x-x_c)^{l_x} (y-y_c)^{l_y} (z-z_c)^{l_z}
  *            \exp(-\alpha * |{\bf r}-{\bf r}_c|^2)
  * \f]
- * Here, the angular momentum quantum numbers \f$i\f$, \f$j\f$, and \f$k\f$
- * add up to the template parameter \a l, the total angular momentum of the
- * orbital. The definition only includes the total angular momentum and
+ * Here, the angular momentum quantum numbers \f$l_x\f$, \f$l_y\f$, and
+ * \f$l_z\f$ add up to the template parameter \a l, the total angular momentum
+ * of the orbital. The definition only includes the total angular momentum and
  * the widths and weights of the primitives. The center of the function
  * and the angular momentum quantum numbers of the individual directions
  * are applied when the definition is expanded on an atom in the system.
  * \tparam l The total angular momentum of the orbital
  */
-template <int l>
+template <unsigned int l>
 class CGTODef: public AbstractBFDef
 {
 	public:
@@ -50,6 +51,20 @@ class CGTODef: public AbstractBFDef
 		double width(int i) const { return _widths[i]; }
 
 		/*!
+		 * \brief Expand this basis function definition
+		 *
+		 * Expand this definition, adding contracted GTO functions
+		 * centered on position \a pos to basis \a basis.
+		 * \param pos   Position on which the functions are centered
+		 * \param basis The basis to which the functions are added
+		 */
+		void expand(const Eigen::Vector3d& pos, Basis *basis) const
+		{
+			CGTODefExpander<0, 0, l>::exec(_widths, _weights,
+				pos, basis);
+		}
+
+		/*!
 		 * \brief Print a basis function
 		 *
 		 * Print a textual representation of this CGTODef on output
@@ -66,7 +81,7 @@ class CGTODef: public AbstractBFDef
 		Eigen::VectorXd _widths;
 };
 
-template <int l>
+template <unsigned int l>
 CGTODef<l>::CGTODef(const std::vector< std::pair<double, double> >& ww):
 	_weights(ww.size()), _widths(ww.size())
 {
@@ -77,7 +92,25 @@ CGTODef<l>::CGTODef(const std::vector< std::pair<double, double> >& ww):
 	}
 }
 
-template <int l>
+template <>
+void CGTODef<0>::expand(const Eigen::Vector3d& pos, Basis* basis) const
+{
+	basis->add(std::tr1::shared_ptr<AbstractBF>(
+		new CGTO<0, 0, 0>(_weights, _widths, pos)));
+}
+
+template <>
+void CGTODef<1>::expand(const Eigen::Vector3d& pos, Basis* basis) const
+{
+	basis->add(std::tr1::shared_ptr<AbstractBF>(
+		new CGTO<0, 0, 1>(_weights, _widths, pos)));
+	basis->add(std::tr1::shared_ptr<AbstractBF>(
+		new CGTO<0, 1, 0>(_weights, _widths, pos)));
+	basis->add(std::tr1::shared_ptr<AbstractBF>(
+		new CGTO<1, 0, 0>(_weights, _widths, pos)));
+}
+
+template <unsigned int l>
 std::ostream& CGTODef<l>::print(std::ostream& os) const
 {
 	os << "CGTODef<" << l << "> (\n" << indent;

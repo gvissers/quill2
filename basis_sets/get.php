@@ -13,7 +13,7 @@ $format = 'Turbomole';
 if ($_SERVER['argc'] > 2)
 	$format = $_SERVER['argv'][2];
 
-$elements = array('H', 'He', 'Li');
+$elements = array('H', 'He', 'Li', 'C');
 
 $known_formats = array(
 	'Gaussian94' => 'gaussian94',

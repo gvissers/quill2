@@ -11,6 +11,23 @@
 
 using namespace std::tr1::placeholders;
 
+void BasisSet::expand(const Geometry& geom, Basis *basis) const
+{
+	for (int i = 0; i < geom.size(); i++)
+	{
+		BFMap::const_iterator eit = _elements.find(geom.symbol(i));
+		if (eit == _elements.end())
+			throw NoFunctions(geom.symbol(i));
+
+		Eigen::Vector3d pos = geom.position(i);
+		for (BFList::const_iterator fit = eit->second.begin();
+			fit != eit->second.end(); ++fit)
+		{
+			(*fit)->expand(pos, basis);
+		}
+	}
+}
+
 template<>
 void BasisSet::readElement<BasisSet::Turbomole>(FilteringLineIStream<CommentFilter>& fis)
 {
@@ -166,12 +183,12 @@ void BasisSet::readElement<BasisSet::Dalton>(FilteringLineIStream<CommentFilter>
 }
 
 template<>
-void BasisSet::read<BasisSet::Auto>(std::istream& is)
+void BasisSet::scan<BasisSet::Auto>(std::istream& is)
 {
 }
 
 template<>
-void BasisSet::read<BasisSet::Turbomole>(std::istream& is)
+void BasisSet::scan<BasisSet::Turbomole>(std::istream& is)
 {
 	std::string str;
 	CommentFilter filter('#');
@@ -205,7 +222,7 @@ void BasisSet::read<BasisSet::Turbomole>(std::istream& is)
 }
 
 template<>
-void BasisSet::read<BasisSet::Molpro>(std::istream& is)
+void BasisSet::scan<BasisSet::Molpro>(std::istream& is)
 {
 	std::string str;
 	CommentFilter filter('!');
@@ -238,7 +255,7 @@ void BasisSet::read<BasisSet::Molpro>(std::istream& is)
 }
 
 template<>
-void BasisSet::read<BasisSet::Dalton>(std::istream& is)
+void BasisSet::scan<BasisSet::Dalton>(std::istream& is)
 {
 	CommentFilter filter('!');
 	FilteringLineIStream<CommentFilter> fis(is, &filter);
@@ -252,9 +269,9 @@ void BasisSet::read<BasisSet::Dalton>(std::istream& is)
 	}
 }
 
-void BasisSet::read(std::istream& is)
+void BasisSet::scan(std::istream& is)
 {
-	read<Auto>(is);
+	scan<Auto>(is);
 }
 
 std::ostream& BasisSet::print(std::ostream& os) const
