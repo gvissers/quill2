@@ -1,4 +1,4 @@
-#include "LineIStream.hh"
+#include "io/LineIStream.hh"
 
 void LineIStream::getLine()
 {

@@ -2,7 +2,7 @@
 #define XYZMATRIX_HH
 
 #include <vector>
-#include "JobIStream.hh"
+#include "io/JobIStream.hh"
 #include "Geometry.hh"
 
 /*!

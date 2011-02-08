@@ -6,7 +6,7 @@
  * \brief Definition of the CommentFilter class
  */
 
-#include "IBufFilter.hh"
+#include "io/IBufFilter.hh"
 
 /*!
  * \brief Class for filtering out single-line comments

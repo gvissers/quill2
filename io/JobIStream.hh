@@ -6,8 +6,8 @@
  * \brief Definition of the JobIStream class
  */
 
-#include "FilteringLineIStream.hh"
-#include "JobFilter.hh"
+#include "io/FilteringLineIStream.hh"
+#include "io/JobFilter.hh"
 
 /*!
  * \brief Class for reading job files

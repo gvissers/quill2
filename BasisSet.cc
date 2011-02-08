@@ -7,7 +7,7 @@
 #include "CGTODef.hh"
 #include "exceptions.hh"
 #include "support.hh"
-#include "manipulators.hh"
+#include "io/manipulators.hh"
 
 using namespace std::tr1::placeholders;
 

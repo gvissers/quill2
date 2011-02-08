@@ -1,7 +1,7 @@
 #include <Eigen/Dense>
 #include "ZMatrix.hh"
-#include "IndentingOStream.hh"
-#include "manipulators.hh"
+#include "io/IndentingOStream.hh"
+#include "io/manipulators.hh"
 #include "support.hh"
 
 namespace {

@@ -9,8 +9,8 @@
 #include <vector>
 #include <map>
 #include "AbstractBFDef.hh"
-#include "FilteringLineIStream.hh"
-#include "CommentFilter.hh"
+#include "io/FilteringLineIStream.hh"
+#include "io/CommentFilter.hh"
 #include "Geometry.hh"
 
 /*!

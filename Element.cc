@@ -1,5 +1,5 @@
 #include "Element.hh"
-#include "IndentingOStream.hh"
+#include "io/IndentingOStream.hh"
 
 std::ostream& operator<<(std::ostream& os, const Element& elem)
 {

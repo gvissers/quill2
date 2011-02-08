@@ -1,7 +1,7 @@
 #include <fstream>
 #include "PeriodicTable.hh"
 #include "Geometry.hh"
-#include "IndentingOStream.hh"
+#include "io/IndentingOStream.hh"
 #include "BasisSet.hh"
 #include "XYZMatrix.hh"
 #include "ZMatrix.hh"

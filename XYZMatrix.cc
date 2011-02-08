@@ -1,6 +1,6 @@
 #include "XYZMatrix.hh"
-#include "IndentingOStream.hh"
-#include "manipulators.hh"
+#include "io/IndentingOStream.hh"
+#include "io/manipulators.hh"
 
 std::ostream& XYZMatrix::print(std::ostream& os) const
 {

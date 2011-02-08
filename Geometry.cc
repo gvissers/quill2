@@ -1,9 +1,9 @@
 #include "Geometry.hh"
 #include "PeriodicTable.hh"
-#include "IndentingOStream.hh"
+#include "io/IndentingOStream.hh"
 #include "XYZMatrix.hh"
 #include "ZMatrix.hh"
-#include "manipulators.hh"
+#include "io/manipulators.hh"
 #include "exceptions.hh"
 
 void Geometry::setAtom(int idx, const std::string& symbol,

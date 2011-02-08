@@ -6,7 +6,7 @@
  * \brief Definition of the FilteringOStream class
  */
 
-#include "FilteringOBuf.hh"
+#include "io/FilteringOBuf.hh"
 
 /*!
  * \brief Proxy class for FilteringOBuf

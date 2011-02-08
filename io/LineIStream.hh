@@ -8,7 +8,7 @@
 
 #include <list>
 #include <sstream>
-#include "IStreamUser.hh"
+#include "io/IStreamUser.hh"
 #include "exceptions.hh"
 
 /*!

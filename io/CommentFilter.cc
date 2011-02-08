@@ -1,4 +1,4 @@
-#include "CommentFilter.hh"
+#include "io/CommentFilter.hh"
 
 CommentFilter::int_type CommentFilter::operator()(std::streambuf *sb)
 {

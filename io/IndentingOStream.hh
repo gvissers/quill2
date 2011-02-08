@@ -6,13 +6,13 @@
  * \brief Manipulators for an indenting output stream
  */
 
-#include "FilteringOStream.hh"
-#include "Indenter.hh"
+#include "io/FilteringOStream.hh"
+#include "io/IndentFilter.hh"
 
 //! Typedef for an indenting stream buffer
-typedef FilteringOBuf<Indenter> IndentingOBuf;
+typedef FilteringOBuf<IndentFilter> IndentingOBuf;
 //! Typedef for an indenting output stream
-typedef FilteringOStream<Indenter> IndentingOStream;
+typedef FilteringOStream<IndentFilter> IndentingOStream;
 
 namespace {
 

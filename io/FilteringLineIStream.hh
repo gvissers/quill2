@@ -6,8 +6,8 @@
  * \brief Definition of the FilteringLineIStream class
  */
 
-#include "LineIStream.hh"
-#include "FilteringIStream.hh"
+#include "io/LineIStream.hh"
+#include "io/FilteringIStream.hh"
 
 /*!
  * \brief Class for reading filtered lines

@@ -1,4 +1,4 @@
-#include "JobFilter.hh"
+#include "io/JobFilter.hh"
 
 JobFilter::int_type JobFilter::operator()(std::streambuf *sb)
 {

@@ -5,7 +5,7 @@
 #include "Deleter.hh"
 #include "constants.hh"
 #include "exceptions.hh"
-#include "IndentingOStream.hh"
+#include "io/IndentingOStream.hh"
 
 SINGLETON_OBJECT(PeriodicTable);
 

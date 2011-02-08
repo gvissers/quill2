@@ -8,7 +8,7 @@
 
 #include <vector>
 #include <map>
-#include "JobIStream.hh"
+#include "io/JobIStream.hh"
 #include "Geometry.hh"
 
 /*!

@@ -1,5 +1,5 @@
 #include "Basis.hh"
-#include "IndentingOStream.hh"
+#include "io/IndentingOStream.hh"
 
 std::ostream& Basis::print(std::ostream& os) const
 {

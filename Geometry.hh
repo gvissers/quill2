@@ -8,7 +8,7 @@
 
 #include <vector>
 #include "Eigen/Core"
-#include "JobIStream.hh"
+#include "io/JobIStream.hh"
 #include "exceptions.hh"
 
 /*!

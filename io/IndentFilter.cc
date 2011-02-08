@@ -1,6 +1,6 @@
-#include "Indenter.hh"
+#include "io/IndentFilter.hh"
 
-Indenter::int_type Indenter::operator()(std::streambuf *sb, int_type c)
+IndentFilter::int_type IndentFilter::operator()(std::streambuf *sb, int_type c)
 {
 	if (traits_type::eq_int_type(c, traits_type::eof()))
 		return c;

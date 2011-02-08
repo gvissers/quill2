@@ -1,9 +1,9 @@
-#ifndef INDENTER_HH
-#define INDENTER_HH
+#ifndef INDENTFILTER_HH
+#define INDENTFILTER_HH
 
 /*!
- * \file Indenter.hh
- * \brief Definition of the Indenter class
+ * \file IndentFilter.hh
+ * \brief Definition of the IndentFilter class
  */
 
 #include <iostream>
@@ -11,12 +11,12 @@
 /*!
  * \brief Stream buffer filter for indenting output
  *
- * Class Indenter is a stream buffer filter that can be used as a template
+ * Class IndentFilter is a stream buffer filter that can be used as a template
  * argument to a FilteringOBuf stream buffer to indent output on an output
  * stream. Stream manipulators indent() and dedent() are defined for easy
  * indenting on the stream.
  */
-class Indenter
+class IndentFilter
 {
 	public:
 		//! Local typedef for character or error code
@@ -29,13 +29,13 @@ class Indenter
 		/*!
 		 * \brief Constructor
 		 *
-		 * Create a new Indenter that indents lines with indentation
+		 * Create a new IndentFilter that indents lines with indentation
 		 * string \a indent, starting with an indentation level
 		 * \a level.
 		 * \param indent The string to indent with
 		 * \param level  The initial indentation level
 		 */
-		Indenter(const std::string& indent="\t", int level=0):
+		IndentFilter(const std::string& indent="\t", int level=0):
 			_indent(indent), _level(level), _indent_now(true) {}
 
 		//! Increase the indentation level with one
@@ -64,4 +64,4 @@ class Indenter
 		bool _indent_now;
 };
 
-#endif // INDENTER_HH
+#endif // INDENTFILTER_HH

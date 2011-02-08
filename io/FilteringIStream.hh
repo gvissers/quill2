@@ -6,7 +6,7 @@
  * \brief Definition of the FilteringIStream class
  */
 
-#include "FilteringIBuf.hh"
+#include "io/FilteringIBuf.hh"
 
 /*!
  * \brief Proxy class for FilteringIBuf
