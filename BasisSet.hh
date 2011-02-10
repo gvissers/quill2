@@ -113,10 +113,25 @@ class BasisSet
 		 * \param ww    Widths and weights of the primitives in the
 		 *    contraction
 		 * \return a new contracted Gaussian orbital
-		 * \exception UknownShell thrown when \a shell is not
+		 * \exception UnknownShell thrown when \a shell is not
 		 *    recognised.
 		 */
 		static AbstractBFDef* contractedGaussian(char shell,
+			const std::vector< std::pair<double, double> >& ww);
+		/*!
+		 * \brief Create a contracted Gaussian
+		 *
+		 * Create a new contracted Gaussian orbital with total angular
+		 * momentum \a l, using the weights and widths in \a ww for
+		 * the primitives.
+		 * \param l  Total angular momentum of the orbital
+		 * \param ww Widths and weights of the primitives in the
+		 *    contraction
+		 * \return a new contracted Gaussian orbital
+		 * \exception ShellTooHigh when \a l is higher than the
+		 *    highest supported angular momentum
+		 */
+		static AbstractBFDef* contractedGaussian(int l,
 			const std::vector< std::pair<double, double> >& ww);
 };
 

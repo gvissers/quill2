@@ -5,6 +5,7 @@
 #include "BasisSet.hh"
 #include "Deleter.hh"
 #include "CGTODef.hh"
+#include "PeriodicTable.hh"
 #include "exceptions.hh"
 #include "support.hh"
 #include "io/manipulators.hh"
@@ -121,11 +122,10 @@ template<>
 void BasisSet::readElement<BasisSet::Dalton>(FilteringLineIStream<CommentFilter>& fis)
 {
 	static std::string last_elem;
-	static char last_shell;
+	static int last_l;
 
 	std::string elem;
-	char shell;
-	int nprim, nbf;
+	int l, nprim, nbf;
 
 	fis >> expectline >> element(elem, false) >> nprim >> nbf;
 	if (fis.fail())
@@ -134,23 +134,12 @@ void BasisSet::readElement<BasisSet::Dalton>(FilteringLineIStream<CommentFilter>
 
 	if (elem != last_elem)
 	{
-		shell = last_shell = 's';
 		last_elem = elem;
+		l = last_l = 0;
 	}
 	else
 	{
-		switch (last_shell)
-		{
-			case 's': shell = last_shell = 'p'; break;
-			case 'p': shell = last_shell = 'd'; break;
-			case 'd': shell = last_shell = 'f'; break;
-			case 'f': shell = last_shell = 'g'; break;
-			case 'g': shell = last_shell = 'h'; break;
-			case 'h': shell = last_shell = 'i'; break;
-			default:
-				throw ParseError(fis.lineNumber(), Dalton,
-					"Orbital shell is higher than supported");
-		}
+		l = ++last_l;
 	}
 
 	std::vector< std::vector< std::pair<double, double> > > wws(nbf);
@@ -169,7 +158,7 @@ void BasisSet::readElement<BasisSet::Dalton>(FilteringLineIStream<CommentFilter>
 			if (!fis.good())
 				throw ParseError(fis.lineNumber(), Dalton,
 					"Expected contraction coefficient");
-			if (weight != 0.0)
+			if (weight != 0)
 				wws[ibf].push_back(std::make_pair(weight, width));
 		}
 	}
@@ -177,8 +166,83 @@ void BasisSet::readElement<BasisSet::Dalton>(FilteringLineIStream<CommentFilter>
 	BFList& elem_funs = _elements[elem];
 	for (int ibf = 0; ibf < nbf; ibf++)
 	{
-		AbstractBFDef *bf = contractedGaussian(shell, wws[ibf]);
+		AbstractBFDef *bf = contractedGaussian(l, wws[ibf]);
 		elem_funs.push_back(bf);
+	}
+}
+
+template<>
+void BasisSet::readElement<BasisSet::Molcas>(FilteringLineIStream<CommentFilter>& fis)
+{
+	std::string kw1, kw2, lbl;
+
+	fis >> expectline >> kw1 >> kw2;
+	if (kw1 != "Basis" || kw2 != "set")
+		throw ParseError(fis.lineNumber(), Molcas,
+			"Expected \"Basis set\"");
+
+	char c;
+	fis >> expectline >> lbl >> c >> kw1;
+	if (fis.fail() || c != '/' || kw1 != "inline")
+		throw ParseError(fis.lineNumber(), Molcas,
+			"Expected atom label and inline keyword");
+
+	double charge;
+	int lmax;
+	fis >> expectline >> charge >> lmax;
+	if (fis.fail())
+		throw ParseError(fis.lineNumber(), Molcas,
+			"Expected nuclear charge and maximum angular momentum");
+
+	int elem_nr = charge;
+	const std::string& elem = PeriodicTable::singleton().findByNumber(elem_nr).symbol();
+	BFList& elem_funs = _elements[elem];
+
+	std::vector<double> widths;
+	std::vector< std::vector< std::pair<double, double> > > wws;
+	for (int l = 0; l <= lmax; l++)
+	{
+		int nprim, nbf;
+		fis >> expectline >> nprim >> nbf;
+		if (fis.fail())
+			throw ParseError(fis.lineNumber(), Molcas,
+				"Expected number of primitives and number of functions");
+
+		widths.clear();
+		for (int iprim = 0; iprim < nprim; iprim++)
+		{
+			double width;
+			fis >> expectline >> width;
+			if (fis.fail())
+				throw ParseError(fis.lineNumber(), Molcas,
+					"Expected width of primitive");
+
+			widths.push_back(width);
+		}
+
+		wws.clear();
+		wws.resize(nbf);
+		for (int iprim = 0; iprim < nprim; iprim++)
+		{
+			double width = widths[iprim];
+			fis >> expectline;
+			for (int ibf = 0; ibf < nbf; ibf++)
+			{
+				double weight;
+				fis >> weight;
+				if (fis.fail())
+					throw ParseError(fis.lineNumber(), Molcas,
+						"Expected contraction coefficient");
+				if (weight != 0)
+					wws[ibf].push_back(std::make_pair(weight, width));
+			}
+		}
+
+		for (int ibf = 0; ibf < nbf; ibf++)
+		{
+			AbstractBFDef *bf = contractedGaussian(l, wws[ibf]);
+			elem_funs.push_back(bf);
+		}
 	}
 }
 
@@ -269,6 +333,21 @@ void BasisSet::scan<BasisSet::Dalton>(std::istream& is)
 	}
 }
 
+template <>
+void BasisSet::scan<BasisSet::Molcas>(std::istream& is)
+{
+	CommentFilter filter("!*");
+	FilteringLineIStream<CommentFilter> fis(is, &filter);
+	while (true)
+	{
+		fis >> getline;
+		if (fis.eof()) break;
+
+		fis.ungetLastLine();
+		readElement<Molcas>(fis);
+	}
+}
+
 void BasisSet::scan(std::istream& is)
 {
 	scan<Auto>(is);
@@ -329,16 +408,28 @@ void BasisSet::clear()
 AbstractBFDef* BasisSet::contractedGaussian(char shell,
 	const std::vector< std::pair<double, double> >& ww)
 {
-	switch (shell)
+	static const std::string shells("spdfghi");
+
+	std::string::size_type pos = shells.find(shell);
+	if (pos == std::string::npos)
+		throw UnknownShell(shell);
+
+	return contractedGaussian(int(pos), ww);
+}
+
+AbstractBFDef* BasisSet::contractedGaussian(int l,
+	const std::vector< std::pair<double, double> >& ww)
+{
+	switch (l)
 	{
-		case 's': return new CGTODef<0>(ww);
-		case 'p': return new CGTODef<1>(ww);
-		case 'd': return new CGTODef<2>(ww);
-		case 'f': return new CGTODef<3>(ww);
-		case 'g': return new CGTODef<4>(ww);
-		case 'h': return new CGTODef<5>(ww);
-		case 'i': return new CGTODef<6>(ww);
-		default: throw UnknownShell(shell);
+		case 0: return new CGTODef<0>(ww);
+		case 1: return new CGTODef<1>(ww);
+		case 2: return new CGTODef<2>(ww);
+		case 3: return new CGTODef<3>(ww);
+		case 4: return new CGTODef<4>(ww);
+		case 5: return new CGTODef<5>(ww);
+		case 6: return new CGTODef<6>(ww);
+		default: throw ShellTooHigh(l);
 	}
 }
 

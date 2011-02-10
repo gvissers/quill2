@@ -10,7 +10,7 @@ std::istream& operator>>(std::istream& is, ElementRef ref)
 		return is;
 
 	toUCFirst(ref.elem);
-	if (ref.check_if_exists && !PeriodicTable::getSingleton().exists(ref.elem))
+	if (ref.check_if_exists && !PeriodicTable::singleton().exists(ref.elem))
 		is.setstate(std::ios::failbit);
 
 	return is;

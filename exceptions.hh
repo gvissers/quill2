@@ -66,4 +66,19 @@ struct InvalidIndex: public Li::Exception
 	}
 };
 
+/*!
+ * \brief %Exception thrown when trying to create an orbital with higher
+ *    angular momentum than Quill supports
+ */
+struct ShellTooHigh: public Li::Exception
+{
+	//! Constructor
+	ShellTooHigh(int l): Exception()
+	{
+		std::ostringstream os;
+		os << "Orbital shell " << l << " is higher than supported";
+		setMsg(os.str());
+	}
+};
+
 #endif // EXCEPTIONS_HH

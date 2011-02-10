@@ -10,7 +10,7 @@ void Geometry::setAtom(int idx, const std::string& symbol,
 {
 	checkIndex(idx);
 
-	const Element& elem = PeriodicTable::getSingleton().findBySymbol(symbol);
+	const Element& elem = PeriodicTable::singleton().findBySymbol(symbol);
 
 	_positions.col(idx) << x, y, z;
 	_masses(idx) = elem.mass();
