@@ -50,6 +50,8 @@ class BasisSet
 		 * Create a new and empty basis set
 		 */
 		BasisSet(): _elements() {}
+		//! Destructor
+		~BasisSet() { clear(); }
 
 		/*!
 		 * \brief Expand this basis set
