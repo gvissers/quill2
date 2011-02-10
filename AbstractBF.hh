@@ -3,7 +3,7 @@
 
 /*!
  * \file AbstractBF.hh
- * Definition of the AbstractBF class
+ * \brief Definition of the AbstractBF class
  */
 
 #include <Eigen/Core>

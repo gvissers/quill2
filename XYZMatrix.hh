@@ -1,6 +1,11 @@
 #ifndef XYZMATRIX_HH
 #define XYZMATRIX_HH
 
+/*!
+ * \file XYZMatrix.hh
+ * \brief Definition of the XYZMatrix class
+ */
+
 #include <vector>
 #include "io/JobIStream.hh"
 #include "Geometry.hh"

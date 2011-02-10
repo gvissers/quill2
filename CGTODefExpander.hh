@@ -1,6 +1,11 @@
 #ifndef CGTODEFEXPANDER_HH
 #define CGTODEFEXPANDER_HH
 
+/*!
+ * \file CGTODefExpander.hh
+ * \brief Definition of the CGTODefExpander class
+ */
+
 #include "CGTO.hh"
 
 /*!

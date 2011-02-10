@@ -3,7 +3,7 @@
 
 /*!
  * \file support.hh
- * \brief Various support and macros for Quill
+ * \brief Various support functions and macros for Quill
  */
 
 #include <string>
@@ -24,7 +24,7 @@ using namespace std::tr1::placeholders;
 /*!
  * \brief Remove characters from a string
  *
- * Remove all characters fmatchinf condition \a cond from string \a str, and
+ * Remove all characters matching condition \a cond from string \a str, and
  * return the updated string.
  * \tparam Cond The type of the condition
  * \param str  The string from which to remove characters

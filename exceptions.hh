@@ -52,8 +52,8 @@ struct ParseError: public Li::Exception
 };
 
 /*!
- * %Exception thrown when trying to access an element in an array or map
- * using an index not present in the container.
+ * \brief %Exception thrown when trying to access a container element
+ *    using an index not present in the container
  */
 struct InvalidIndex: public Li::Exception
 {
