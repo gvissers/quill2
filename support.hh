@@ -82,6 +82,28 @@ std::string ucFirst(const std::string& str);
  */
 std::string& toUCFirst(std::string& str);
 
+/*!
+ * \brief Left rotate
+ *
+ * Rotate number \a x to the left by \a n bits, without carry.
+ * \tparam T The type of the number
+ * \param x  The number to rotate
+ * \param n  The size of the rotation
+ * \return The rotated number
+ */
+template <typename T>
+T lrot(T x, unsigned int n)
+{
+	// For unsigned types, the mask can be omitted
+	T mask = (1 << n) - 1;
+	return (x << n) | ((x >> (sizeof(T)-n)) & mask);
+}
+template <>
+inline size_t lrot(size_t x, unsigned int n)
+{
+	return (x << n) | (x >> (sizeof(size_t)-n));
+}
+
 namespace
 {
 
