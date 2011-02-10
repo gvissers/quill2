@@ -20,6 +20,7 @@
 class Basis
 {
 	public:
+		//! Local typedef for a (shared) pointer to a basis function
 		typedef std::tr1::shared_ptr<AbstractBF> BasisFunPtr;
 		//! Local typedef for a list of basis functions
 		typedef std::vector<BasisFunPtr> BasisFunList;

@@ -161,6 +161,7 @@ struct BasisSet::UnknownShell: public Li::Exception
 //! %Exception thrown when no basis functions are defined for an element
 struct BasisSet::NoFunctions: public Li::Exception
 {
+	//! Constructor
 	NoFunctions(const std::string& elem):
 		Exception("No basis functions defined for element \""  + elem + "\"") {}
 };

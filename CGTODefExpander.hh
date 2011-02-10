@@ -14,6 +14,17 @@
 template <unsigned int lx, unsigned int ly, unsigned int lz>
 struct CGTODefExpander
 {
+	/*!
+	 * \brief Add a basis function
+	 *
+	 * Add a contracted Gaussian type orbital with angular momentum
+	 * quantum numbers \a lx, \a ly, and \a lz to the basis, and continue
+	 * with the next function.
+	 * \param weights The weights of the primitives in the contraction
+	 * \param widths  The widths of the primitives in the contraction
+	 * \param pos     The center of the basis orbital
+	 * \param basis   The basis to be filled
+	 */
 	static void exec(const Eigen::VectorXd& weights,
 		const Eigen::VectorXd& widths, const Eigen::Vector3d& pos,
 		Basis *basis)

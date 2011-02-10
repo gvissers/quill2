@@ -25,13 +25,22 @@ class ZMatrix
 		{
 			//! Element symbol of the atom
 			std::string symbol;
-			//! Indices of the atoms defining the plane
-			int idx1, idx2, idx3;
-			//! Polar coordinates of the atoms relatiive to the plane
-			double r, theta, phi;
+			//! Index of the atom to which this atom is connected
+			int idx1;
+			//! Atom index for defining the bond angle \a idx2 - \a idx1 - this atom
+			int idx2;
+			//! Atom index defining the reference plane for the torsional angle
+			int idx3;
+			//! Bond length between this atom and atom \a idx1
+			double r;
+			//! Angle between the bond and that between atoms \a idx1 and \a idx2
+			double theta;
+			//! Angle between the bond and the plane defined by atoms \a idx1, \a idx2, and \a idx3.
+			double phi;
 
 			//! Constructor
-			AtomPos(const std::string& symbol, int idx1, double r,
+			AtomPos(const std::string& symbol,
+				int idx1, double r,
 				int idx2, double theta,
 				int idx3, double phi):
 				symbol(symbol),

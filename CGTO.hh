@@ -19,9 +19,9 @@
  * G(x,y,z) = (x-x_c)^{l_x} (y-y_c)^{l_y} (z-z_c)^{l_z}
  *            \exp(-\alpha * |{\bf r}-{\bf r}_c|^2)
  * \f]
- * \tparam lx The angular momentum quantum number in the \f$x\$ coordinate
- * \tparam ly The angular momentum quantum number in the \f$y\$ coordinate
- * \tparam lz The angular momentum quantum number in the \f$z\$ coordinate
+ * \tparam lx The angular momentum quantum number in the \f$x\f$ coordinate
+ * \tparam ly The angular momentum quantum number in the \f$y\f$ coordinate
+ * \tparam lz The angular momentum quantum number in the \f$z\f$ coordinate
  */
 template <int lx, int ly, int lz>
 class CGTO: public AbstractBF

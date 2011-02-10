@@ -92,14 +92,14 @@ std::string& toUCFirst(std::string& str);
  * \return The rotated number
  */
 template <typename T>
-T lrot(T x, unsigned int n)
+inline T lrot(T x, unsigned int n)
 {
 	// For unsigned types, the mask can be omitted
 	T mask = (1 << n) - 1;
 	return (x << n) | ((x >> (sizeof(T)-n)) & mask);
 }
 template <>
-inline size_t lrot(size_t x, unsigned int n)
+inline size_t lrot<size_t>(size_t x, unsigned int n)
 {
 	return (x << n) | (x >> (sizeof(size_t)-n));
 }

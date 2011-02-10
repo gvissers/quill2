@@ -19,8 +19,12 @@ class XYZMatrix
 		{
 			//! Element symbol of the atom
 			std::string symbol;
-			//! Coordinates of the position of the atom
-			double x, y, z;
+			//! \f$x\f$-coordinates of the atom position
+			double x;
+			//! \f$y\f$-coordinates of the atom position
+			double y;
+			//! \f$z\f$-coordinates of the atom position
+			double z;
 
 			//! Constructor
 			AtomPos(const std::string& symbol, double x, double y,
