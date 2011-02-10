@@ -6,6 +6,8 @@
  * \brief Definition of the FilteringOBuf clas
  */
 
+#include <iostream>
+
 /*!
  * \brief Class for filtering output streams
  *

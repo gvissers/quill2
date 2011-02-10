@@ -6,8 +6,6 @@
  * \brief Definition of the XYZMatrix class
  */
 
-#include <vector>
-#include "io/JobIStream.hh"
 #include "Geometry.hh"
 
 /*!

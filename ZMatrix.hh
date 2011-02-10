@@ -6,9 +6,7 @@
  * \brief Definition of the ZMatrix class
  */
 
-#include <vector>
 #include <map>
-#include "io/JobIStream.hh"
 #include "Geometry.hh"
 
 /*!

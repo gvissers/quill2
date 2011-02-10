@@ -6,6 +6,8 @@
  * \brief Definition of the IStreamUser class
  */
 
+#include <iostream>
+
 /*!
  * \brief Proxy class for an input stream
  *

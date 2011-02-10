@@ -6,7 +6,6 @@
  * \brief IO stream manipulators for Quill
  */
 
-#include <iostream>
 #include "io/IndentingOStream.hh"
 
 //! Proxy struct for reference to element string

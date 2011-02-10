@@ -9,7 +9,6 @@
 #include <vector>
 #include "Eigen/Core"
 #include "io/JobIStream.hh"
-#include "exceptions.hh"
 
 /*!
  * \brief The geometry of the system

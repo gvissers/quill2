@@ -6,10 +6,8 @@
  * \brief Definition of the BasisSet class
  */
 
-#include <vector>
 #include <map>
 #include "AbstractBFDef.hh"
-#include "io/FilteringLineIStream.hh"
 #include "io/CommentFilter.hh"
 #include "Geometry.hh"
 
