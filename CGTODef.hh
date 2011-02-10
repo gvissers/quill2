@@ -9,7 +9,6 @@
 #include "Eigen/Dense"
 #include "AbstractBFDef.hh"
 #include "CGTODefExpander.hh"
-#include "io/IndentingOStream.hh"
 
 /*!
  * \brief Contracted Gaussian Type Orbital

@@ -8,7 +8,7 @@
 
 #include <Eigen/Dense>
 #include "AbstractBF.hh"
-#include "io/IndentingOStream.hh"
+#include "io/manipulators.hh"
 
 /*!
  * \brief Contracted Gaussian Type Orbital

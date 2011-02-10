@@ -1,6 +1,5 @@
 #include "Geometry.hh"
 #include "PeriodicTable.hh"
-#include "io/IndentingOStream.hh"
 #include "XYZMatrix.hh"
 #include "ZMatrix.hh"
 #include "io/manipulators.hh"

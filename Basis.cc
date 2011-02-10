@@ -1,5 +1,5 @@
 #include "Basis.hh"
-#include "io/IndentingOStream.hh"
+#include "io/manipulators.hh"
 
 std::ostream& Basis::print(std::ostream& os) const
 {
