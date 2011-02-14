@@ -1,6 +1,11 @@
 #ifndef OVERLAP_HH
 #define OVERLAP_HH
 
+/*!
+ * \file gto_overlap.hh
+ * \brief Functions for computing the overlap between contracted GTOs
+ */
+
 #include <Eigen/Dense>
 #include "constants.hh"
 
