@@ -98,6 +98,7 @@ inline T lrot(T x, unsigned int n)
 	T mask = (1 << n) - 1;
 	return (x << n) | ((x >> (sizeof(T)-n)) & mask);
 }
+//! Specialization of left rotation for \c size_t
 template <>
 inline size_t lrot<size_t>(size_t x, unsigned int n)
 {
