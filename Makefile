@@ -1,7 +1,9 @@
 FEATURES = 
 FEATURES += DEBUG
 
-VPATH = io
+CXX = ccache g++
+
+VPATH = io gaussint
 
 INCLUDES = -I . -I /home/ge/Programs/lithium/include -I eigen
 #CXXFLAGS = -Wall -W -Weffc++ -ggdb $(INCLUDES)
@@ -10,9 +12,10 @@ CXXFLAGS = -Wall -W -ggdb $(INCLUDES) \
 LDFLAGS = -L /home/ge/Programs/lithium/lib -lli_base \
 	-Wl,-rpath=/home/ge/Programs/lithium/lib
 
-OBJS = main.o Basis.o BasisSet.o CommentFilter.o Element.o Geometry.o \
-	IndentFilter.o JobFilter.o LineIStream.o manipulators.o \
-	PeriodicTable.o support.o XYZMatrix.o ZMatrix.o
+OBJS = main.o AbstractBF.o Basis.o BasisSet.o CGTO.o CommentFilter.o \
+	Dispatcher.o Element.o Geometry.o gto_overlap.o IndentFilter.o \
+	JobFilter.o LineIStream.o manipulators.o PeriodicTable.o support.o \
+	XYZMatrix.o ZMatrix.o
 
 .PHONY: doc
 

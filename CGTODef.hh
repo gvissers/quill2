@@ -95,18 +95,18 @@ template <>
 void CGTODef<0>::expand(const Eigen::Vector3d& pos, Basis* basis) const
 {
 	basis->add(std::tr1::shared_ptr<AbstractBF>(
-		new CGTO<0, 0, 0>(_weights, _widths, pos)));
+		new CGTOSpec<0, 0, 0>(_weights, _widths, pos)));
 }
 
 template <>
 void CGTODef<1>::expand(const Eigen::Vector3d& pos, Basis* basis) const
 {
 	basis->add(std::tr1::shared_ptr<AbstractBF>(
-		new CGTO<0, 0, 1>(_weights, _widths, pos)));
+		new CGTOSpec<0, 0, 1>(_weights, _widths, pos)));
 	basis->add(std::tr1::shared_ptr<AbstractBF>(
-		new CGTO<0, 1, 0>(_weights, _widths, pos)));
+		new CGTOSpec<0, 1, 0>(_weights, _widths, pos)));
 	basis->add(std::tr1::shared_ptr<AbstractBF>(
-		new CGTO<1, 0, 0>(_weights, _widths, pos)));
+		new CGTOSpec<1, 0, 0>(_weights, _widths, pos)));
 }
 
 template <unsigned int l>

@@ -30,7 +30,7 @@ class Basis
 		 *
 		 * Create a new and empty basis
 		 */
-		Basis(): _funs() {}
+		Basis(): _funs(), _overlap() {}
 
 		//! Return the number of functions in this basis
 		int size() const { return _funs.size(); }
@@ -41,6 +41,14 @@ class Basis
 		 * Add basis function \a bf to this basis.
 		 */
 		void add(const BasisFunPtr& ptr) { _funs.push_back(ptr); }
+
+		/*!
+		 * \brief Return the overlap matrix
+		 *
+		 * Return the matrix with the overlaps between the fucntions
+		 * in this basis, computing it first if necessary.
+		 */
+		const Eigen::MatrixXd& overlap() const;
 
 		/*!
 		 * \brief Print this basis
@@ -55,6 +63,8 @@ class Basis
 	private:
 		//! The list of basis functions
 		BasisFunList _funs;
+		//! The overlap matrix for this basis
+		mutable Eigen::MatrixXd _overlap;
 };
 
 namespace {

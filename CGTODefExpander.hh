@@ -6,7 +6,7 @@
  * \brief Definition of the CGTODefExpander class
  */
 
-#include "CGTO.hh"
+#include "CGTOSpec.hh"
 
 /*!
  * \brief Struct for expanding a CGTO definition
@@ -35,7 +35,7 @@ struct CGTODefExpander
 		Basis *basis)
 	{
 		basis->add(std::tr1::shared_ptr<AbstractBF>(
-			new CGTO<lx, ly, lz>(weights, widths, pos)));
+			new CGTOSpec<lx, ly, lz>(weights, widths, pos)));
 		CGTODefExpander<lx, ly+1, lz-1>::exec(weights, widths,
 			pos, basis);
 	}
@@ -49,7 +49,7 @@ struct CGTODefExpander<lx, ly, 0>
 		Basis *basis)
 	{
 		basis->add(std::tr1::shared_ptr<AbstractBF>(
-			new CGTO<lx, ly, 0>(weights, widths, pos)));
+			new CGTOSpec<lx, ly, 0>(weights, widths, pos)));
 		CGTODefExpander<lx+1, 0, ly-1>::exec(weights, widths,
 			pos, basis);
 	}
@@ -63,7 +63,7 @@ struct CGTODefExpander<lx, 0, 0>
 		Basis *basis)
 	{
 		basis->add(std::tr1::shared_ptr<AbstractBF>(
-			new CGTO<lx, 0, 0>(weights, widths, pos)));
+			new CGTOSpec<lx, 0, 0>(weights, widths, pos)));
 	}
 };
 

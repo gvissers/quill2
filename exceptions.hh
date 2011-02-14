@@ -64,6 +64,13 @@ struct InvalidIndex: public Li::Exception
 		os << "Invalid index " << i;
 		setMsg(os.str());
 	}
+	//! Constructor
+	InvalidIndex(size_t i, size_t j): Exception()
+	{
+		std::ostringstream os;
+		os << "Invalid index " << i << ", " << j;
+		setMsg(os.str());
+	}
 };
 
 /*!

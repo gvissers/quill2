@@ -13,3 +13,18 @@ std::ostream& Basis::print(std::ostream& os) const
 	return os;
 }
 
+const Eigen::MatrixXd& Basis::overlap() const
+{
+	int n = size();
+	_overlap.resize(n, n);
+	for (int i = 0; i < n; i++)
+	{
+		for (int j = 0; j < i; j++)
+		{
+			_overlap(i, j) = _overlap(j, i)
+				= ::overlap(*_funs[i], *_funs[j]);
+		}
+		_overlap(i, i) = ::overlap(*_funs[i], *_funs[i]);
+	}
+	return _overlap;
+}

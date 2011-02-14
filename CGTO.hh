@@ -8,7 +8,7 @@
 
 #include <Eigen/Dense>
 #include "AbstractBF.hh"
-#include "io/manipulators.hh"
+#include "exceptions.hh"
 
 /*!
  * \brief Contracted Gaussian Type Orbital
@@ -19,28 +19,35 @@
  * G(x,y,z) = (x-x_c)^{l_x} (y-y_c)^{l_y} (z-z_c)^{l_z}
  *            \exp(-\alpha * |{\bf r}-{\bf r}_c|^2)
  * \f]
- * \tparam lx The angular momentum quantum number in the \f$x\f$ coordinate
- * \tparam ly The angular momentum quantum number in the \f$y\f$ coordinate
- * \tparam lz The angular momentum quantum number in the \f$z\f$ coordinate
  */
-template <int lx, int ly, int lz>
 class CGTO: public AbstractBF
 {
 	public:
 		/*!
 		 * \brief Constructor
 		 *
-		 * Create a new contraction of primitve Gaussian type orbitals
-		 * on position \a center. The weights of the primitives are
-		 * given in weights, the widths in \a widths.
+		 * Create a new contraction of primitive Gaussian type orbitals
+		 * with angular momentum quantum numbers \a ls on position
+		 * \a center. The weights of the primitives are given in
+		 * weights, the widths in \a widths.
 		 */
-		CGTO(const Eigen::VectorXd& weights,
+		CGTO(size_t cid, const Eigen::Vector3i& ls,
+			const Eigen::VectorXd& weights,
 			const Eigen::VectorXd& widths,
 			const Eigen::Vector3d& center):
+			AbstractBF(cid), _ls(ls),
 			_weights(weights), _widths(widths), _center(center) {}
 
 		//! Return the number of primitives in this contraction
 		int size() const { return _weights.size(); }
+		//! Return the angular momentum quantum numbers
+		const Eigen::Vector3i& ls() const { return _ls; }
+		//! Return the angular momentum in the \f$x\f$ direction
+		int lx() const { return _ls.x(); }
+		//! Return the angular momentum in the \f$y\f$ direction
+		int ly() const { return _ls.y(); }
+		//! Return the angular momentum in the \f$z\f$ direction
+		int lz() const { return _ls.z(); }
 		//! Return the weight of the \a i'th primitive
 		double weight(int i) const
 		{
@@ -53,6 +60,10 @@ class CGTO: public AbstractBF
 			checkIndex(i);
 			return _widths(i);
 		}
+		//! Return the weights of all primitives in this orbital
+		const Eigen::VectorXd& weights() const { return _weights; }
+		//! Return the widths of all primitives in this orbital
+		const Eigen::VectorXd& widths() const { return _widths; }
 		//! Return the center position of this orbital
 		const Eigen::Vector3d& center() const { return _center; }
 
@@ -64,7 +75,7 @@ class CGTO: public AbstractBF
 		 * \param os The output stream to write to
 		 * \return The updated output stream
 		 */
-		std::ostream& print(std::ostream& os) const;
+		virtual std::ostream& print(std::ostream& os) const;
 
 		/*!
 		 * \brief Evaluate this CGTO
@@ -76,6 +87,8 @@ class CGTO: public AbstractBF
 		double eval(const Eigen::Vector3d& pos) const;
 
 	private:
+		//! The angular momentum quantum numbers
+		Eigen::Vector3i _ls;
 		//! The weights of the primitives in this contraction
 		Eigen::VectorXd _weights;
 		//! The widths of the primitive Gaussians
@@ -89,7 +102,7 @@ class CGTO: public AbstractBF
 		 * Check if \a idx is a valid primitive index for this
 		 * contraction. The check is only performed if the program
 		 * is compiled with the DEBUG symbol defined.
-		 * \param idx The idnex to check
+		 * \param idx The index to check
 		 * \exception InvalidIndex thrown when the index is out
 		 *    of bounds.
 		 */
@@ -101,29 +114,5 @@ class CGTO: public AbstractBF
 #endif
 		}
 };
-
-template <int lx, int ly, int lz>
-std::ostream& CGTO<lx, ly, lz>::print(std::ostream& os) const
-{
-	os << "CGTO<" << lx << ", " << ly << ", " << lz << "> (\n" << indent;
-	os << "center: " << _center.transpose() << "\n";
-	os << "primitives:\n" << indent;
-	for (int i = 0; i < size(); i++)
-		os << weight(i) << " " << width(i) << "\n";
-	os << dedent << dedent << ")";
-	return os;
-}
-
-template <int lx, int ly, int lz>
-double CGTO<lx, ly, lz>::eval(const Eigen::Vector3d& pos) const
-{
-	Eigen::Vector3d dr = pos-center();
-	double rn = dr.squaredNorm();
-	double res = (-rn * _widths).array().exp().sum();
-	for (int p = 0; p < lx; p++) res *= dr.x();
-	for (int p = 0; p < ly; p++) res *= dr.y();
-	for (int p = 0; p < lz; p++) res *= dr.z();
-	return res;
-}
 
 #endif // CGTO_HH

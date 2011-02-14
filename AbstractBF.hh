@@ -20,6 +20,11 @@
  */
 struct AbstractBF
 {
+	//! Unique class ID, used in looking up integral calculation functions
+	size_t cid;
+
+	//! Constructor
+	AbstractBF(size_t cid): cid(cid) {}
 	//! Destructor
 	virtual ~AbstractBF() {}
 
@@ -36,6 +41,18 @@ struct AbstractBF
 	 */
 	virtual std::ostream& print(std::ostream& os) const = 0;
 };
+
+/*!
+ * \brief The overlap between basis functions
+ *
+ * Compute the overlap between basis functions \a f and \a g. This looks up
+ * the overlap function to use for the concrete types of \a f and \a g in
+ * the Dispatcher, and executes the function found.
+ * \param f The first basis function
+ * \param g The second basis function
+ * \return The overlap between \a f and \a g
+ */
+double overlap(const AbstractBF& f, const AbstractBF& g);
 
 namespace {
 

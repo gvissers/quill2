@@ -1,6 +1,9 @@
+#include <vector>
+#include <Exception.hh>
 #include "gaussint/gto_overlap.hh"
 
-Eigen::ArrayXXd OverlapKernel<0, 0, 0, 0, 0, 0>::calc(
+template <>
+Eigen::ArrayXXd specialized_overlap_coefs<0, 0, 0, 0, 0, 0>(
 	const Eigen::ArrayXXd&, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d&)
@@ -8,7 +11,8 @@ Eigen::ArrayXXd OverlapKernel<0, 0, 0, 0, 0, 0>::calc(
 	return exp_ared / (asum * asum.sqrt());
 }
 
-Eigen::ArrayXXd OverlapKernel<1, 0, 0, 0, 0, 0>::calc(
+template <>
+Eigen::ArrayXXd specialized_overlap_coefs<1, 0, 0, 0, 0, 0>(
 	const Eigen::ArrayXXd&, const Eigen::ArrayXXd& beta,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r)
@@ -16,7 +20,8 @@ Eigen::ArrayXXd OverlapKernel<1, 0, 0, 0, 0, 0>::calc(
 	return r.x() * beta * exp_ared / (asum.square() * asum.sqrt());
 }
 
-Eigen::ArrayXXd OverlapKernel<0, 1, 0, 0, 0, 0>::calc(
+template <>
+Eigen::ArrayXXd specialized_overlap_coefs<0, 1, 0, 0, 0, 0>(
 	const Eigen::ArrayXXd&, const Eigen::ArrayXXd& beta,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r)
@@ -24,7 +29,8 @@ Eigen::ArrayXXd OverlapKernel<0, 1, 0, 0, 0, 0>::calc(
 	return r.y() * beta * exp_ared / (asum.square() * asum.sqrt());
 }
 
-Eigen::ArrayXXd OverlapKernel<0, 0, 1, 0, 0, 0>::calc(
+template <>
+Eigen::ArrayXXd specialized_overlap_coefs<0, 0, 1, 0, 0, 0>(
 	const Eigen::ArrayXXd&, const Eigen::ArrayXXd& beta,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r)
@@ -32,7 +38,8 @@ Eigen::ArrayXXd OverlapKernel<0, 0, 1, 0, 0, 0>::calc(
 	return r.z() * beta * exp_ared / (asum.square() * asum.sqrt());
 }
 
-Eigen::ArrayXXd OverlapKernel<0, 0, 0, 1, 0, 0>::calc(
+template <>
+Eigen::ArrayXXd specialized_overlap_coefs<0, 0, 0, 1, 0, 0>(
 	const Eigen::ArrayXXd& alpha, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r)
@@ -40,7 +47,8 @@ Eigen::ArrayXXd OverlapKernel<0, 0, 0, 1, 0, 0>::calc(
 	return -r.x() * alpha * exp_ared / (asum.square() * asum.sqrt());
 }
 
-Eigen::ArrayXXd OverlapKernel<0, 0, 0, 0, 1, 0>::calc(
+template <>
+Eigen::ArrayXXd specialized_overlap_coefs<0, 0, 0, 0, 1, 0>(
 	const Eigen::ArrayXXd& alpha, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r)
@@ -48,7 +56,8 @@ Eigen::ArrayXXd OverlapKernel<0, 0, 0, 0, 1, 0>::calc(
 	return -r.y() * alpha * exp_ared / (asum.square() * asum.sqrt());
 }
 
-Eigen::ArrayXXd OverlapKernel<0, 0, 0, 0, 0, 1>::calc(
+template <>
+Eigen::ArrayXXd specialized_overlap_coefs<0, 0, 0, 0, 0, 1>(
 	const Eigen::ArrayXXd& alpha, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r)
@@ -56,7 +65,8 @@ Eigen::ArrayXXd OverlapKernel<0, 0, 0, 0, 0, 1>::calc(
 	return -r.z() * alpha * exp_ared / (asum.square() * asum.sqrt());
 }
 
-Eigen::ArrayXXd OverlapKernel<2, 0, 0, 0, 0, 0>::calc(
+template <>
+Eigen::ArrayXXd specialized_overlap_coefs<2, 0, 0, 0, 0, 0>(
 	const Eigen::ArrayXXd&, const Eigen::ArrayXXd& beta,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r)
@@ -65,7 +75,8 @@ Eigen::ArrayXXd OverlapKernel<2, 0, 0, 0, 0, 0>::calc(
 		/ (asum.cube() * asum.sqrt());
 }
 
-Eigen::ArrayXXd OverlapKernel<1, 1, 0, 0, 0, 0>::calc(
+template <>
+Eigen::ArrayXXd specialized_overlap_coefs<1, 1, 0, 0, 0, 0>(
 	const Eigen::ArrayXXd&, const Eigen::ArrayXXd& beta,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r)
@@ -74,7 +85,8 @@ Eigen::ArrayXXd OverlapKernel<1, 1, 0, 0, 0, 0>::calc(
 		/ (asum.cube() * asum.sqrt());
 }
 
-Eigen::ArrayXXd OverlapKernel<1, 0, 1, 0, 0, 0>::calc(
+template <>
+Eigen::ArrayXXd specialized_overlap_coefs<1, 0, 1, 0, 0, 0>(
 	const Eigen::ArrayXXd&, const Eigen::ArrayXXd& beta,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r)
@@ -83,7 +95,8 @@ Eigen::ArrayXXd OverlapKernel<1, 0, 1, 0, 0, 0>::calc(
 		/ (asum.cube() * asum.sqrt());
 }
 
-Eigen::ArrayXXd OverlapKernel<1, 0, 0, 1, 0, 0>::calc(
+template <>
+Eigen::ArrayXXd specialized_overlap_coefs<1, 0, 0, 1, 0, 0>(
 	const Eigen::ArrayXXd&, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& ared,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r)
@@ -92,7 +105,8 @@ Eigen::ArrayXXd OverlapKernel<1, 0, 0, 1, 0, 0>::calc(
 		/ (asum.square() * asum.sqrt());
 }
 
-Eigen::ArrayXXd OverlapKernel<1, 0, 0, 0, 1, 0>::calc(
+template <>
+Eigen::ArrayXXd specialized_overlap_coefs<1, 0, 0, 0, 1, 0>(
 	const Eigen::ArrayXXd&, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& ared,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r)
@@ -101,7 +115,8 @@ Eigen::ArrayXXd OverlapKernel<1, 0, 0, 0, 1, 0>::calc(
 		/ (asum.square() * asum.sqrt());
 }
 
-Eigen::ArrayXXd OverlapKernel<1, 0, 0, 0, 0, 1>::calc(
+template <>
+Eigen::ArrayXXd specialized_overlap_coefs<1, 0, 0, 0, 0, 1>(
 	const Eigen::ArrayXXd&, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& ared,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r)
@@ -110,7 +125,8 @@ Eigen::ArrayXXd OverlapKernel<1, 0, 0, 0, 0, 1>::calc(
 		/ (asum.square() * asum.sqrt());
 }
 
-Eigen::ArrayXXd OverlapKernel<0, 2, 0, 0, 0, 0>::calc(
+template <>
+Eigen::ArrayXXd specialized_overlap_coefs<0, 2, 0, 0, 0, 0>(
 	const Eigen::ArrayXXd&, const Eigen::ArrayXXd& beta,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r)
@@ -119,7 +135,8 @@ Eigen::ArrayXXd OverlapKernel<0, 2, 0, 0, 0, 0>::calc(
 		/ (asum.cube() * asum.sqrt());
 }
 
-Eigen::ArrayXXd OverlapKernel<0, 1, 1, 0, 0, 0>::calc(
+template <>
+Eigen::ArrayXXd specialized_overlap_coefs<0, 1, 1, 0, 0, 0>(
 	const Eigen::ArrayXXd&, const Eigen::ArrayXXd& beta,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r)
@@ -128,7 +145,8 @@ Eigen::ArrayXXd OverlapKernel<0, 1, 1, 0, 0, 0>::calc(
 		/ (asum.cube() * asum.sqrt());
 }
 
-Eigen::ArrayXXd OverlapKernel<0, 1, 0, 1, 0, 0>::calc(
+template <>
+Eigen::ArrayXXd specialized_overlap_coefs<0, 1, 0, 1, 0, 0>(
 	const Eigen::ArrayXXd&, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& ared,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r)
@@ -137,7 +155,8 @@ Eigen::ArrayXXd OverlapKernel<0, 1, 0, 1, 0, 0>::calc(
 		/ (asum.square() * asum.sqrt());
 }
 
-Eigen::ArrayXXd OverlapKernel<0, 1, 0, 0, 1, 0>::calc(
+template <>
+Eigen::ArrayXXd specialized_overlap_coefs<0, 1, 0, 0, 1, 0>(
 	const Eigen::ArrayXXd&, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& ared,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r)
@@ -146,7 +165,8 @@ Eigen::ArrayXXd OverlapKernel<0, 1, 0, 0, 1, 0>::calc(
 		/ (asum.square() * asum.sqrt());
 }
 
-Eigen::ArrayXXd OverlapKernel<0, 1, 0, 0, 0, 1>::calc(
+template <>
+Eigen::ArrayXXd specialized_overlap_coefs<0, 1, 0, 0, 0, 1>(
 	const Eigen::ArrayXXd&, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& ared,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r)
@@ -155,7 +175,8 @@ Eigen::ArrayXXd OverlapKernel<0, 1, 0, 0, 0, 1>::calc(
 		/ (asum.square() * asum.sqrt());
 }
 
-Eigen::ArrayXXd OverlapKernel<0, 0, 2, 0, 0, 0>::calc(
+template <>
+Eigen::ArrayXXd specialized_overlap_coefs<0, 0, 2, 0, 0, 0>(
 	const Eigen::ArrayXXd&, const Eigen::ArrayXXd& beta,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r)
@@ -164,7 +185,8 @@ Eigen::ArrayXXd OverlapKernel<0, 0, 2, 0, 0, 0>::calc(
 		/ (asum.cube() * asum.sqrt());
 }
 
-Eigen::ArrayXXd OverlapKernel<0, 0, 1, 1, 0, 0>::calc(
+template <>
+Eigen::ArrayXXd specialized_overlap_coefs<0, 0, 1, 1, 0, 0>(
 	const Eigen::ArrayXXd&, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& ared,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r)
@@ -173,7 +195,8 @@ Eigen::ArrayXXd OverlapKernel<0, 0, 1, 1, 0, 0>::calc(
 		/ (asum.square() * asum.sqrt());
 }
 
-Eigen::ArrayXXd OverlapKernel<0, 0, 1, 0, 1, 0>::calc(
+template <>
+Eigen::ArrayXXd specialized_overlap_coefs<0, 0, 1, 0, 1, 0>(
 	const Eigen::ArrayXXd&, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& ared,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r)
@@ -182,7 +205,8 @@ Eigen::ArrayXXd OverlapKernel<0, 0, 1, 0, 1, 0>::calc(
 		/ (asum.square() * asum.sqrt());
 }
 
-Eigen::ArrayXXd OverlapKernel<0, 0, 1, 0, 0, 1>::calc(
+template <>
+Eigen::ArrayXXd specialized_overlap_coefs<0, 0, 1, 0, 0, 1>(
 	const Eigen::ArrayXXd&, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& ared,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r)
@@ -191,7 +215,8 @@ Eigen::ArrayXXd OverlapKernel<0, 0, 1, 0, 0, 1>::calc(
 		/ (asum.square() * asum.sqrt());
 }
 
-Eigen::ArrayXXd OverlapKernel<0, 0, 0, 2, 0, 0>::calc(
+template <>
+Eigen::ArrayXXd specialized_overlap_coefs<0, 0, 0, 2, 0, 0>(
 	const Eigen::ArrayXXd& alpha, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r)
@@ -200,7 +225,8 @@ Eigen::ArrayXXd OverlapKernel<0, 0, 0, 2, 0, 0>::calc(
 		/ (asum.cube() * asum.sqrt());
 }
 
-Eigen::ArrayXXd OverlapKernel<0, 0, 0, 1, 1, 0>::calc(
+template <>
+Eigen::ArrayXXd specialized_overlap_coefs<0, 0, 0, 1, 1, 0>(
 	const Eigen::ArrayXXd& alpha, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r)
@@ -209,7 +235,8 @@ Eigen::ArrayXXd OverlapKernel<0, 0, 0, 1, 1, 0>::calc(
 		/ (asum.cube() * asum.sqrt());
 }
 
-Eigen::ArrayXXd OverlapKernel<0, 0, 0, 1, 0, 1>::calc(
+template <>
+Eigen::ArrayXXd specialized_overlap_coefs<0, 0, 0, 1, 0, 1>(
 	const Eigen::ArrayXXd& alpha, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r)
@@ -218,7 +245,8 @@ Eigen::ArrayXXd OverlapKernel<0, 0, 0, 1, 0, 1>::calc(
 		/ (asum.cube() * asum.sqrt());
 }
 
-Eigen::ArrayXXd OverlapKernel<0, 0, 0, 0, 2, 0>::calc(
+template <>
+Eigen::ArrayXXd specialized_overlap_coefs<0, 0, 0, 0, 2, 0>(
 	const Eigen::ArrayXXd& alpha, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r)
@@ -227,7 +255,8 @@ Eigen::ArrayXXd OverlapKernel<0, 0, 0, 0, 2, 0>::calc(
 		/ (asum.cube() * asum.sqrt());
 }
 
-Eigen::ArrayXXd OverlapKernel<0, 0, 0, 0, 1, 1>::calc(
+template <>
+Eigen::ArrayXXd specialized_overlap_coefs<0, 0, 0, 0, 1, 1>(
 	const Eigen::ArrayXXd& alpha, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r)
@@ -236,7 +265,8 @@ Eigen::ArrayXXd OverlapKernel<0, 0, 0, 0, 1, 1>::calc(
 		/ (asum.cube() * asum.sqrt());
 }
 
-Eigen::ArrayXXd OverlapKernel<0, 0, 0, 0, 0, 2>::calc(
+template <>
+Eigen::ArrayXXd specialized_overlap_coefs<0, 0, 0, 0, 0, 2>(
 	const Eigen::ArrayXXd& alpha, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r)
@@ -245,3 +275,68 @@ Eigen::ArrayXXd OverlapKernel<0, 0, 0, 0, 0, 2>::calc(
 		/ (asum.cube() * asum.sqrt());
 }
 
+Eigen::ArrayXXd overlap_coefs_1d(int l1, int l2, double x,
+	const Eigen::ArrayXXd& beta, const Eigen::ArrayXXd& asum)
+{
+#ifdef DEBUG
+	if (l1 < l2)
+		throw Li::Exception("l1 must not be smaller than l2");
+#endif
+
+	int powsum = l1 + l2;
+	if (powsum == 0)
+		return Eigen::ArrayXXd::Ones(beta.rows(), beta.cols());
+	if (powsum == 1)
+		return x * beta / asum;
+
+	std::vector<Eigen::ArrayXXd> coefs;
+	coefs.push_back(x*beta/asum);
+	// Recursion in l1:
+	// S_l+1,0 = [l/2 S_l-1,0 + x beta S_l,0] / (alpha + beta)
+	coefs.push_back((0.5 + x*beta*coefs[0]) / asum);
+	for (int i = 2; i < powsum; i++)
+		coefs.push_back((0.5*i*coefs[i-2] + x*beta*coefs[i-1]) / asum);
+
+	// recursion in l2:
+	// S_l1,l2 = S_l1+1,l2-1 - x S_l1,l2-1
+	for (int j = 0; j < l2; j++)
+	{
+		for (int i = powsum-1; i >= l1+j; i--)
+			coefs[i] -= x * coefs[i-1];
+	}
+
+	return coefs[powsum-1];
+}
+
+double gto_overlap_generic(const Eigen::Vector3i& ls1,
+	const Eigen::VectorXd& weights1, const Eigen::VectorXd& widths1,
+	const Eigen::Vector3d& pos1,
+	const Eigen::Vector3i& ls2,
+	const Eigen::VectorXd& weights2, const Eigen::VectorXd& widths2,
+	const Eigen::Vector3d& pos2)
+{
+	int n1 = widths1.size(), n2 = widths2.size();
+	Eigen::ArrayXXd alpha = widths1.replicate(1, n2);
+	Eigen::ArrayXXd beta = widths2.transpose().replicate(n1, 1);
+	Eigen::ArrayXXd asum = alpha + beta;
+	Eigen::ArrayXXd ared = (widths1 * widths2.transpose()).array() / asum;
+	Eigen::Vector3d r = pos2 - pos1;
+	Eigen::ArrayXXd coefs = (-r.squaredNorm() * ared).exp()
+		/ (asum * asum.sqrt());
+
+	for (int i = 0; i < 3; i++)
+	{
+		if (ls1[i]+ls2[i] > 0)
+		{
+			if (ls1[i] < ls2[i])
+				coefs *= overlap_coefs_1d(ls2[i], ls1[i],
+					-r[i], alpha, asum);
+			else
+				coefs *= overlap_coefs_1d(ls1[i], ls2[i],
+					r[i], beta, asum);
+		}
+	}
+
+	return Constants::pi_sqrt_pi * weights1.transpose()
+		* coefs.matrix() * weights2;
+}

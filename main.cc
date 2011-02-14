@@ -7,6 +7,7 @@
 #include "ZMatrix.hh"
 #include "CGTO.hh"
 #include "Basis.hh"
+#include "Dispatcher.hh"
 
 int main()
 {
@@ -34,6 +35,8 @@ int main()
 		set.expand(geom, &basis);
 		os << basis << "\n";
 
+		std::cout << Dispatcher::singleton().nrPairs() << " bf pairs\n";
+		os << basis.overlap();
 /*
 		std::string mat = "C\n"
 			"H   1 1.089000\n"

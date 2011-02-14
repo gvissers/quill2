@@ -104,6 +104,31 @@ inline size_t lrot<size_t>(size_t x, unsigned int n)
 	return (x << n) | (x >> (sizeof(size_t)-n));
 }
 
+namespace std
+{
+namespace tr1
+{
+
+/*!
+ * \brief Hash function for a pair of size_t
+ *
+ * No standard hash function for pairs exists, so we roll our own by
+ * \c xor'ing the values. Since we want to differentiate betweem \c pair(a, b)
+ * and \c pair(b, a), we rotate the second value by half the bit length first.
+ */
+template <>
+struct hash< std::pair<size_t, size_t> >
+{
+	//! Evaluate the hash function
+	size_t operator()(const std::pair<size_t, size_t>& cids) const
+	{
+		return cids.first ^ lrot(cids.second, 4*sizeof(size_t));
+	}
+};
+
+}
+}
+
 namespace
 {
 
