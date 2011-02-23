@@ -9,7 +9,7 @@
 #include <vector>
 #include <bitset>
 #include <tr1/memory>
-#include "AbstractBF.hh"
+#include "AbstractBFPair.hh"
 
 /*!
  * \brief Class representing a basis
@@ -25,14 +25,20 @@ class Basis
 		typedef std::tr1::shared_ptr<AbstractBF> BasisFunPtr;
 		//! Local typedef for a list of basis functions
 		typedef std::vector<BasisFunPtr> BasisFunList;
+		//! Local typedef for a list of basis function pairs
+		typedef std::vector<AbstractBFPair*> PairList;
 
 		//! Enumeration for the different status flags
 		enum StatusFlag
 		{
+			//! Set when the list of function pairs is current
+			PAIRS_CURRENT,
 			//! Set when the overlap matrix is computed and up to date
 			OVERLAP_CURRENT,
 			//! Set when the kinetic energy matrix is computed and up to date
-			KINETIC_CURRENT
+			KINETIC_CURRENT,
+			//! The number of status flags
+			NR_FLAGS
 		};
 
 		/*!
@@ -77,7 +83,7 @@ class Basis
 		 */
 		const Eigen::MatrixXd& kineticEnergy() const
 		{
-			if (!_status.test(OVERLAP_CURRENT))
+			if (!_status.test(KINETIC_CURRENT))
 				calcOneElectron();
 			return _kinetic;
 		}
@@ -95,13 +101,17 @@ class Basis
 	private:
 		//! The list of basis functions
 		BasisFunList _funs;
+		//! The list of function pairs
+		mutable PairList _pairs;
 		//! Status flags for the basis
-		mutable std::bitset<2> _status;
+		mutable std::bitset<NR_FLAGS> _status;
 		//! The overlap matrix for this basis
 		mutable Eigen::MatrixXd _overlap;
 		//! The kinetic energy matrix for this basis
 		mutable Eigen::MatrixXd _kinetic;
 
+		//! Create the list of basis function pairs
+		void setPairs() const;
 		//! Compute the overlap matrix in this basis
 		void calcOverlap() const;
 		//! Compute the kinetic energy matrix in this basis

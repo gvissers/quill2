@@ -7,77 +7,9 @@
  */
 
 #include "Dispatcher.hh"
-#include "CGTOSpec.hh"
-#include "gaussint/gto_overlap.hh"
+#include "CGTOSpecPair.hh"
 #include "gaussint/gto_kinetic.hh"
 #include "gaussint/gto_one_elec.hh"
-
-//! Structure for function pairs using generic code to compute integrals
-struct GenericCGTOPair
-{
-	//! Compute the overlap between contracted Gaussians \a f and and \a g
-	static double overlap(const AbstractBF& f, const AbstractBF& g)
-	{
-		const CGTO& ff = static_cast<const CGTO&>(f);
-		const CGTO& gg = static_cast<const CGTO&>(g);
-		return gto_overlap_generic(
-			ff.ls(), ff.weights(), ff.widths(), ff.center(),
-			gg.ls(), gg.weights(), gg.widths(), gg.center());
-	}
-	//! Compute the kinetic energy between contracted Gaussians \a f and and \a g
-	static double kineticEnergy(const AbstractBF& f, const AbstractBF& g)
-	{
-		const CGTO& ff = static_cast<const CGTO&>(f);
-		const CGTO& gg = static_cast<const CGTO&>(g);
-		return gto_kinetic_generic(
-			ff.ls(), ff.weights(), ff.widths(), ff.center(),
-			gg.ls(), gg.weights(), gg.widths(), gg.center());
-	}
-	//! Compute the one-electron integrals between contracted Gaussians \a f and and \a g
-	static void oneElectron(const AbstractBF& f, const AbstractBF& g, double *S, double *T)
-	{
-		const CGTO& ff = static_cast<const CGTO&>(f);
-		const CGTO& gg = static_cast<const CGTO&>(g);
-		gto_one_elec_generic(
-			ff.ls(), ff.weights(), ff.widths(), ff.center(),
-			gg.ls(), gg.weights(), gg.widths(), gg.center(),
-			S, T);
-	}
-};
-//! Structure for function pairs using specialized template code to compute integrals
-template <int lx1, int ly1, int lz1, int lx2, int ly2, int lz2>
-struct SpecializedCGTOPair
-{
-	//! Compute the overlap between contracted Gaussians \a f and and \a g
-	static double overlap(const AbstractBF& f, const AbstractBF& g)
-	{
-		const CGTO& ff = static_cast<const CGTO&>(f);
-		const CGTO& gg = static_cast<const CGTO&>(g);
-		return gto_overlap_specialized<lx1, ly1, lz1, lx2, ly2, lz2>(
-			ff.weights(), ff.widths(), ff.center(),
-			gg.weights(), gg.widths(), gg.center());
-	}
-	//! Compute the kinetic energy between contracted Gaussians \a f and and \a g
-	static double kineticEnergy(const AbstractBF& f, const AbstractBF& g)
-	{
-		const CGTO& ff = static_cast<const CGTO&>(f);
-		const CGTO& gg = static_cast<const CGTO&>(g);
-		return gto_kinetic_specialized<lx1, ly1, lz1, lx2, ly2, lz2>(
-			ff.weights(), ff.widths(), ff.center(),
-			gg.weights(), gg.widths(), gg.center());
-	}
-	//! Compute the kinetic energy between contracted Gaussians \a f and and \a g
-	static void oneElectron(const AbstractBF& f, const AbstractBF& g,
-		double *S, double *T)
-	{
-		const CGTO& ff = static_cast<const CGTO&>(f);
-		const CGTO& gg = static_cast<const CGTO&>(g);
-		gto_one_elec_specialized<lx1, ly1, lz1, lx2, ly2, lz2>(
-			ff.weights(), ff.widths(), ff.center(),
-			gg.weights(), gg.widths(), gg.center(),
-			S, T);
-	}
-};
 
 /*!
  * \brief Set pair functions
@@ -96,65 +28,48 @@ struct PairFunctionAdder
 		Dispatcher& dispatcher = Dispatcher::singleton();
 		size_t id1 = dispatcher.classID< CGTOSpec<lx1, ly1, lz1> >();
 		size_t id2 = dispatcher.classID< CGTOSpec<lx2, ly2, lz2> >();
-		dispatcher.setOverlapFunction(id1, id2,
-			GenericCGTOPair::overlap);
-		dispatcher.setKineticFunction(id1, id2,
-			GenericCGTOPair::kineticEnergy);
-		dispatcher.setOneElecFunction(id1, id2,
-			GenericCGTOPair::oneElectron);
+		dispatcher.setPairCreator(id1, id2, CGTOPair::create);
 	}
 };
-//! Specialization for integrals between s functions
+//! Specialization for pairs of two s-type functions
 template <>
 struct PairFunctionAdder<0, 0, 0, 0, 0, 0, 0>
 {
-	//! Add functions operating on a pair of s-shell basis functions to the dispatcher
+	//! Add functions operating on a pair of basis functions to the dispatcher
 	static void add()
 	{
 		Dispatcher& dispatcher = Dispatcher::singleton();
 		size_t id = dispatcher.classID< CGTOSpec<0, 0, 0> >();
-		dispatcher.setOverlapFunction(id, id,
-			SpecializedCGTOPair<0, 0, 0, 0, 0, 0>::overlap);
-		dispatcher.setKineticFunction(id, id,
-			SpecializedCGTOPair<0, 0, 0, 0, 0, 0>::kineticEnergy);
-		dispatcher.setOneElecFunction(id, id,
-			SpecializedCGTOPair<0, 0, 0, 0, 0, 0>::oneElectron);
+		dispatcher.setPairCreator(id, id,
+			CGTOSpecPair<0, 0, 0, 0, 0, 0>::create);
 	}
 };
-//! Specialization for integrals between s and p functions
+//! Specialization for (s,p) and (p,s) pairs
 template <int lx1, int ly1, int lz1, int lx2, int ly2, int lz2>
 struct PairFunctionAdder<lx1, ly1, lz1, lx2, ly2, lz2, 1>
 {
-	//! Add functions operating on a pair of s, p basis functions to the dispatcher
+	//! Add functions operating on a pair of basis functions to the dispatcher
 	static void add()
 	{
 		Dispatcher& dispatcher = Dispatcher::singleton();
 		size_t id1 = dispatcher.classID< CGTOSpec<lx1, ly1, lz1> >();
 		size_t id2 = dispatcher.classID< CGTOSpec<lx2, ly2, lz2> >();
-		dispatcher.setOverlapFunction(id1, id2,
-			SpecializedCGTOPair<lx1, ly1, lz1, lx2, ly2, lz2>::overlap);
-		dispatcher.setKineticFunction(id1, id2,
-			SpecializedCGTOPair<lx1, ly1, lz1, lx2, ly2, lz2>::kineticEnergy);
-		dispatcher.setOneElecFunction(id1, id2,
-			SpecializedCGTOPair<lx1, ly1, lz1, lx2, ly2, lz2>::oneElectron);
+		dispatcher.setPairCreator(id1, id2,
+			CGTOSpecPair<lx1, ly1, lz1, lx2, ly2, lz2>::create);
 	}
 };
-//! Specialization for integrals between s,d and p,p functions
+//! Specialization for (s,d), (p,p) and (d,s) pairs
 template <int lx1, int ly1, int lz1, int lx2, int ly2, int lz2>
 struct PairFunctionAdder<lx1, ly1, lz1, lx2, ly2, lz2, 2>
 {
-	//! Add functions operating on a pair of s, d or p, p basis functions to the dispatcher
+	//! Add functions operating on a pair of basis functions to the dispatcher
 	static void add()
 	{
 		Dispatcher& dispatcher = Dispatcher::singleton();
 		size_t id1 = dispatcher.classID< CGTOSpec<lx1, ly1, lz1> >();
 		size_t id2 = dispatcher.classID< CGTOSpec<lx2, ly2, lz2> >();
-		dispatcher.setOverlapFunction(id1, id2,
-			SpecializedCGTOPair<lx1, ly1, lz1, lx2, ly2, lz2>::overlap);
-		dispatcher.setKineticFunction(id1, id2,
-			GenericCGTOPair::kineticEnergy);
-		dispatcher.setOneElecFunction(id1, id2,
-			GenericCGTOPair::oneElectron);
+		dispatcher.setPairCreator(id1, id2,
+			CGTOSpecPair<lx1, ly1, lz1, lx2, ly2, lz2>::create);
 	}
 };
 

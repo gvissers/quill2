@@ -8,6 +8,7 @@
 #include "CGTO.hh"
 #include "Basis.hh"
 #include "Dispatcher.hh"
+#include "gaussint/boys.hh"
 
 int main()
 {

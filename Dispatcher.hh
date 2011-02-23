@@ -11,8 +11,9 @@
 #include <Singleton.hh>
 #include "support.hh"
 
-// Forward declaration
+// Forward declarations
 class AbstractBF;
+class AbstractBFPair;
 
 /*!
  * \brief Class for dispatching integral calculations
@@ -27,18 +28,10 @@ class AbstractBF;
 class Dispatcher: public Li::Singleton<Dispatcher, true>
 {
 	public:
-		//! Local typedef for an overlap function
-		typedef double (*OverlapFunctionPtr)(const AbstractBF&, const AbstractBF&);
-		//! Local typedef for a lookup table of overlap functions
-		typedef std::tr1::unordered_map<std::pair<size_t, size_t>, OverlapFunctionPtr> OverlapMap;
-		//! Local typedef for a kinetic energy function
-		typedef double (*KineticFunctionPtr)(const AbstractBF&, const AbstractBF&);
-		//! Local typedef for a lookup table of kinetic energy functions
-		typedef std::tr1::unordered_map<std::pair<size_t, size_t>, KineticFunctionPtr> KineticMap;
-		//! Local typedef for a one-electron function
-		typedef void (*OneElecFunctionPtr)(const AbstractBF&, const AbstractBF&, double *S, double *T);
-		//! Local typedef for a lookup table of one-electron functions
-		typedef std::tr1::unordered_map<std::pair<size_t, size_t>, OneElecFunctionPtr> OneElecMap;
+		//! Local typedef for a pair creation function
+		typedef AbstractBFPair* (*PairCreatorPtr)(const AbstractBF& f, const AbstractBF& g);
+		//! Local typedef for a lookup table of pair creation functions
+		typedef std::tr1::unordered_map<std::pair<size_t, size_t>, PairCreatorPtr> PairMap;
 
 		//! Constructor
 		Dispatcher();
@@ -54,71 +47,33 @@ class Dispatcher: public Li::Singleton<Dispatcher, true>
 		size_t classID() const { return _hasher(typeid(T).name()); }
 
 		/*!
-		 * \brief Compute the overlap between two basis functions
+		 * \brief Create a pair of basis functions
 		 *
-		 * Compute the overlap between basis functions \a f and \a g,
-		 * by finding the overlap function to use, and calling that.
-		 * \param f The first basis function
-		 * \param g The second basis function
-		 * \return The overlap between \a f and \a g
+		 * Create the basis function pair from functions \a f and \a g,
+		 * by looking up the types of \a f and \a g in the lookup
+		 * table, and calling the apprpriate constructor function.
+		 * \param f The first function in the pair
+		 * \param g The second function in the pair
+		 * \return Pointer to the basis function pair (f,g)
 		 */
-		double overlap(const AbstractBF& f, const AbstractBF& g) const;
-		/*!
-		 * \brief Compute a kinetic energy matrix element
-		 *
-		 * Compute the kinetic energy integral between basis functions
-		 * \a f and \a g, by finding the function to use, and calling
-		 * that.
-		 * \param f The first basis function
-		 * \param g The second basis function
-		 * \return The kinetic energy matrix element between \a f
-		 *    and \a g
-		 */
-		double kineticEnergy(const AbstractBF& f, const AbstractBF& g) const;
-		/*!
-		 * \brief Compute one electron integrals
-		 *
-		 * Compute the overlap and kinetic energy integrals between
-		 * basis functions \a f and \a g, by finding the function to
-		 * use, and calling that.
-		 * \param f The first basis function
-		 * \param g The second basis function
-		 * \param S Place to store the overlap
-		 * \param T Place to store the kinetic energy
-		 */
-		void oneElectron(const AbstractBF& f, const AbstractBF& g,
-			double *S, double *T) const;
+		AbstractBFPair* pair(const AbstractBF& f, const AbstractBF& g) const;
 
 		//! Return the number of type pairs in this dispatcher
-		int nrPairs() { return _S_funs.size(); }
+		int nrPairs() { return _pair_funs.size(); }
 
 	private:
 		//! Hash function object for creating class IDs
 		std::tr1::hash<std::string> _hasher;
-		//! The map of overlap calculation functions
-		OverlapMap _S_funs;
-		//! The map of kinetic energy calculation functions
-		KineticMap _T_funs;
-		//! The map of one-electron calculation functions
-		OneElecMap _one_elec_funs;
+		//! The map of pair creation functions
+		PairMap _pair_funs;
 
 		template <int lx1, int ly1, int lz1, int lx2, int ly2, int lz2, int lsum>
 		friend struct PairFunctionAdder;
 
-		//! Set the overlap function between orbitals with type ids \a id1 and \a id2 to \a fun
-		void setOverlapFunction(size_t id1, size_t id2, OverlapFunctionPtr fun)
+		//! Set the pair creation function for orbitals with type ids \a id1 and \a id2 to \a fun
+		void setPairCreator(size_t id1, size_t id2, PairCreatorPtr pc)
 		{
-			_S_funs.insert(std::make_pair(std::make_pair(id1, id2), fun));
-		}
-		//! Set the kinetic energy function between orbitals with type ids \a id1 and \a id2 to \a fun
-		void setKineticFunction(size_t id1, size_t id2, OverlapFunctionPtr fun)
-		{
-			_T_funs.insert(std::make_pair(std::make_pair(id1, id2), fun));
-		}
-		//! Set the one-electron function between orbitals with type ids \a id1 and \a id2 to \a fun
-		void setOneElecFunction(size_t id1, size_t id2, OneElecFunctionPtr fun)
-		{
-			_one_elec_funs.insert(std::make_pair(std::make_pair(id1, id2), fun));
+			_pair_funs.insert(std::make_pair(std::make_pair(id1, id2), pc));
 		}
 };
 

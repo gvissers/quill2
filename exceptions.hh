@@ -92,7 +92,7 @@ struct ShellTooHigh: public Li::Exception
  * \brief %Exception thrown when no convergence could be reached in an
  *    iterative calculation
  */
-struct NoConvergence: public Exception
+struct NoConvergence: public Li::Exception
 {
 	//! Constructor
 	NoConvergence(): Exception("Unable to reach convergence") {}
