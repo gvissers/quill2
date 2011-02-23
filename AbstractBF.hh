@@ -53,6 +53,29 @@ struct AbstractBF
  * \return The overlap between \a f and \a g
  */
 double overlap(const AbstractBF& f, const AbstractBF& g);
+/*!
+ * \brief The kinetic energy integral between basis functions
+ *
+ * Compute the kinetic energy matrix element over basis functions \a f and
+ * \a g. This looks up the function to use for the concrete types of \a f
+ * and \a g in the Dispatcher, and executes the function found.
+ * \param f The first basis function
+ * \param g The second basis function
+ * \return The kinetic energy integral between \a f and \a g
+ */
+double kineticEnergy(const AbstractBF& f, const AbstractBF& g);
+/*!
+ * \brief The one electron integrals between basis functions
+ *
+ * Compute the overlap and kinetic energy matrix elements over basis functions
+ * \a f and \a g. This looks up the function to use for the concrete types of
+ * \a f and \a g in the Dispatcher, and executes the function found.
+ * \param f The first basis function
+ * \param g The second basis function
+ * \param S Place to store the overlap between \a f and \a g
+ * \param T Place to store the kinetic energy integral between \a f and \a g
+ */
+void oneElectron(const AbstractBF& f, const AbstractBF& g, double *S, double *T);
 
 namespace {
 

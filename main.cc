@@ -36,7 +36,7 @@ int main()
 		os << basis << "\n";
 
 		std::cout << Dispatcher::singleton().nrPairs() << " bf pairs\n";
-		os << basis.overlap();
+		os << basis.overlap() << "\n\n" << basis.kineticEnergy() << "\n";
 /*
 		std::string mat = "C\n"
 			"H   1 1.089000\n"

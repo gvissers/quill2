@@ -13,7 +13,7 @@ std::ostream& Basis::print(std::ostream& os) const
 	return os;
 }
 
-const Eigen::MatrixXd& Basis::overlap() const
+void Basis::calcOverlap() const
 {
 	int n = size();
 	_overlap.resize(n, n);
@@ -26,5 +26,42 @@ const Eigen::MatrixXd& Basis::overlap() const
 		}
 		_overlap(i, i) = ::overlap(*_funs[i], *_funs[i]);
 	}
-	return _overlap;
+	_status.set(OVERLAP_CURRENT);
+}
+
+void Basis::calcKinetic() const
+{
+	int n = size();
+	_kinetic.resize(n, n);
+	for (int i = 0; i < n; i++)
+	{
+		for (int j = 0; j < i; j++)
+		{
+			_kinetic(i, j) = _kinetic(j, i)
+				= ::kineticEnergy(*_funs[i], *_funs[j]);
+		}
+		_kinetic(i, i) = ::kineticEnergy(*_funs[i], *_funs[i]);
+	}
+	_status.set(KINETIC_CURRENT);
+}
+
+void Basis::calcOneElectron() const
+{
+	int n = size();
+	_overlap.resize(n, n);
+	_kinetic.resize(n, n);
+	for (int i = 0; i < n; i++)
+	{
+		for (int j = 0; j < i; j++)
+		{
+			::oneElectron(*_funs[i], *_funs[j],
+				&_overlap(i,j), &_kinetic(i,j));
+			_overlap(j,i) = _overlap(i,j);
+			_kinetic(j,i) = _kinetic(i,j);
+		}
+		::oneElectron(*_funs[i], *_funs[i],
+			&_overlap(i,i), &_kinetic(i,i));
+	}
+	_status.set(OVERLAP_CURRENT);
+	_status.set(KINETIC_CURRENT);
 }

@@ -29,8 +29,16 @@ class Dispatcher: public Li::Singleton<Dispatcher, true>
 	public:
 		//! Local typedef for an overlap function
 		typedef double (*OverlapFunctionPtr)(const AbstractBF&, const AbstractBF&);
-		//! Local typedef for a lokkup table of overlap functions
+		//! Local typedef for a lookup table of overlap functions
 		typedef std::tr1::unordered_map<std::pair<size_t, size_t>, OverlapFunctionPtr> OverlapMap;
+		//! Local typedef for a kinetic energy function
+		typedef double (*KineticFunctionPtr)(const AbstractBF&, const AbstractBF&);
+		//! Local typedef for a lookup table of kinetic energy functions
+		typedef std::tr1::unordered_map<std::pair<size_t, size_t>, KineticFunctionPtr> KineticMap;
+		//! Local typedef for a one-electron function
+		typedef void (*OneElecFunctionPtr)(const AbstractBF&, const AbstractBF&, double *S, double *T);
+		//! Local typedef for a lookup table of one-electron functions
+		typedef std::tr1::unordered_map<std::pair<size_t, size_t>, OneElecFunctionPtr> OneElecMap;
 
 		//! Constructor
 		Dispatcher();
@@ -55,6 +63,31 @@ class Dispatcher: public Li::Singleton<Dispatcher, true>
 		 * \return The overlap between \a f and \a g
 		 */
 		double overlap(const AbstractBF& f, const AbstractBF& g) const;
+		/*!
+		 * \brief Compute a kinetic energy matrix element
+		 *
+		 * Compute the kinetic energy integral between basis functions
+		 * \a f and \a g, by finding the function to use, and calling
+		 * that.
+		 * \param f The first basis function
+		 * \param g The second basis function
+		 * \return The kinetic energy matrix element between \a f
+		 *    and \a g
+		 */
+		double kineticEnergy(const AbstractBF& f, const AbstractBF& g) const;
+		/*!
+		 * \brief Compute one electron integrals
+		 *
+		 * Compute the overlap and kinetic energy integrals between
+		 * basis functions \a f and \a g, by finding the function to
+		 * use, and calling that.
+		 * \param f The first basis function
+		 * \param g The second basis function
+		 * \param S Place to store the overlap
+		 * \param T Place to store the kinetic energy
+		 */
+		void oneElectron(const AbstractBF& f, const AbstractBF& g,
+			double *S, double *T) const;
 
 		//! Return the number of type pairs in this dispatcher
 		int nrPairs() { return _S_funs.size(); }
@@ -64,6 +97,10 @@ class Dispatcher: public Li::Singleton<Dispatcher, true>
 		std::tr1::hash<std::string> _hasher;
 		//! The map of overlap calculation functions
 		OverlapMap _S_funs;
+		//! The map of kinetic energy calculation functions
+		KineticMap _T_funs;
+		//! The map of one-electron calculation functions
+		OneElecMap _one_elec_funs;
 
 		template <int lx1, int ly1, int lz1, int lx2, int ly2, int lz2, int lsum>
 		friend struct PairFunctionAdder;
@@ -72,6 +109,16 @@ class Dispatcher: public Li::Singleton<Dispatcher, true>
 		void setOverlapFunction(size_t id1, size_t id2, OverlapFunctionPtr fun)
 		{
 			_S_funs.insert(std::make_pair(std::make_pair(id1, id2), fun));
+		}
+		//! Set the kinetic energy function between orbitals with type ids \a id1 and \a id2 to \a fun
+		void setKineticFunction(size_t id1, size_t id2, OverlapFunctionPtr fun)
+		{
+			_T_funs.insert(std::make_pair(std::make_pair(id1, id2), fun));
+		}
+		//! Set the one-electron function between orbitals with type ids \a id1 and \a id2 to \a fun
+		void setOneElecFunction(size_t id1, size_t id2, OneElecFunctionPtr fun)
+		{
+			_one_elec_funs.insert(std::make_pair(std::make_pair(id1, id2), fun));
 		}
 };
 

@@ -35,11 +35,21 @@ class Geometry
 			checkIndex(idx);
 			return _symbols[idx];
 		}
+		//! Return the nuclear charges of the atoms
+		const Eigen::VectorXi& charges() const
+		{
+			return _charges;
+		}
 		//! Return the position of atom \a idx
 		Eigen::Vector3d position(int idx) const
 		{
 			checkIndex(idx);
 			return _positions.col(idx);
+		}
+		//! Return tthe positions of the atoms
+		const Eigen::MatrixXd& positions() const
+		{
+			return _positions;
 		}
 
 		/*!

@@ -6,10 +6,11 @@
  * \brief Functions used to initialize the Dispatcher
  */
 
-//#include <tr1/functional>
 #include "Dispatcher.hh"
 #include "CGTOSpec.hh"
 #include "gaussint/gto_overlap.hh"
+#include "gaussint/gto_kinetic.hh"
+#include "gaussint/gto_one_elec.hh"
 
 //! Structure for function pairs using generic code to compute integrals
 struct GenericCGTOPair
@@ -22,6 +23,25 @@ struct GenericCGTOPair
 		return gto_overlap_generic(
 			ff.ls(), ff.weights(), ff.widths(), ff.center(),
 			gg.ls(), gg.weights(), gg.widths(), gg.center());
+	}
+	//! Compute the kinetic energy between contracted Gaussians \a f and and \a g
+	static double kineticEnergy(const AbstractBF& f, const AbstractBF& g)
+	{
+		const CGTO& ff = static_cast<const CGTO&>(f);
+		const CGTO& gg = static_cast<const CGTO&>(g);
+		return gto_kinetic_generic(
+			ff.ls(), ff.weights(), ff.widths(), ff.center(),
+			gg.ls(), gg.weights(), gg.widths(), gg.center());
+	}
+	//! Compute the one-electron integrals between contracted Gaussians \a f and and \a g
+	static void oneElectron(const AbstractBF& f, const AbstractBF& g, double *S, double *T)
+	{
+		const CGTO& ff = static_cast<const CGTO&>(f);
+		const CGTO& gg = static_cast<const CGTO&>(g);
+		gto_one_elec_generic(
+			ff.ls(), ff.weights(), ff.widths(), ff.center(),
+			gg.ls(), gg.weights(), gg.widths(), gg.center(),
+			S, T);
 	}
 };
 //! Structure for function pairs using specialized template code to compute integrals
@@ -36,6 +56,26 @@ struct SpecializedCGTOPair
 		return gto_overlap_specialized<lx1, ly1, lz1, lx2, ly2, lz2>(
 			ff.weights(), ff.widths(), ff.center(),
 			gg.weights(), gg.widths(), gg.center());
+	}
+	//! Compute the kinetic energy between contracted Gaussians \a f and and \a g
+	static double kineticEnergy(const AbstractBF& f, const AbstractBF& g)
+	{
+		const CGTO& ff = static_cast<const CGTO&>(f);
+		const CGTO& gg = static_cast<const CGTO&>(g);
+		return gto_kinetic_specialized<lx1, ly1, lz1, lx2, ly2, lz2>(
+			ff.weights(), ff.widths(), ff.center(),
+			gg.weights(), gg.widths(), gg.center());
+	}
+	//! Compute the kinetic energy between contracted Gaussians \a f and and \a g
+	static void oneElectron(const AbstractBF& f, const AbstractBF& g,
+		double *S, double *T)
+	{
+		const CGTO& ff = static_cast<const CGTO&>(f);
+		const CGTO& gg = static_cast<const CGTO&>(g);
+		gto_one_elec_specialized<lx1, ly1, lz1, lx2, ly2, lz2>(
+			ff.weights(), ff.widths(), ff.center(),
+			gg.weights(), gg.widths(), gg.center(),
+			S, T);
 	}
 };
 
@@ -58,6 +98,10 @@ struct PairFunctionAdder
 		size_t id2 = dispatcher.classID< CGTOSpec<lx2, ly2, lz2> >();
 		dispatcher.setOverlapFunction(id1, id2,
 			GenericCGTOPair::overlap);
+		dispatcher.setKineticFunction(id1, id2,
+			GenericCGTOPair::kineticEnergy);
+		dispatcher.setOneElecFunction(id1, id2,
+			GenericCGTOPair::oneElectron);
 	}
 };
 //! Specialization for integrals between s functions
@@ -71,6 +115,10 @@ struct PairFunctionAdder<0, 0, 0, 0, 0, 0, 0>
 		size_t id = dispatcher.classID< CGTOSpec<0, 0, 0> >();
 		dispatcher.setOverlapFunction(id, id,
 			SpecializedCGTOPair<0, 0, 0, 0, 0, 0>::overlap);
+		dispatcher.setKineticFunction(id, id,
+			SpecializedCGTOPair<0, 0, 0, 0, 0, 0>::kineticEnergy);
+		dispatcher.setOneElecFunction(id, id,
+			SpecializedCGTOPair<0, 0, 0, 0, 0, 0>::oneElectron);
 	}
 };
 //! Specialization for integrals between s and p functions
@@ -85,6 +133,10 @@ struct PairFunctionAdder<lx1, ly1, lz1, lx2, ly2, lz2, 1>
 		size_t id2 = dispatcher.classID< CGTOSpec<lx2, ly2, lz2> >();
 		dispatcher.setOverlapFunction(id1, id2,
 			SpecializedCGTOPair<lx1, ly1, lz1, lx2, ly2, lz2>::overlap);
+		dispatcher.setKineticFunction(id1, id2,
+			SpecializedCGTOPair<lx1, ly1, lz1, lx2, ly2, lz2>::kineticEnergy);
+		dispatcher.setOneElecFunction(id1, id2,
+			SpecializedCGTOPair<lx1, ly1, lz1, lx2, ly2, lz2>::oneElectron);
 	}
 };
 //! Specialization for integrals between s,d and p,p functions
@@ -99,6 +151,10 @@ struct PairFunctionAdder<lx1, ly1, lz1, lx2, ly2, lz2, 2>
 		size_t id2 = dispatcher.classID< CGTOSpec<lx2, ly2, lz2> >();
 		dispatcher.setOverlapFunction(id1, id2,
 			SpecializedCGTOPair<lx1, ly1, lz1, lx2, ly2, lz2>::overlap);
+		dispatcher.setKineticFunction(id1, id2,
+			GenericCGTOPair::kineticEnergy);
+		dispatcher.setOneElecFunction(id1, id2,
+			GenericCGTOPair::oneElectron);
 	}
 };
 

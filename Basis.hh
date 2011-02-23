@@ -7,6 +7,7 @@
  */
 
 #include <vector>
+#include <bitset>
 #include <tr1/memory>
 #include "AbstractBF.hh"
 
@@ -25,12 +26,21 @@ class Basis
 		//! Local typedef for a list of basis functions
 		typedef std::vector<BasisFunPtr> BasisFunList;
 
+		//! Enumeration for the different status flags
+		enum StatusFlag
+		{
+			//! Set when the overlap matrix is computed and up to date
+			OVERLAP_CURRENT,
+			//! Set when the kinetic energy matrix is computed and up to date
+			KINETIC_CURRENT
+		};
+
 		/*!
 		 * \brief Constructor
 		 *
 		 * Create a new and empty basis
 		 */
-		Basis(): _funs(), _overlap() {}
+		Basis(): _funs(), _status(), _overlap(), _kinetic() {}
 
 		//! Return the number of functions in this basis
 		int size() const { return _funs.size(); }
@@ -40,7 +50,11 @@ class Basis
 		 *
 		 * Add basis function \a bf to this basis.
 		 */
-		void add(const BasisFunPtr& ptr) { _funs.push_back(ptr); }
+		void add(const BasisFunPtr& ptr)
+		{
+			_funs.push_back(ptr);
+			_status.reset();
+		}
 
 		/*!
 		 * \brief Return the overlap matrix
@@ -48,7 +62,25 @@ class Basis
 		 * Return the matrix with the overlaps between the fucntions
 		 * in this basis, computing it first if necessary.
 		 */
-		const Eigen::MatrixXd& overlap() const;
+		const Eigen::MatrixXd& overlap() const
+		{
+			if (!_status.test(OVERLAP_CURRENT))
+				calcOneElectron();
+			return _overlap;
+		}
+		/*!
+		 * \brief Return the kinetic energy matrix
+		 *
+		 * Return the matrix with the kinetic energy integrals
+		 * for the electrons in this basis, computing it first if
+		 * necessary.
+		 */
+		const Eigen::MatrixXd& kineticEnergy() const
+		{
+			if (!_status.test(OVERLAP_CURRENT))
+				calcOneElectron();
+			return _kinetic;
+		}
 
 		/*!
 		 * \brief Print this basis
@@ -63,8 +95,19 @@ class Basis
 	private:
 		//! The list of basis functions
 		BasisFunList _funs;
+		//! Status flags for the basis
+		mutable std::bitset<2> _status;
 		//! The overlap matrix for this basis
 		mutable Eigen::MatrixXd _overlap;
+		//! The kinetic energy matrix for this basis
+		mutable Eigen::MatrixXd _kinetic;
+
+		//! Compute the overlap matrix in this basis
+		void calcOverlap() const;
+		//! Compute the kinetic energy matrix in this basis
+		void calcKinetic() const;
+		//! Compute the one-electron matrices in this basis
+		void calcOneElectron() const;
 };
 
 namespace {
