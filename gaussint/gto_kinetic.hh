@@ -30,43 +30,43 @@
  * \param r        Vector from first to second orbital center
  */
 template <int lx1, int ly1, int lz1, int lx2, int ly2, int lz2>
-Eigen::ArrayXXd specialized_primitive_kinetic(
+Eigen::ArrayXXd gto_kinetic_primitive_specialized(
 	const Eigen::ArrayXXd& alpha, const Eigen::ArrayXXd& beta,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& ared,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r);
 
 template <>
-Eigen::ArrayXXd specialized_primitive_kinetic<0, 0, 0, 0, 0, 0>(
+Eigen::ArrayXXd gto_kinetic_primitive_specialized<0, 0, 0, 0, 0, 0>(
 	const Eigen::ArrayXXd&, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& ared,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r);
 template <>
-Eigen::ArrayXXd specialized_primitive_kinetic<1, 0, 0, 0, 0, 0>(
+Eigen::ArrayXXd gto_kinetic_primitive_specialized<1, 0, 0, 0, 0, 0>(
 	const Eigen::ArrayXXd&, const Eigen::ArrayXXd& beta,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& ared,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r);
 template <>
-Eigen::ArrayXXd specialized_primitive_kinetic<0, 1, 0, 0, 0, 0>(
+Eigen::ArrayXXd gto_kinetic_primitive_specialized<0, 1, 0, 0, 0, 0>(
 	const Eigen::ArrayXXd&, const Eigen::ArrayXXd& beta,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& ared,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r);
 template <>
-Eigen::ArrayXXd specialized_primitive_kinetic<0, 0, 1, 0, 0, 0>(
+Eigen::ArrayXXd gto_kinetic_primitive_specialized<0, 0, 1, 0, 0, 0>(
 	const Eigen::ArrayXXd&, const Eigen::ArrayXXd& beta,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& ared,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r);
 template <>
-Eigen::ArrayXXd specialized_primitive_kinetic<0, 0, 0, 1, 0, 0>(
+Eigen::ArrayXXd gto_kinetic_primitive_specialized<0, 0, 0, 1, 0, 0>(
 	const Eigen::ArrayXXd& alpha, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& ared,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r);
 template <>
-Eigen::ArrayXXd specialized_primitive_kinetic<0, 0, 0, 0, 1, 0>(
+Eigen::ArrayXXd gto_kinetic_primitive_specialized<0, 0, 0, 0, 1, 0>(
 	const Eigen::ArrayXXd& alpha, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& ared,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r);
 template <>
-Eigen::ArrayXXd specialized_primitive_kinetic<0, 0, 0, 0, 0, 1>(
+Eigen::ArrayXXd gto_kinetic_primitive_specialized<0, 0, 0, 0, 0, 1>(
 	const Eigen::ArrayXXd& alpha, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& ared,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r);
@@ -107,12 +107,26 @@ double gto_kinetic_specialized(const Eigen::VectorXd& weights1,
 	Eigen::ArrayXXd exp_ared = (-r.squaredNorm()*ared).exp();
 
 	return Constants::pi_sqrt_pi * weights1.transpose()
-		* specialized_primitive_kinetic<lx1, ly1, lz1, lx2, ly2, lz2>(
+		* gto_kinetic_primitive_specialized<lx1, ly1, lz1, lx2, ly2, lz2>(
 			alpha, beta, asum, ared, exp_ared, r).matrix()
 		* weights2;
 }
 
-Eigen::ArrayXXd generic_primitive_kinetic(
+/*!
+ * \brief Compute the kinetic energy between primitives
+ *
+ * Compute the kinetic energy integrals between the primitive Gaussians in a
+ * contracted GTO, without the normalization factor.
+ * \param ls1      Angular momentum quantum numbers of the first orbital
+ * \param ls2      Angular momentum quantum numbers of the second orbital
+ * \param alpha    Primitive widths in the first orbital, for all second primitives
+ * \param beta     Primitive widths in the second orbital, for all first primitives
+ * \param asum     Sum of \a alpha and \a beta
+ * \param ared     "Reduced" widths \f$\xi = \alpha\beta / (\alpha+\beta)\f$
+ * \param exp_ared \f$\exp(-\xi r^2) with \f$r\$ the distance between the orbital centers
+ * \param r        Vector from first to second orbital center
+ */
+Eigen::ArrayXXd gto_kinetic_primitive_generic(
 	const Eigen::Vector3i& ls1, const Eigen::Vector3i& ls2,
 	const Eigen::ArrayXXd& alpha, const Eigen::ArrayXXd& beta,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& ared,

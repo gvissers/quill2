@@ -34,7 +34,7 @@
 // T_la+1,lb = [x beta T_la,lb + la/2 T_la-1,lb + lb/2 T_la,lb-1] / asum
 //   + 2 ared S_la+1,lb - la beta/asum S_la-1,lb
 
-void generic_primitive_one_elec_1d(int l1, int l2,
+void gto_one_elec_primitive_generic_1d(int l1, int l2,
 	const Eigen::ArrayXXd& alpha, const Eigen::ArrayXXd& beta,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& ared,
 	double x, Eigen::ArrayXXd& Sp, Eigen::ArrayXXd& Tp)
@@ -108,7 +108,7 @@ void generic_primitive_one_elec_1d(int l1, int l2,
 	Tp = cT.back();
 }
 
-void generic_primitive_one_elec(
+void gto_one_elec_primitive_generic(
 	const Eigen::Vector3i& ls1, const Eigen::Vector3i& ls2,
 	const Eigen::ArrayXXd& alpha, const Eigen::ArrayXXd& beta,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& ared,
@@ -125,12 +125,12 @@ void generic_primitive_one_elec(
 
 		if (ls1[i] < ls2[i])
 		{
-			generic_primitive_one_elec_1d(ls2[i], ls1[i],
+			gto_one_elec_primitive_generic_1d(ls2[i], ls1[i],
 				beta, alpha, asum, ared, -r[i], Sp, Tp);
 		}
 		else
 		{
-			generic_primitive_one_elec_1d(ls1[i], ls2[i],
+			gto_one_elec_primitive_generic_1d(ls1[i], ls2[i],
 				alpha, beta, asum, ared, r[i], Sp, Tp);
 		}
 	}
@@ -153,7 +153,7 @@ void gto_one_elec_generic(const Eigen::Vector3i& ls1,
 	Eigen::ArrayXXd exp_ared = (-r.squaredNorm() * ared).exp();
 	Eigen::ArrayXXd Sp, Tp;
 
-	generic_primitive_one_elec(ls1, ls2, alpha, beta, asum, ared,
+	gto_one_elec_primitive_generic(ls1, ls2, alpha, beta, asum, ared,
 		exp_ared, r, Sp, Tp);
 
 	*S = Constants::pi_sqrt_pi

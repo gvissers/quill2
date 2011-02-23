@@ -44,16 +44,30 @@ void gto_one_elec_specialized(const Eigen::VectorXd& weights1,
         Eigen::ArrayXXd exp_ared = (-r.squaredNorm()*ared).exp();
 
 	*S = Constants::pi_sqrt_pi * weights1.transpose()
-                * specialized_primitive_overlap<lx1, ly1, lz1, lx2, ly2, lz2>(
+                * gto_overlap_primitive_specialized<lx1, ly1, lz1, lx2, ly2, lz2>(
                         alpha, beta, asum, ared, exp_ared, r).matrix()
                 * weights2;
 	*T = Constants::pi_sqrt_pi * weights1.transpose()
-                * specialized_primitive_kinetic<lx1, ly1, lz1, lx2, ly2, lz2>(
+                * gto_kinetic_primitive_specialized<lx1, ly1, lz1, lx2, ly2, lz2>(
                         alpha, beta, asum, ared, exp_ared, r).matrix()
                 * weights2;
 }
 
-void generic_primitive_one_elec(
+/*!
+ * \brief Compute one-electron integrals between primtive GTOs
+ *
+ * Compute the overlap and kinetic energy integrals between two sets of
+ * primitive Gaussians in a contracted GTO, without normalization.
+ * \param ls1      Angular momentum quantum numbers of the first orbital
+ * \param ls2      Angular momentum quantum numbers of the second orbital
+ * \param alpha    Primitive widths in the first orbital, for all second primitives
+ * \param beta     Primitive widths in the second orbital, for all first primitives
+ * \param asum     Sum of \a alpha and \a beta
+ * \param ared     "Reduced" widths \f$\xi = \alpha\beta / (\alpha+\beta)\f$
+ * \param exp_ared \f$\exp(-\xi r^2) with \f$r\$ the distance between the orbital centers
+ * \param r        Vector from first to second orbital center
+ */
+void gto_one_elec_primitive_generic(
 	const Eigen::Vector3i& ls1, const Eigen::Vector3i& ls2,
 	const Eigen::ArrayXXd& alpha, const Eigen::ArrayXXd& beta,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& ared,

@@ -14,7 +14,7 @@
 //      = xi (3 - 2 xi r^2) S_00
 
 template <>
-Eigen::ArrayXXd specialized_primitive_kinetic<0, 0, 0, 0, 0, 0>(
+Eigen::ArrayXXd gto_kinetic_primitive_specialized<0, 0, 0, 0, 0, 0>(
 	const Eigen::ArrayXXd&, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& ared,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r)
@@ -32,7 +32,7 @@ Eigen::ArrayXXd specialized_primitive_kinetic<0, 0, 0, 0, 0, 0>(
 //      = x beta ared(5 - 2 r^2 ared) S_00 / asum 
 
 template <>
-Eigen::ArrayXXd specialized_primitive_kinetic<1, 0, 0, 0, 0, 0>(
+Eigen::ArrayXXd gto_kinetic_primitive_specialized<1, 0, 0, 0, 0, 0>(
 	const Eigen::ArrayXXd&, const Eigen::ArrayXXd& beta,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& ared,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r)
@@ -42,7 +42,7 @@ Eigen::ArrayXXd specialized_primitive_kinetic<1, 0, 0, 0, 0, 0>(
 }
 
 template <>
-Eigen::ArrayXXd specialized_primitive_kinetic<0, 1, 0, 0, 0, 0>(
+Eigen::ArrayXXd gto_kinetic_primitive_specialized<0, 1, 0, 0, 0, 0>(
 	const Eigen::ArrayXXd&, const Eigen::ArrayXXd& beta,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& ared,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r)
@@ -52,7 +52,7 @@ Eigen::ArrayXXd specialized_primitive_kinetic<0, 1, 0, 0, 0, 0>(
 }
 
 template <>
-Eigen::ArrayXXd specialized_primitive_kinetic<0, 0, 1, 0, 0, 0>(
+Eigen::ArrayXXd gto_kinetic_primitive_specialized<0, 0, 1, 0, 0, 0>(
 	const Eigen::ArrayXXd&, const Eigen::ArrayXXd& beta,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& ared,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r)
@@ -62,7 +62,7 @@ Eigen::ArrayXXd specialized_primitive_kinetic<0, 0, 1, 0, 0, 0>(
 }
 
 template <>
-Eigen::ArrayXXd specialized_primitive_kinetic<0, 0, 0, 1, 0, 0>(
+Eigen::ArrayXXd gto_kinetic_primitive_specialized<0, 0, 0, 1, 0, 0>(
 	const Eigen::ArrayXXd& alpha, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& ared,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r)
@@ -72,7 +72,7 @@ Eigen::ArrayXXd specialized_primitive_kinetic<0, 0, 0, 1, 0, 0>(
 }
 
 template <>
-Eigen::ArrayXXd specialized_primitive_kinetic<0, 0, 0, 0, 1, 0>(
+Eigen::ArrayXXd gto_kinetic_primitive_specialized<0, 0, 0, 0, 1, 0>(
 	const Eigen::ArrayXXd& alpha, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& ared,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r)
@@ -82,7 +82,7 @@ Eigen::ArrayXXd specialized_primitive_kinetic<0, 0, 0, 0, 1, 0>(
 }
 
 template <>
-Eigen::ArrayXXd specialized_primitive_kinetic<0, 0, 0, 0, 0, 1>(
+Eigen::ArrayXXd gto_kinetic_primitive_specialized<0, 0, 0, 0, 0, 1>(
 	const Eigen::ArrayXXd& alpha, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& ared,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r)
@@ -91,14 +91,16 @@ Eigen::ArrayXXd specialized_primitive_kinetic<0, 0, 0, 0, 0, 1>(
 		/ (asum.square() * asum.sqrt());
 }
 
-Eigen::ArrayXXd generic_primitive_kinetic(
+Eigen::ArrayXXd gto_kinetic_primitive_generic(
 	const Eigen::Vector3i& ls1, const Eigen::Vector3i& ls2,
 	const Eigen::ArrayXXd& alpha, const Eigen::ArrayXXd& beta,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& ared,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r)
 {
+	// We need to compute overlaps to do the recursion for the kinetic
+	// energy, so compute both and only return the kinetic energy.
 	Eigen::ArrayXXd Sp, Tp;
-	generic_primitive_one_elec(ls1, ls2, alpha, beta, asum, ared,
+	gto_one_elec_primitive_generic(ls1, ls2, alpha, beta, asum, ared,
 		exp_ared, r, Sp, Tp);
 	return Tp;
 }

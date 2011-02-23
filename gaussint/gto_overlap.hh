@@ -28,148 +28,147 @@
  * \param r        Vector from first to second orbital center
  */
 template <int lx1, int ly1, int lz1, int lx2, int ly2, int lz2>
-Eigen::ArrayXXd specialized_primitive_overlap(
+Eigen::ArrayXXd gto_overlap_primitive_specialized(
 	const Eigen::ArrayXXd& alpha, const Eigen::ArrayXXd& beta,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& ared,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r);
-
 template <>
-Eigen::ArrayXXd specialized_primitive_overlap<0, 0, 0, 0, 0, 0>(
+Eigen::ArrayXXd gto_overlap_primitive_specialized<0, 0, 0, 0, 0, 0>(
 	const Eigen::ArrayXXd&, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d&);
 template <>
-Eigen::ArrayXXd specialized_primitive_overlap<1, 0, 0, 0, 0, 0>(
+Eigen::ArrayXXd gto_overlap_primitive_specialized<1, 0, 0, 0, 0, 0>(
 	const Eigen::ArrayXXd&, const Eigen::ArrayXXd& beta,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r);
 template <>
-Eigen::ArrayXXd specialized_primitive_overlap<0, 1, 0, 0, 0, 0>(
+Eigen::ArrayXXd gto_overlap_primitive_specialized<0, 1, 0, 0, 0, 0>(
 	const Eigen::ArrayXXd&, const Eigen::ArrayXXd& beta,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r);
 template <>
-Eigen::ArrayXXd specialized_primitive_overlap<0, 0, 1, 0, 0, 0>(
+Eigen::ArrayXXd gto_overlap_primitive_specialized<0, 0, 1, 0, 0, 0>(
 	const Eigen::ArrayXXd&, const Eigen::ArrayXXd& beta,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r);
 template <>
-Eigen::ArrayXXd specialized_primitive_overlap<0, 0, 0, 1, 0, 0>(
+Eigen::ArrayXXd gto_overlap_primitive_specialized<0, 0, 0, 1, 0, 0>(
 	const Eigen::ArrayXXd& alpha, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r);
 template <>
-Eigen::ArrayXXd specialized_primitive_overlap<0, 0, 0, 0, 1, 0>(
+Eigen::ArrayXXd gto_overlap_primitive_specialized<0, 0, 0, 0, 1, 0>(
 	const Eigen::ArrayXXd& alpha, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r);
 template <>
-Eigen::ArrayXXd specialized_primitive_overlap<0, 0, 0, 0, 0, 1>(
+Eigen::ArrayXXd gto_overlap_primitive_specialized<0, 0, 0, 0, 0, 1>(
 	const Eigen::ArrayXXd& alpha, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r);
 template <>
-Eigen::ArrayXXd specialized_primitive_overlap<2, 0, 0, 0, 0, 0>(
+Eigen::ArrayXXd gto_overlap_primitive_specialized<2, 0, 0, 0, 0, 0>(
 	const Eigen::ArrayXXd&, const Eigen::ArrayXXd& beta,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r);
 template <>
-Eigen::ArrayXXd specialized_primitive_overlap<1, 1, 0, 0, 0, 0>(
+Eigen::ArrayXXd gto_overlap_primitive_specialized<1, 1, 0, 0, 0, 0>(
 	const Eigen::ArrayXXd&, const Eigen::ArrayXXd& beta,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r);
 template <>
-Eigen::ArrayXXd specialized_primitive_overlap<1, 0, 1, 0, 0, 0>(
+Eigen::ArrayXXd gto_overlap_primitive_specialized<1, 0, 1, 0, 0, 0>(
 	const Eigen::ArrayXXd&, const Eigen::ArrayXXd& beta,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r);
 template <>
-Eigen::ArrayXXd specialized_primitive_overlap<1, 0, 0, 1, 0, 0>(
+Eigen::ArrayXXd gto_overlap_primitive_specialized<1, 0, 0, 1, 0, 0>(
 	const Eigen::ArrayXXd&, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& ared,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r);
 template <>
-Eigen::ArrayXXd specialized_primitive_overlap<1, 0, 0, 0, 1, 0>(
+Eigen::ArrayXXd gto_overlap_primitive_specialized<1, 0, 0, 0, 1, 0>(
 	const Eigen::ArrayXXd&, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& ared,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r);
 template <>
-Eigen::ArrayXXd specialized_primitive_overlap<1, 0, 0, 0, 0, 1>(
+Eigen::ArrayXXd gto_overlap_primitive_specialized<1, 0, 0, 0, 0, 1>(
 	const Eigen::ArrayXXd&, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& ared,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r);
 template <>
-Eigen::ArrayXXd specialized_primitive_overlap<0, 2, 0, 0, 0, 0>(
+Eigen::ArrayXXd gto_overlap_primitive_specialized<0, 2, 0, 0, 0, 0>(
 	const Eigen::ArrayXXd&, const Eigen::ArrayXXd& beta,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r);
 template <>
-Eigen::ArrayXXd specialized_primitive_overlap<0, 1, 1, 0, 0, 0>(
+Eigen::ArrayXXd gto_overlap_primitive_specialized<0, 1, 1, 0, 0, 0>(
 	const Eigen::ArrayXXd&, const Eigen::ArrayXXd& beta,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r);
 template <>
-Eigen::ArrayXXd specialized_primitive_overlap<0, 1, 0, 1, 0, 0>(
+Eigen::ArrayXXd gto_overlap_primitive_specialized<0, 1, 0, 1, 0, 0>(
 	const Eigen::ArrayXXd&, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& ared,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r);
 template <>
-Eigen::ArrayXXd specialized_primitive_overlap<0, 1, 0, 0, 1, 0>(
+Eigen::ArrayXXd gto_overlap_primitive_specialized<0, 1, 0, 0, 1, 0>(
 	const Eigen::ArrayXXd&, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& ared,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r);
 template <>
-Eigen::ArrayXXd specialized_primitive_overlap<0, 1, 0, 0, 0, 1>(
+Eigen::ArrayXXd gto_overlap_primitive_specialized<0, 1, 0, 0, 0, 1>(
 	const Eigen::ArrayXXd&, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& ared,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r);
 template <>
-Eigen::ArrayXXd specialized_primitive_overlap<0, 0, 2, 0, 0, 0>(
+Eigen::ArrayXXd gto_overlap_primitive_specialized<0, 0, 2, 0, 0, 0>(
 	const Eigen::ArrayXXd&, const Eigen::ArrayXXd& beta,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r);
 template <>
-Eigen::ArrayXXd specialized_primitive_overlap<0, 0, 1, 1, 0, 0>(
+Eigen::ArrayXXd gto_overlap_primitive_specialized<0, 0, 1, 1, 0, 0>(
 	const Eigen::ArrayXXd&, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& ared,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r);
 template <>
-Eigen::ArrayXXd specialized_primitive_overlap<0, 0, 1, 0, 1, 0>(
+Eigen::ArrayXXd gto_overlap_primitive_specialized<0, 0, 1, 0, 1, 0>(
 	const Eigen::ArrayXXd&, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& ared,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r);
 template <>
-Eigen::ArrayXXd specialized_primitive_overlap<0, 0, 1, 0, 0, 1>(
+Eigen::ArrayXXd gto_overlap_primitive_specialized<0, 0, 1, 0, 0, 1>(
 	const Eigen::ArrayXXd&, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& ared,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r);
 template <>
-Eigen::ArrayXXd specialized_primitive_overlap<0, 0, 0, 2, 0, 0>(
+Eigen::ArrayXXd gto_overlap_primitive_specialized<0, 0, 0, 2, 0, 0>(
 	const Eigen::ArrayXXd& alpha, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r);
 template <>
-Eigen::ArrayXXd specialized_primitive_overlap<0, 0, 0, 1, 1, 0>(
+Eigen::ArrayXXd gto_overlap_primitive_specialized<0, 0, 0, 1, 1, 0>(
 	const Eigen::ArrayXXd& alpha, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r);
 template <>
-Eigen::ArrayXXd specialized_primitive_overlap<0, 0, 0, 1, 0, 1>(
+Eigen::ArrayXXd gto_overlap_primitive_specialized<0, 0, 0, 1, 0, 1>(
 	const Eigen::ArrayXXd& alpha, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r);
 template <>
-Eigen::ArrayXXd specialized_primitive_overlap<0, 0, 0, 0, 2, 0>(
+Eigen::ArrayXXd gto_overlap_primitive_specialized<0, 0, 0, 0, 2, 0>(
 	const Eigen::ArrayXXd& alpha, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r);
 template <>
-Eigen::ArrayXXd specialized_primitive_overlap<0, 0, 0, 0, 1, 1>(
+Eigen::ArrayXXd gto_overlap_primitive_specialized<0, 0, 0, 0, 1, 1>(
 	const Eigen::ArrayXXd& alpha, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r);
 template <>
-Eigen::ArrayXXd specialized_primitive_overlap<0, 0, 0, 0, 0, 2>(
+Eigen::ArrayXXd gto_overlap_primitive_specialized<0, 0, 0, 0, 0, 2>(
 	const Eigen::ArrayXXd& alpha, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r);
@@ -179,7 +178,7 @@ Eigen::ArrayXXd specialized_primitive_overlap<0, 0, 0, 0, 0, 2>(
  *
  * Compute the overlap between two contracted Gaussian type orbitals. This
  * template function only works for combinations of angular momentum
- * quantum number for which specialized_primitive_overlap() is implemented.
+ * quantum number for which gto_overlap_primitive_specialized() is implemented.
  * For a generic overlap function, see gto_overlap_generic().
  * \tparam lx1     Angular momentum in  the \f$x\f$ direction of the first function
  * \tparam ly1     Angular momentum in  the \f$y\f$ direction of the first function
@@ -210,7 +209,7 @@ double gto_overlap_specialized(const Eigen::VectorXd& weights1,
 	Eigen::ArrayXXd exp_ared = (-r.squaredNorm()*ared).exp();
 
 	return Constants::pi_sqrt_pi * weights1.transpose()
-		* specialized_primitive_overlap<lx1, ly1, lz1, lx2, ly2, lz2>(
+		* gto_overlap_primitive_specialized<lx1, ly1, lz1, lx2, ly2, lz2>(
 			alpha, beta, asum, ared, exp_ared, r).matrix()
 		* weights2;
 }
@@ -228,7 +227,7 @@ double gto_overlap_specialized(const Eigen::VectorXd& weights1,
  * \param exp_ared \f$\exp(-\xi r^2) with \f$r\$ the distance between the orbital centers
  * \param r        Vector from first to second orbital center
  */
-Eigen::ArrayXXd generic_primitive_overlap(
+Eigen::ArrayXXd gto_overlap_primitive_generic(
 	const Eigen::Vector3i& ls1, const Eigen::Vector3i& ls2,
 	const Eigen::ArrayXXd& alpha, const Eigen::ArrayXXd& beta,
 	const Eigen::ArrayXXd& asum,
