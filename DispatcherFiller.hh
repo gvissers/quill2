@@ -12,17 +12,18 @@
 #include "gaussint/gto_one_elec.hh"
 
 /*!
- * \brief Set pair functions
+ * \brief Set pair creation function
  *
- * Add integral calculations functions for pairs of contracted Gaussians
- * to the dispatcher. This template inserts the generic integral functions,
- * specializations of this template may insert specialized templates for
- * specific combinations of angular momentum quantum numbers.
+ * Add the pair creation function for pairs of contracted Gaussians
+ * to the dispatcher. This template inserts a pseudo-constructor for
+ * a pair of generic CGTOs, specializations of this template may insert
+ * pair creators for specialized templates for specific combinations of
+ * angular momentum quantum numbers.
  */
 template <int lx1, int ly1, int lz1, int lx2, int ly2, int lz2, int lsum>
 struct PairFunctionAdder
 {
-	//! Add functions operating on a pair of basis functions to the dispatcher
+	//! Add pair creation function to the dispatcher
 	static void add()
 	{
 		Dispatcher& dispatcher = Dispatcher::singleton();
@@ -35,7 +36,7 @@ struct PairFunctionAdder
 template <>
 struct PairFunctionAdder<0, 0, 0, 0, 0, 0, 0>
 {
-	//! Add functions operating on a pair of basis functions to the dispatcher
+	//! Add pair creation function to the dispatcher
 	static void add()
 	{
 		Dispatcher& dispatcher = Dispatcher::singleton();
@@ -48,7 +49,7 @@ struct PairFunctionAdder<0, 0, 0, 0, 0, 0, 0>
 template <int lx1, int ly1, int lz1, int lx2, int ly2, int lz2>
 struct PairFunctionAdder<lx1, ly1, lz1, lx2, ly2, lz2, 1>
 {
-	//! Add functions operating on a pair of basis functions to the dispatcher
+	//! Add pair creation function to the dispatcher
 	static void add()
 	{
 		Dispatcher& dispatcher = Dispatcher::singleton();
@@ -62,7 +63,7 @@ struct PairFunctionAdder<lx1, ly1, lz1, lx2, ly2, lz2, 1>
 template <int lx1, int ly1, int lz1, int lx2, int ly2, int lz2>
 struct PairFunctionAdder<lx1, ly1, lz1, lx2, ly2, lz2, 2>
 {
-	//! Add functions operating on a pair of basis functions to the dispatcher
+	//! Add pair creation function to the dispatcher
 	static void add()
 	{
 		Dispatcher& dispatcher = Dispatcher::singleton();
