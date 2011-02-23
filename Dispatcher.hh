@@ -16,14 +16,15 @@ class AbstractBF;
 class AbstractBFPair;
 
 /*!
- * \brief Class for dispatching integral calculations
+ * \brief Class for looking up basis function pairs
  *
- * Class Dispatcher is used to dispatch to dispatch calls to functions
- * taking multiple abstract basis functions as arguments (notably integral
- * calculations) to different functions for the underlying concrete basis
- * function. The type of the underlying basis functions is identified using
- * a unique class ID for each basis function class. These type IDs are used
- * as an index a lookup table to find the requested function.
+ * Class Dispatcher is used to store function to create pairs of basis
+ * functions, retaining the type information of the concrete functions in the
+ * pairs. The resulting pairs stored all derive from AbstractBFPair, which
+ * specifies the functionality common to all basis function pairs. The type
+ * of the underlying basis functions is identified using a unique class ID
+ * for each basis function class. These type IDs are used as an index a lookup
+ * table to find the requested pair creation function.
  */
 class Dispatcher: public Li::Singleton<Dispatcher, true>
 {
