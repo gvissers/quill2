@@ -7,6 +7,7 @@
  */
 
 #include <typeinfo>
+#include <tr1/memory>
 #include <tr1/unordered_map>
 #include <Singleton.hh>
 #include "support.hh"
@@ -57,7 +58,8 @@ class Dispatcher: public Li::Singleton<Dispatcher, true>
 		 * \param g The second function in the pair
 		 * \return Pointer to the basis function pair (f,g)
 		 */
-		AbstractBFPair* pair(const AbstractBF& f, const AbstractBF& g) const;
+		std::tr1::shared_ptr<AbstractBFPair> pair(const AbstractBF& f,
+			const AbstractBF& g) const;
 
 		//! Return the number of type pairs in this dispatcher
 		int nrPairs() { return _pair_funs.size(); }

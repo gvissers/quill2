@@ -1,5 +1,6 @@
 #include "CGTOPair.hh"
 #include "gaussint/gto_one_elec.hh"
+#include "gaussint/gto_nuc_attr.hh"
 
 double CGTOPair::overlap() const
 {
@@ -28,3 +29,12 @@ void CGTOPair::oneElectron(double &S, double &T) const
 		* Tp.matrix() * g().weights();
 }
 
+double CGTOPair::nuclearAttraction(const Eigen::MatrixXd& nuc_pos,
+	const Eigen::VectorXd& nuc_charge) const
+{
+	return Constants::pi_sqrt_pi * f().weights().transpose()
+		* gto_nuc_attr_primitive_generic(f().ls(), g().ls(),
+			alpha(), beta(), f().center(), g().center(),
+			asum(), exp_ared(), nuc_pos, nuc_charge).matrix()
+		* g().weights();
+}

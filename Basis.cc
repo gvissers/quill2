@@ -90,3 +90,24 @@ void Basis::calcOneElectron() const
 	_status.set(OVERLAP_CURRENT);
 	_status.set(KINETIC_CURRENT);
 }
+
+void Basis::calcNuclearAttraction(const Eigen::MatrixXd& nuc_pos,
+	const Eigen::VectorXd& nuc_charge) const
+{
+	if (!_status.test(PAIRS_CURRENT))
+		setPairs();
+
+	PairList::const_iterator pit = _pairs.begin();
+	int n = size();
+	_nuc_attr.resize(n, n);
+	for (int i = 0; i < n; ++i)
+	{
+		for (int j = 0; j < i; ++j, ++pit)
+			_nuc_attr(i, j) = _nuc_attr(j, i)
+				= (*pit)->nuclearAttraction(nuc_pos, nuc_charge); 
+		_nuc_attr(i, i) = (*pit)->nuclearAttraction(nuc_pos, nuc_charge);
+		++pit;
+	}
+
+	_status.set(NUC_ATTR_CURRENT);
+}

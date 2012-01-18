@@ -15,7 +15,7 @@ LDFLAGS = -L /home/ge/Programs/lithium/lib -lli_base \
 
 OBJS = main.o Basis.o BasisSet.o boys.o CGTO.o CGTOPair.o CommentFilter.o \
 	Dispatcher.o Element.o Geometry.o gto_kinetic.o gto_one_elec.o \
-	gto_overlap.o IndentFilter.o JobFilter.o LineIStream.o \
+	gto_nuc_attr.o gto_overlap.o IndentFilter.o JobFilter.o LineIStream.o \
 	manipulators.o PeriodicTable.o support.o XYZMatrix.o ZMatrix.o
 
 .PHONY: doc

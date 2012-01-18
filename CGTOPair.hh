@@ -50,6 +50,16 @@ class CGTOPair: public AbstractBFPair
 		virtual void oneElectron(double& S, double& T) const;
 
 		/*!
+		 * Compute the nuclear attraction integrals, due to the nuclei
+		 * with positions \a nuc_pos and charges \a nuc_charge, between
+		 * the functions in this pair.
+		 * \param nuc_pos    The positions of the nuclei
+		 * \param nuc_charge The nuclear charges
+		 */
+		virtual double nuclearAttraction(const Eigen::MatrixXd& nuc_pos,
+			const Eigen::VectorXd& nuc_charge) const;
+
+		/*!
 		 * \brief Return the widths of the primitives in the first
 		 *    contraction, for all primitives in the second contraction.
 		 */
@@ -75,7 +85,7 @@ class CGTOPair: public AbstractBFPair
 		{
 			return alpha()*beta() / asum();
 		}
-		//! \f$\exp(-\xr^2)\f$ with \f$r\f$ the distance between the centers of the two orbitals
+		//! \f$\exp(-\xi r^2)\f$ with \f$r\f$ the distance between the centers of the two orbitals
 		Eigen::ArrayXXd exp_ared() const
 		{
 			return (-r().squaredNorm()*ared()).exp();

@@ -36,7 +36,7 @@ class Geometry
 			return _symbols[idx];
 		}
 		//! Return the nuclear charges of the atoms
-		const Eigen::VectorXi& charges() const
+		const Eigen::VectorXd& charges() const
 		{
 			return _charges;
 		}
@@ -120,7 +120,7 @@ class Geometry
 		//! The mass of the atoms
 		Eigen::VectorXd _masses;
 		//! The charges of the atoms
-		Eigen::VectorXi _charges;
+		Eigen::VectorXd _charges;
 		//! The atom symbols
 		std::vector<std::string> _symbols;
 

@@ -37,7 +37,9 @@ int main()
 		os << basis << "\n";
 
 		std::cout << Dispatcher::singleton().nrPairs() << " bf pairs\n";
-		os << basis.overlap() << "\n\n" << basis.kineticEnergy() << "\n";
+		os << basis.overlap() << "\n\n" << basis.kineticEnergy() << "\n\n"
+			<< basis.nuclearAttraction(geom.positions(), geom.charges())
+			<< "\n";
 /*
 		std::string mat = "C\n"
 			"H   1 1.089000\n"

@@ -54,7 +54,7 @@ void gto_one_elec_specialized(const Eigen::VectorXd& weights1,
 }
 
 /*!
- * \brief Compute one-electron integrals between primtive GTOs
+ * \brief Compute one-electron integrals between primitive GTOs
  *
  * Compute the overlap and kinetic energy integrals between two sets of
  * primitive Gaussians in a contracted GTO, without normalization.

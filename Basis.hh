@@ -25,8 +25,10 @@ class Basis
 		typedef std::tr1::shared_ptr<AbstractBF> BasisFunPtr;
 		//! Local typedef for a list of basis functions
 		typedef std::vector<BasisFunPtr> BasisFunList;
+		//! Local typedef for a (shared) pointer to a pair of basis functions
+		typedef std::tr1::shared_ptr<AbstractBFPair> PairPtr;
 		//! Local typedef for a list of basis function pairs
-		typedef std::vector<AbstractBFPair*> PairList;
+		typedef std::vector<PairPtr> PairList;
 
 		//! Enumeration for the different status flags
 		enum StatusFlag
@@ -37,6 +39,8 @@ class Basis
 			OVERLAP_CURRENT,
 			//! Set when the kinetic energy matrix is computed and up to date
 			KINETIC_CURRENT,
+			//! Set when the nuclear attraction matrix is computed and up to date
+			NUC_ATTR_CURRENT,
 			//! The number of status flags
 			NR_FLAGS
 		};
@@ -87,6 +91,23 @@ class Basis
 				calcOneElectron();
 			return _kinetic;
 		}
+		/*!
+		 * \brief Return the nuclear attraction matrix
+		 *
+		 * Return the matrix with the muclear attraction integrals
+		 * for the electrons in this basis, computing it first if
+		 * necessary.
+		 * \param nuc_pos Positions of the nuclei
+		 * \param nuc_charge Charges of the nuclei
+		 */
+		const Eigen::MatrixXd& nuclearAttraction(
+			const Eigen::MatrixXd& nuc_pos,
+			const Eigen::VectorXd& nuc_charge) const
+		{
+			if (!_status.test(NUC_ATTR_CURRENT))
+				calcNuclearAttraction(nuc_pos, nuc_charge);
+			return _nuc_attr;
+		}
 
 		/*!
 		 * \brief Print this basis
@@ -109,6 +130,8 @@ class Basis
 		mutable Eigen::MatrixXd _overlap;
 		//! The kinetic energy matrix for this basis
 		mutable Eigen::MatrixXd _kinetic;
+		//! The nuclear attraction matrix for this basis
+		mutable Eigen::MatrixXd _nuc_attr;
 
 		//! Create the list of basis function pairs
 		void setPairs() const;
@@ -118,6 +141,16 @@ class Basis
 		void calcKinetic() const;
 		//! Compute the one-electron matrices in this basis
 		void calcOneElectron() const;
+		/*!
+		 * \brief Compute the nuclear attraction
+		 * 
+		 * Compute the nuclear integrals due to the nuclei on positions
+		 * \a nuc_pos with charges \a nuc_charge.
+		 * \param nuc_pos Positions of the nuclei
+		 * \param nuc_charge Charges of the nuclei
+		 */
+		void calcNuclearAttraction(const Eigen::MatrixXd& nuc_pos,
+			const Eigen::VectorXd& nuc_charge) const;
 };
 
 namespace {

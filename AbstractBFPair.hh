@@ -71,6 +71,17 @@ class AbstractBFPair
 		 */
 		virtual void oneElectron(double& S, double& T) const = 0;
 
+		/*!
+		 * Compute the nuclear attraction integrals, due to the nuclei
+		 * with positions \a nuc_pos and charges \a nuc_charge, between
+		 * the functions in this pair. Child classes should implement
+		 * this function.
+		 * \param nuc_pos    The positions of the nuclei
+		 * \param nuc_charge The nuclear charges
+		 */
+		virtual double nuclearAttraction(const Eigen::MatrixXd& nuc_pos,
+			const Eigen::VectorXd& nuc_charge) const = 0;
+
 	private:
 		//! The first function in the pair
 		const AbstractBF& _f;
