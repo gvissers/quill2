@@ -2,7 +2,7 @@ FEATURES =
 FEATURES += DEBUG
 
 CXX = ccache g++
-OPT = -Wall -W -ggdb
+OPT = -std=c++0x -Wall -W -ggdb
 #OPT = -O2
 
 VPATH = io gaussint

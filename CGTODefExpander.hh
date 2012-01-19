@@ -34,8 +34,7 @@ struct CGTODefExpander
 		const Eigen::VectorXd& widths, const Eigen::Vector3d& pos,
 		Basis *basis)
 	{
-		basis->add(std::tr1::shared_ptr<AbstractBF>(
-			new CGTOSpec<lx, ly, lz>(weights, widths, pos)));
+		basis->add(new CGTOSpec<lx, ly, lz>(weights, widths, pos));
 		CGTODefExpander<lx, ly+1, lz-1>::exec(weights, widths,
 			pos, basis);
 	}
@@ -48,8 +47,7 @@ struct CGTODefExpander<lx, ly, 0>
 		const Eigen::VectorXd& widths, const Eigen::Vector3d& pos,
 		Basis *basis)
 	{
-		basis->add(std::tr1::shared_ptr<AbstractBF>(
-			new CGTOSpec<lx, ly, 0>(weights, widths, pos)));
+		basis->add(new CGTOSpec<lx, ly, 0>(weights, widths, pos));
 		CGTODefExpander<lx+1, 0, ly-1>::exec(weights, widths,
 			pos, basis);
 	}
@@ -62,8 +60,7 @@ struct CGTODefExpander<lx, 0, 0>
 		const Eigen::VectorXd& widths, const Eigen::Vector3d& pos,
 		Basis *basis)
 	{
-		basis->add(std::tr1::shared_ptr<AbstractBF>(
-			new CGTOSpec<lx, 0, 0>(weights, widths, pos)));
+		basis->add(new CGTOSpec<lx, 0, 0>(weights, widths, pos));
 	}
 };
 

@@ -81,6 +81,8 @@ class AbstractBFPair
 		 */
 		virtual double nuclearAttraction(const Eigen::MatrixXd& nuc_pos,
 			const Eigen::VectorXd& nuc_charge) const = 0;
+		
+		virtual double electronRepulsion(const AbstractBFPair& pair) const = 0;
 
 	private:
 		//! The first function in the pair

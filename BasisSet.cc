@@ -111,7 +111,7 @@ void BasisSet::readElement<BasisSet::Molpro>(FilteringLineIStream<CommentFilter>
 		ww.clear();
 		std::transform(weights.begin(), weights.end(),
 			widths.begin()+(istart-1), std::back_inserter(ww),
-			std::make_pair<double, double>);
+			[](double w, double a) { return std::make_pair(w,a); } );
 
 		AbstractBFDef *bf = contractedGaussian(shell[0], ww);
 		elem_funs.push_back(bf);

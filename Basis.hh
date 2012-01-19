@@ -8,8 +8,8 @@
 
 #include <vector>
 #include <bitset>
-#include <tr1/memory>
-#include "AbstractBFPair.hh"
+#include <memory>
+#include "AbstractBFQuad.hh"
 
 /*!
  * \brief Class representing a basis
@@ -22,19 +22,25 @@ class Basis
 {
 	public:
 		//! Local typedef for a (shared) pointer to a basis function
-		typedef std::tr1::shared_ptr<AbstractBF> BasisFunPtr;
+		typedef std::unique_ptr<AbstractBF> BasisFunPtr;
 		//! Local typedef for a list of basis functions
 		typedef std::vector<BasisFunPtr> BasisFunList;
 		//! Local typedef for a (shared) pointer to a pair of basis functions
-		typedef std::tr1::shared_ptr<AbstractBFPair> PairPtr;
+		typedef std::unique_ptr<AbstractBFPair> PairPtr;
 		//! Local typedef for a list of basis function pairs
 		typedef std::vector<PairPtr> PairList;
+		//! Local typedef for a pointer to a quartet of basis functions
+		typedef std::unique_ptr<AbstractBFQuad> QuadPtr;
+		//! Local typedef for a list of basis function quadruples
+		typedef std::vector<QuadPtr> QuadList;
 
 		//! Enumeration for the different status flags
 		enum StatusFlag
 		{
 			//! Set when the list of function pairs is current
 			PAIRS_CURRENT,
+			//! Set when the list of function quadruples is current
+			QUADS_CURRENT,
 			//! Set when the overlap matrix is computed and up to date
 			OVERLAP_CURRENT,
 			//! Set when the kinetic energy matrix is computed and up to date
@@ -60,9 +66,9 @@ class Basis
 		 *
 		 * Add basis function \a bf to this basis.
 		 */
-		void add(const BasisFunPtr& ptr)
+		void add(AbstractBF *bf)
 		{
-			_funs.push_back(ptr);
+			_funs.push_back(BasisFunPtr(bf));
 			_status.reset();
 		}
 
@@ -124,6 +130,8 @@ class Basis
 		BasisFunList _funs;
 		//! The list of function pairs
 		mutable PairList _pairs;
+		//! The list of function quadruples
+		mutable QuadList _quads;
 		//! Status flags for the basis
 		mutable std::bitset<NR_FLAGS> _status;
 		//! The overlap matrix for this basis
@@ -135,6 +143,8 @@ class Basis
 
 		//! Create the list of basis function pairs
 		void setPairs() const;
+		//! Create the list of basis function quadruples
+		void setQuads() const;
 		//! Compute the overlap matrix in this basis
 		void calcOverlap() const;
 		//! Compute the kinetic energy matrix in this basis

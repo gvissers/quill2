@@ -1,3 +1,4 @@
+#include <memory>
 #include "Basis.hh"
 #include "Dispatcher.hh"
 #include "io/manipulators.hh"
@@ -26,6 +27,24 @@ void Basis::setPairs() const
 	}
 
 	_status.set(PAIRS_CURRENT);
+}
+
+void Basis::setQuads() const
+{
+	if (!_status.test(PAIRS_CURRENT))
+		setPairs();
+
+	_quads.clear();
+	for (PairList::const_iterator iit = _pairs.begin(); iit != _pairs.end(); ++iit)
+	{
+		for (PairList::const_iterator jit = _pairs.begin(); jit <= iit; ++jit)
+		{
+			AbstractBFQuad *q = new AbstractBFQuad(**iit, **jit);
+			_quads.push_back(std::unique_ptr<AbstractBFQuad>(q));
+		}
+	}
+	
+	_status.set(QUADS_CURRENT);
 }
 
 void Basis::calcOverlap() const
