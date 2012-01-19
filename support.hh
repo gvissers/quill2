@@ -8,10 +8,10 @@
 
 #include <string>
 #include <algorithm>
-#include <tr1/functional>
+#include <functional>
 #include <cmath>
 
-using namespace std::tr1::placeholders;
+using namespace std::placeholders;
 
 #define NON_COPYABLE(class_name) \
 	private:\
@@ -51,14 +51,14 @@ std::string& remove(std::string& str, Cond cond)
 template <typename Cond>
 std::string& rtrim(std::string& str, Cond cond)
 {
-	// Okay, the tr1::bind christmas tree below is rather sick. The problem
+	// Okay, the std::bind christmas tree below is rather sick. The problem
 	// is that we need to negate the condition in order to find the
 	// last character *not* matching it. However, std::not1 will only
 	// work on objects that define a type argument_type, which Cond
 	// does not necessarily do (most notably, when Cond itself is the
-	// result of a tr1::bind).
+	// result of a std::bind).
 	std::string::reverse_iterator it = std::find_if(str.rbegin(), str.rend(),
-		std::tr1::bind(std::logical_not<bool>(), std::tr1::bind(cond, _1)));
+		std::bind(std::logical_not<bool>(), std::bind(cond, _1)));
 	str.erase(it.base(), str.end());
 	return str;
 }
@@ -107,14 +107,12 @@ inline size_t lrot<size_t>(size_t x, unsigned int n)
 
 namespace std
 {
-namespace tr1
-{
 
 /*!
  * \brief Hash function for a pair of size_t
  *
  * No standard hash function for pairs exists, so we roll our own by
- * \c xor'ing the values. Since we want to differentiate betweem \c pair(a, b)
+ * \c xor'ing the values. Since we want to differentiate between \c pair(a, b)
  * and \c pair(b, a), we rotate the second value by half the bit length first.
  */
 template <>
@@ -127,8 +125,7 @@ struct hash< std::pair<size_t, size_t> >
 	}
 };
 
-}
-}
+} // namespace std
 
 namespace
 {

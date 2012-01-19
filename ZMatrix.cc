@@ -28,7 +28,7 @@ std::istream& operator>>(std::istream& is, ElementGetter& eg)
 	if (!is.fail())
 	{
 		eg.zmat->addLabel(eg.elem, eg.zmat->size());
-		rtrim(eg.elem, std::tr1::bind(std::isdigit<char>, _1, std::locale()));
+		rtrim(eg.elem, std::bind(std::isdigit<char>, _1, std::locale()));
 	}
 	return is;
 }

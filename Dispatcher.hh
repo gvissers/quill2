@@ -8,7 +8,7 @@
 
 #include <typeinfo>
 #include <memory>
-#include <tr1/unordered_map>
+#include <unordered_map>
 #include <Singleton.hh>
 #include "support.hh"
 
@@ -33,7 +33,7 @@ public:
 	//! Local typedef for a pair creation function
 	typedef AbstractBFPair* (*PairCreatorPtr)(const AbstractBF& f, const AbstractBF& g);
 	//! Local typedef for a lookup table of pair creation functions
-	typedef std::tr1::unordered_map<std::pair<size_t, size_t>, PairCreatorPtr> PairMap;
+	typedef std::unordered_map<std::pair<size_t, size_t>, PairCreatorPtr> PairMap;
 
 	//! Constructor
 	Dispatcher();
@@ -66,7 +66,7 @@ public:
 
 private:
 	//! Hash function object for creating class IDs
-	std::tr1::hash<std::string> _hasher;
+	std::hash<std::string> _hasher;
 	//! The map of pair creation functions
 	PairMap _pair_funs;
 

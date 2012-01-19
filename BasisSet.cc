@@ -1,7 +1,6 @@
 #include <sstream>
 #include <cstdio>
 #include <util.hh>
-#include <tr1/functional>
 #include "BasisSet.hh"
 #include "Deleter.hh"
 #include "CGTODef.hh"
@@ -9,8 +8,6 @@
 #include "exceptions.hh"
 #include "support.hh"
 #include "io/manipulators.hh"
-
-using namespace std::tr1::placeholders;
 
 void BasisSet::expand(const Geometry& geom, Basis *basis) const
 {
@@ -296,7 +293,7 @@ void BasisSet::scan<BasisSet::Molpro>(std::istream& is)
 	{
 		fis >> expectline;
 		str = fis.line();
-		remove(str, std::tr1::bind(std::isspace<char>, _1, std::locale()));
+		remove(str, std::bind(std::isspace<char>, _1, std::locale()));
 		if (str != "basis={")
 			throw ParseError(fis.lineNumber(), Molpro,
 				"Expected \"basis={\"");
