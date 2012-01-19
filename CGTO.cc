@@ -1,5 +1,8 @@
 #include "CGTO.hh"
+#include "Dispatcher.hh"
 #include "io/manipulators.hh"
+
+const size_t CGTO::cid = Dispatcher::singleton().classID<CGTO>();
 
 std::ostream& CGTO::print(std::ostream& os) const
 {

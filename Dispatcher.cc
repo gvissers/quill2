@@ -9,7 +9,12 @@ STATIC_SINGLETON_OBJECT(Dispatcher);
 Dispatcher::Dispatcher(): Li::Singleton<Dispatcher, true>(),
 	_hasher(), _pair_funs()
 {
-	PairMapFiller<Limits::lmax, Limits::lmax>::fill();
+#if LMAX_SPECIALIZED >= 0
+	PairMapFiller<Limits::lmax_specialized, Limits::lmax_specialized>::fill();
+#endif
+
+	size_t id = classID<CGTO>();
+	setPairCreator(id, id, CGTOPair::create);
 }
 
 std::unique_ptr<AbstractBFPair> Dispatcher::pair(const AbstractBF& f,

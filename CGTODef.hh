@@ -94,15 +94,25 @@ CGTODef<l>::CGTODef(const std::vector< std::pair<double, double> >& ww):
 template <>
 void CGTODef<0>::expand(const Eigen::Vector3d& pos, Basis* basis) const
 {
+#if LMAX_SPECIALIZED >= 0
 	basis->add(new CGTOSpec<0, 0, 0>(_weights, _widths, pos));
+#else
+	basis->add(new CGTO(Eigen::Vector3i(0, 0, 0), _weights, _widths, pos));
+#endif
 }
 
 template <>
 void CGTODef<1>::expand(const Eigen::Vector3d& pos, Basis* basis) const
 {
+#if LMAX_SPECIALIZED >= 1
 	basis->add(new CGTOSpec<0, 0, 1>(_weights, _widths, pos));
 	basis->add(new CGTOSpec<0, 1, 0>(_weights, _widths, pos));
 	basis->add(new CGTOSpec<1, 0, 0>(_weights, _widths, pos));
+#else
+	basis->add(new CGTO(Eigen::Vector3i(0, 0, 1), _weights, _widths, pos));
+	basis->add(new CGTO(Eigen::Vector3i(0, 1, 0), _weights, _widths, pos));
+	basis->add(new CGTO(Eigen::Vector3i(1, 0, 0), _weights, _widths, pos));
+#endif
 }
 
 template <unsigned int l>

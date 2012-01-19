@@ -7,11 +7,12 @@
  */
 
 #include "CGTOSpec.hh"
+#include "limits.hh"
 
 /*!
  * \brief Struct for expanding a CGTO definition
  *
- * Struct CGTODevExpander and its specializations are used to generate all
+ * Struct CGTODefExpander and its specializations are used to generate all
  * different combinations of angular momentum quantum numbers with a
  * sum equal to the total angular momentum of the CGTO definition, and add
  * basis functions with these quantum numbers to the basis.
@@ -34,7 +35,10 @@ struct CGTODefExpander
 		const Eigen::VectorXd& widths, const Eigen::Vector3d& pos,
 		Basis *basis)
 	{
-		basis->add(new CGTOSpec<lx, ly, lz>(weights, widths, pos));
+		if (Limits::lmax_specialized >= int(lx+ly+lz))
+			basis->add(new CGTOSpec<lx, ly, lz>(weights, widths, pos));
+		else
+			basis->add(new CGTO(Eigen::Vector3i(lx, ly, lz), weights, widths, pos));
 		CGTODefExpander<lx, ly+1, lz-1>::exec(weights, widths,
 			pos, basis);
 	}
@@ -47,7 +51,10 @@ struct CGTODefExpander<lx, ly, 0>
 		const Eigen::VectorXd& widths, const Eigen::Vector3d& pos,
 		Basis *basis)
 	{
-		basis->add(new CGTOSpec<lx, ly, 0>(weights, widths, pos));
+		if (Limits::lmax_specialized >= int(lx+ly))
+			basis->add(new CGTOSpec<lx, ly, 0>(weights, widths, pos));
+		else
+			basis->add(new CGTO(Eigen::Vector3i(lx, ly, 0), weights, widths, pos));
 		CGTODefExpander<lx+1, 0, ly-1>::exec(weights, widths,
 			pos, basis);
 	}
@@ -60,7 +67,10 @@ struct CGTODefExpander<lx, 0, 0>
 		const Eigen::VectorXd& widths, const Eigen::Vector3d& pos,
 		Basis *basis)
 	{
-		basis->add(new CGTOSpec<lx, 0, 0>(weights, widths, pos));
+		if (Limits::lmax_specialized >= int(lx))
+			basis->add(new CGTOSpec<lx, 0, 0>(weights, widths, pos));
+		else
+			basis->add(new CGTO(Eigen::Vector3i(lx, 0, 0), weights, widths, pos));
 	}
 };
 
