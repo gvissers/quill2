@@ -19,20 +19,21 @@ static Eigen::ArrayXXd gto_nuc_attr_primitive_generic_1d(int l1, int l2,
 	if (l1 == 0)
 		return Fm(0, U);
 
-	std::vector< std::vector<Eigen::ArrayXXd> > As(l1+1);
+	int lsum = l1+l2;
+	std::vector< std::vector<Eigen::ArrayXXd> > As(lsum+1);
 
 	Eigen::ArrayXXd dpa = P - x1;
 	Eigen::ArrayXXd dpc = P - xnuc;
 	// A_0,0
-	for (int m = 0; m <= l1+l2; ++m)
+	for (int m = 0; m <= lsum; ++m)
 		As[0].push_back(Fm(m, U));
 	// A_1,0
-	for (int m = 0; m <= l1+l2-1; ++m)
+	for (int m = 0; m <= lsum-1; ++m)
 		As[1].push_back(dpa*As[0][m] - dpc*As[0][m+1]);
 	// A_a,0
-	for (int i1 = 1; i1 < l1; ++i1)
+	for (int i1 = 1; i1 < lsum; ++i1)
 	{
-		for (int m = 0; m < l1+l2-i1; ++m)
+		for (int m = 0; m <= lsum-i1-1; ++m)
 		{
 			As[i1+1].push_back(dpa*As[i1][m] - dpc*As[i1][m+1]
 				+ 0.5*i1*(As[i1-1][m]-As[i1-1][m+1])/asum);
@@ -42,30 +43,14 @@ static Eigen::ArrayXXd gto_nuc_attr_primitive_generic_1d(int l1, int l2,
 	if (l2 == 0)
 		return As[l1][0];
 
-	
-	Eigen::ArrayXXd dpb = P - x2;
-	for (int i1 = 1; i1 <= l1; ++i1)
+	double dab = x2 - x1;
+	for (int i2 = 1; i2 <= l2; i2++)
 	{
-		// A_a,1
-		for (int m = 0; m <= l2-1; ++m)
-		{
-			As[i1-1][m] = dpb*As[i1][m] - dpc*As[i1][m+1]
-				+ 0.5*i1*(As[i1-1][m]-As[i1-1][m+1])/asum;
-		}
-		
-		// A_a,b
-		for (int i2 = 1; i2 < std::min(i1, l2); i2++)
-		{
-			for (int m = 0; m <= l2-i2; ++m)
-			{
-				As[i1-i2-1][m] = dpb*As[i1-i2][m] - dpc*As[i1-i2][m+1]
-					+ 0.5*i2*(As[i1-i2+1][m]-As[i1-i2+1][m+1])/asum
-					+ 0.5*i1*(As[i1-i2-1][m]-As[i1-i2-1][m+1])/asum;
-			}
-		}
+		for (int i1 = lsum; i1 >= l1+i2; i1--)
+			As[i1][0] -= dab * As[i1-1][0];
 	}
 	
-	return As[l1-l2][0];
+	return As[lsum][0];
 }
 
 Eigen::ArrayXXd gto_nuc_attr_primitive_generic(
