@@ -32,7 +32,7 @@ void CGTOPair::oneElectron(double &S, double &T) const
 double CGTOPair::nuclearAttraction(const Eigen::MatrixXd& nuc_pos,
 	const Eigen::VectorXd& nuc_charge) const
 {
-	return Constants::pi_sqrt_pi * f().weights().transpose()
+	return 2 * M_PI * f().weights().transpose()
 		* gto_nuc_attr_primitive_generic(f().ls(), g().ls(),
 			alpha(), beta(), f().center(), g().center(),
 			asum(), exp_ared(), nuc_pos, nuc_charge).matrix()
