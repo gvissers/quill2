@@ -27,3 +27,21 @@ double CGTO::eval(const Eigen::Vector3d& pos) const
 	return res;
 }
 
+void CGTO::normalizeWeights()
+{
+	for (int iprim = 0; iprim < size(); ++iprim)
+	{
+		double alpha = width(iprim);
+		double norm = 2 * alpha / M_PI;
+		norm *= std::sqrt(norm);
+		for (int l = 0; l < lx(); ++l)
+			norm *= 4*alpha / (2*l+1);
+		for (int l = 0; l < ly(); ++l)
+			norm *= 4*alpha / (2*l+1);
+		for (int l = 0; l < lz(); ++l)
+			norm *= 4*alpha / (2*l+1);
+		norm = std::sqrt(norm);
+		
+		_weights[iprim] *= norm;
+	}
+}

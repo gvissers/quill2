@@ -37,7 +37,7 @@ public:
 	CGTO(const Eigen::Vector3i& ls, const Eigen::VectorXd& weights,
 		const Eigen::VectorXd& widths, const Eigen::Vector3d& center):
 		AbstractBF(cid), _ls(ls), _weights(weights), _widths(widths),
-		_center(center) {}
+		_center(center) { normalizeWeights(); }
 
 	//! Return the number of primitives in this contraction
 	int size() const { return _weights.size(); }
@@ -49,6 +49,8 @@ public:
 	int ly() const { return _ls.y(); }
 	//! Return the angular momentum in the \f$z\f$ direction
 	int lz() const { return _ls.z(); }
+	//! Return the total angular momentum
+	int lsum() const { return _ls.sum(); }
 	//! Return the weight of the \a i'th primitive
 	double weight(int i) const
 	{
@@ -100,7 +102,7 @@ protected:
 		const Eigen::VectorXd& weights, const Eigen::VectorXd& widths,
 		const Eigen::Vector3d& center):
 		AbstractBF(cid), _ls(ls), _weights(weights), _widths(widths),
-		_center(center) {}
+		_center(center) { normalizeWeights(); }
 
 private:
 	//! The angular momentum quantum numbers
@@ -111,6 +113,14 @@ private:
 	Eigen::VectorXd _widths;
 	//! The center position of this function
 	Eigen::Vector3d _center;
+	
+	/*!
+	 * \brief Normalize the weights
+	 * 
+	 * Scale the weights of the primitives in this contraction, to
+	 * normalize this CGTO.
+	 */
+	void normalizeWeights();
 
 	/*!
 	 * \brief Check if a primitive index is valid
