@@ -94,7 +94,7 @@ double Fm_no_taylor(int m, double t, double expmt)
 
 double Fm(int m, double t)
 {
-	return Fm_no_taylor(m, t, std::exp(-m*t));
+	return Fm_no_taylor(m, t, std::exp(-t));
 }
 
 Eigen::ArrayXXd Fm(int m, const Eigen::ArrayXXd& ts)

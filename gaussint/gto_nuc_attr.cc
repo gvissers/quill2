@@ -7,24 +7,25 @@
 
 static std::vector<Eigen::ArrayXXd> gto_nuc_attr_primitive_generic_1d(
 	int lA, int lB, double xA, double xB,
-	const Eigen::ArrayXXd& asum,
-	const Eigen::ArrayXXd& P, double xnuc)
+	const Eigen::ArrayXXd& theta,
+	const Eigen::ArrayXXd& P, const Eigen::ArrayXXd& dPC)
 {
-#ifdef DEBUG
 	if (lA < lB)
-		throw Li::Exception("lA must not be smaller than lB");
-#endif
+	{
+		std::swap(lA, lB);
+		std::swap(xA, xB);
+	}
 	
 	int rows = P.rows();
-	int cols = P.cols();
+	int cols = dPC.cols();
 	if (lA == 0)
 		return std::vector<Eigen::ArrayXXd>(1, Eigen::ArrayXXd::Ones(rows, cols));
 
 	int lsum = lA+lB;
 	std::vector< std::vector<Eigen::ArrayXXd> > As(lsum+1);
 
-	Eigen::ArrayXXd dPA = P - xA;
-	Eigen::ArrayXXd dPC = P - xnuc;
+	Eigen::ArrayXXd dPA = (P - xA).replicate(1, cols/P.cols());
+		
 	// A_0,0
 	As[0].push_back(Eigen::ArrayXXd::Ones(rows, cols));
 	// A_1,0
@@ -33,14 +34,14 @@ static std::vector<Eigen::ArrayXXd> gto_nuc_attr_primitive_generic_1d(
 	// A_a,0
 	for (int iA = 1; iA < lsum; ++iA)
 	{
-		As[iA+1].push_back(dPA*As[iA][0] + 0.5*iA*As[iA-1][0]/asum);
+		As[iA+1].push_back(dPA*As[iA][0] + 0.5*iA*As[iA-1][0]/theta);
 		for (int m = 1; m < iA; ++m)
 		{
 			As[iA+1].push_back(dPA*As[iA][m] - dPC*As[iA][m-1]
-				+ 0.5*iA*(As[iA-1][m]-As[iA-1][m-1])/asum);
+				+ 0.5*iA*(As[iA-1][m]-As[iA-1][m-1])/theta);
 		}
 		As[iA+1].push_back(dPA*As[iA][iA] - dPC*As[iA][iA-1]
-			- 0.5*iA*As[iA-1][iA-1]/asum);
+			- 0.5*iA*As[iA-1][iA-1]/theta);
 		As[iA+1].push_back(-dPC*As[iA][iA]);
 	}
 	
@@ -64,56 +65,53 @@ Eigen::ArrayXXd gto_nuc_attr_primitive_generic(
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& exp_ared,
 	const Eigen::MatrixXd& nuc_pos, const Eigen::VectorXd& nuc_charge)
 {
-	Eigen::ArrayXXd P[3];
-	Eigen::ArrayXXd U;
-	Eigen::ArrayXXd A = Eigen::ArrayXXd::Zero(alpha.rows(), alpha.cols());
+	int nr_nuc = nuc_pos.cols();
+	int nr_rows = alpha.rows(), nr_cols = alpha.cols();
+	Eigen::ArrayXXd theta = asum.replicate(1, nr_nuc);
+	Eigen::ArrayXXd U = Eigen::ArrayXXd::Zero(nr_rows, nr_cols*nr_nuc);
+	std::vector<Eigen::ArrayXXd> Axyz[3];
+
+	for (int i = 0; i < 3; i++)
+	{
+		Eigen::ArrayXXd P = (alpha*posA[i] + beta*posB[i]) / asum;
+		Eigen::ArrayXXd dPC(nr_rows, nr_cols*nr_nuc);
+		for (int iC = 0; iC < nr_nuc; ++iC)
+			dPC.block(0, iC*nr_cols, nr_rows, nr_cols) = P - nuc_pos(i, iC);
+		U += dPC.square();
+
+		Axyz[i] = gto_nuc_attr_primitive_generic_1d(lsA[i], lsB[i],
+			posA[i], posB[i], theta, P, dPC);
+	}
+	U *= theta;
+
 	Eigen::Vector3i lsAB = lsA + lsB;
 	int lsum = lsAB.sum();
 
-	for (int i = 0; i < 3; i++)
-		P[i] = (alpha*posA[i] + beta*posB[i]) / asum;
+	Eigen::ArrayXXd F = Fm(lsum, U);
+	Eigen::ArrayXXd expmU = (-U).exp();
+	Eigen::ArrayXXd Am = Axyz[0][lsAB.x()] * Axyz[1][lsAB.y()]
+		* Axyz[2][lsAB.z()] * F;
+	Eigen::ArrayXXd A = Eigen::ArrayXXd::Zero(nr_rows, nr_cols);
+	for (int iC = 0; iC < nr_nuc; ++iC)
+		A += -nuc_charge[iC] * Am.block(0, iC*nr_cols, nr_rows, nr_cols);
 
-	//for (int inuc = 0; inuc < nuc_pos.cols(); inuc++)
-	int inuc = 0;
+	for (int m = lsum-1; m >= 0; --m)
 	{
-		Eigen::Vector3d pos = nuc_pos.col(inuc);
-		U = asum * ((P[0] - pos[0]).square()
-			+ (P[1] - pos[1]).square()
-			+ (P[2] - pos[2]).square());
-
-		std::vector<Eigen::ArrayXXd> Ax =
-			lsB.x() <= lsA.x()
-			? gto_nuc_attr_primitive_generic_1d(lsA.x(), lsB.x(),
-				posA.x(), posB.x(), asum, P[0], pos.x())
-			: gto_nuc_attr_primitive_generic_1d(lsB.x(), lsA.x(),
-				posB.x(), posA.x(), asum, P[0], pos.x());
-		std::vector<Eigen::ArrayXXd> Ay =
-			lsB.y() <= lsA.y()
-			? gto_nuc_attr_primitive_generic_1d(lsA.y(), lsB.y(),
-				posA.y(), posB.y(), asum, P[1], pos.y())
-			: gto_nuc_attr_primitive_generic_1d(lsB.y(), lsA.y(),
-				posB.y(), posA.y(), asum, P[1], pos.y());
-		std::vector<Eigen::ArrayXXd> Az =
-			lsB.z() <= lsA.z()
-			? gto_nuc_attr_primitive_generic_1d(lsA.z(), lsB.z(),
-				posA.z(), posB.z(), asum, P[2], pos.z())
-			: gto_nuc_attr_primitive_generic_1d(lsB.z(), lsA.z(),
-				posB.z(), posA.z(), asum, P[2], pos.z());
-
-		for (int m = 0; m <= lsum; ++m)
+		Am = Eigen::ArrayXXd::Zero(nr_rows, nr_cols*nr_nuc);
+		for (int ix = 0; ix <= std::min(m, lsAB.x()); ++ix)
 		{
-			Eigen::ArrayXXd Am = Eigen::ArrayXXd::Zero(alpha.rows(), alpha.cols());
-			for (int ix = 0; ix <= std::min(m, lsAB.x()); ++ix)
+			for (int iy = 0; iy <= std::min(m-ix, lsAB.y()); ++iy)
 			{
-				for (int iy = 0; iy <= std::min(m-ix, lsAB.y()); ++iy)
-				{
-					int iz = m - ix - iy;
-					if (iz <= lsAB.z())
-						Am += Ax[ix] * Ay[iy] * Az[iz];
-				}
+				int iz = m - ix - iy;
+				if (iz <= lsAB.z())
+					Am += Axyz[0][ix] * Axyz[1][iy] * Axyz[2][iz];
 			}
-			A += -nuc_charge[inuc] * Am * Fm(m, U);
 		}
+		F = (expmU + 2*U*F) / (2*m+1);
+		Am *= F;
+		
+		for (int iC = 0; iC < nr_nuc; ++iC)
+			A += -nuc_charge[iC] * Am.block(0, iC*nr_cols, nr_rows, nr_cols);
 	}
 	
 	return exp_ared * A / asum;
