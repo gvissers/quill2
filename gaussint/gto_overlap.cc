@@ -309,7 +309,7 @@ Eigen::ArrayXXd gto_overlap_primitive_1d(int l1, int l2, double x,
 }
 
 Eigen::ArrayXXd gto_overlap_primitive_generic(
-	const Eigen::Vector3i& ls1, const Eigen::Vector3i& ls2,
+	const Eigen::Vector3i& lsA, const Eigen::Vector3i& lsB,
         const Eigen::ArrayXXd& alpha, const Eigen::ArrayXXd& beta,
         const Eigen::ArrayXXd& asum,
         const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r)
@@ -318,13 +318,13 @@ Eigen::ArrayXXd gto_overlap_primitive_generic(
 
 	for (int i = 0; i < 3; i++)
 	{
-		if (ls1[i]+ls2[i] > 0)
+		if (lsA[i]+lsB[i] > 0)
 		{
-			if (ls1[i] < ls2[i])
-				Sp *= gto_overlap_primitive_1d(ls2[i], ls1[i],
+			if (lsA[i] < lsB[i])
+				Sp *= gto_overlap_primitive_1d(lsA[i], lsB[i],
 					-r[i], alpha, asum);
 			else
-				Sp *= gto_overlap_primitive_1d(ls1[i], ls2[i],
+				Sp *= gto_overlap_primitive_1d(lsA[i], lsB[i],
 					r[i], beta, asum);
 		}
 	}
@@ -332,22 +332,23 @@ Eigen::ArrayXXd gto_overlap_primitive_generic(
 	return Sp;
 }
 
-double gto_overlap_generic(const Eigen::Vector3i& ls1,
-	const Eigen::VectorXd& weights1, const Eigen::VectorXd& widths1,
-	const Eigen::Vector3d& pos1,
-	const Eigen::Vector3i& ls2,
-	const Eigen::VectorXd& weights2, const Eigen::VectorXd& widths2,
-	const Eigen::Vector3d& pos2)
+double gto_overlap_generic(const Eigen::Vector3i& lsA,
+	const Eigen::VectorXd& weightsA, const Eigen::VectorXd& widthsA,
+	const Eigen::Vector3d& posA,
+	const Eigen::Vector3i& lsB,
+	const Eigen::VectorXd& weightsB, const Eigen::VectorXd& widthsB,
+	const Eigen::Vector3d& posB)
 {
-	int n1 = widths1.size(), n2 = widths2.size();
-	Eigen::ArrayXXd alpha = widths1.replicate(1, n2);
-	Eigen::ArrayXXd beta = widths2.transpose().replicate(n1, 1);
+	int nA = widthsA.size(), nB = widthsB.size();
+	Eigen::ArrayXXd alpha = widthsA.replicate(1, nB);
+	Eigen::ArrayXXd beta = widthsB.transpose().replicate(nA, 1);
 	Eigen::ArrayXXd asum = alpha + beta;
-	Eigen::ArrayXXd ared = (widths1 * widths2.transpose()).array() / asum;
-	Eigen::Vector3d r = pos2 - pos1;
+	Eigen::ArrayXXd ared = (widthsA * widthsB.transpose()).array() / asum;
+	Eigen::Vector3d r = posB - posA;
 	Eigen::ArrayXXd exp_ared = (-r.squaredNorm() * ared).exp();
 
-	return Constants::pi_sqrt_pi * weights1.transpose()
-		* gto_overlap_primitive_generic(ls1, ls2, alpha, beta, asum, exp_ared, r).matrix()
-		* weights2;
+	return Constants::pi_sqrt_pi * weightsA.transpose()
+		* gto_overlap_primitive_generic(lsA, lsB, alpha, beta, asum,
+			exp_ared, r).matrix()
+		* weightsB;
 }

@@ -10,6 +10,7 @@
 #include "CGTOPair.hh"
 #include "CGTOSpec.hh"
 #include "gaussint/gto_one_elec.hh"
+#include "gaussint/gto_nuc_attr.hh"
 #include "constants.hh"
 
 /*!
@@ -17,29 +18,29 @@
  *
  * Class CGTOSpecPair holds a pair of specializations of contracted Gaussian
  * type orbitals, for specific angular momentum quantum numbers.
- * \tparam lx1 Angular momentum in the \f$x\f$ direction for the first orbital
- * \tparam ly1 Angular momentum in the \f$y\f$ direction for the first orbital
- * \tparam lz1 Angular momentum in the \f$z\f$ direction for the first orbital
- * \tparam lx2 Angular momentum in the \f$x\f$ direction for the second orbital
- * \tparam ly2 Angular momentum in the \f$y\f$ direction for the seoncd orbital
- * \tparam lz2 Angular momentum in the \f$z\f$ direction for the second orbital
+ * \tparam lxA Angular momentum in the \f$x\f$ direction for the first orbital
+ * \tparam lyA Angular momentum in the \f$y\f$ direction for the first orbital
+ * \tparam lzA Angular momentum in the \f$z\f$ direction for the first orbital
+ * \tparam lxB Angular momentum in the \f$x\f$ direction for the second orbital
+ * \tparam lyB Angular momentum in the \f$y\f$ direction for the seoncd orbital
+ * \tparam lzB Angular momentum in the \f$z\f$ direction for the second orbital
  */
-template <int lx1, int ly1, int lz1, int lx2, int ly2, int lz2>
+template <int lxA, int lyA, int lzA, int lxB, int lyB, int lzB>
 struct CGTOSpecPair: public CGTOPair
 {
 	//! Constructor
-	CGTOSpecPair(const CGTOSpec<lx1, ly1, lz1>& f,
-		const CGTOSpec<lx2, ly2, lz2>& g): CGTOPair(f, g) {}
+	CGTOSpecPair(const CGTOSpec<lxA, lyA, lzA>& f,
+		const CGTOSpec<lxB, lyB, lzB>& g): CGTOPair(f, g) {}
 
 	//! Return the first orbital in this pair
-	const CGTOSpec<lx1, ly1, lz1>& f() const
+	const CGTOSpec<lxA, lyA, lzA>& f() const
 	{
-		return static_cast< const CGTOSpec<lx1, ly1, lz1>& >(AbstractBFPair::f());
+		return static_cast< const CGTOSpec<lxA, lyA, lzA>& >(AbstractBFPair::f());
 	}
 	//! Return the second orbital in this pair
-	const CGTOSpec<lx1, ly1, lz1>& g() const
+	const CGTOSpec<lxB, lyB, lzB>& g() const
 	{
-		return static_cast< const CGTOSpec<lx1, ly1, lz1>& >(AbstractBFPair::g());
+		return static_cast< const CGTOSpec<lxB, lyB, lzB>& >(AbstractBFPair::g());
 	}
 
 	//! Compute the overlap between the two orbitals in this pair
@@ -57,6 +58,16 @@ struct CGTOSpecPair: public CGTOPair
 	void oneElectron(double& S, double& T) const;
 
 	/*!
+	 * Compute the nuclear attraction integrals, due to the nuclei
+	 * with positions \a nuc_pos and charges \a nuc_charge, between
+	 * the functions in this pair.
+	 * \param nuc_pos    The positions of the nuclei
+	 * \param nuc_charge The nuclear charges
+	 */
+	double nuclearAttraction(const Eigen::MatrixXd& nuc_pos,
+		const Eigen::VectorXd& nuc_charge) const;
+
+	/*!
 	 * \brief Create a new CGTOSpecPair
 	 *
 	 * Create a new pairs of CGTO specializations. This pseudo-constructor
@@ -69,9 +80,9 @@ struct CGTOSpecPair: public CGTOPair
 	{
 		try
 		{
-			const CGTOSpec<lx1, ly1, lz1>& ff = dynamic_cast< const CGTOSpec<lx1, ly1, lz1>& >(f);
-			const CGTOSpec<lx2, ly2, lz2>& gg = dynamic_cast< const CGTOSpec<lx2, ly2, lz2>& >(g);
-			return new CGTOSpecPair<lx1, ly1, lz1, lx2, ly2, lz2>(ff, gg);
+			const CGTOSpec<lxA, lyA, lzA>& ff = dynamic_cast< const CGTOSpec<lxA, lyA, lzA>& >(f);
+			const CGTOSpec<lxB, lyB, lzB>& gg = dynamic_cast< const CGTOSpec<lxB, lyB, lzB>& >(g);
+			return new CGTOSpecPair<lxA, lyA, lzA, lxB, lyB, lzB>(ff, gg);
 		}
 		catch (const std::bad_cast&)
 		{
@@ -80,36 +91,47 @@ struct CGTOSpecPair: public CGTOPair
 	}
 };
 
-template <int lx1, int ly1, int lz1, int lx2, int ly2, int lz2>
-double CGTOSpecPair<lx1, ly1, lz1, lx2, ly2, lz2>::overlap() const
+template <int lxA, int lyA, int lzA, int lxB, int lyB, int lzB>
+double CGTOSpecPair<lxA, lyA, lzA, lxB, lyB, lzB>::overlap() const
 {
 	return Constants::pi_sqrt_pi * f().weights().transpose()
-		* gto_overlap_primitive_specialized<lx1, ly1, lz1, lx2, ly2, lz2>(
+		* gto_overlap_primitive_specialized<lxA, lyA, lzA, lxB, lyB, lzB>(
 			alpha(), beta(), asum(), ared(), exp_ared(),
 			r()).matrix()
 		* g().weights();
 }
 
-template <int lx1, int ly1, int lz1, int lx2, int ly2, int lz2>
-double CGTOSpecPair<lx1, ly1, lz1, lx2, ly2, lz2>::kineticEnergy() const
+template <int lxA, int lyA, int lzA, int lxB, int lyB, int lzB>
+double CGTOSpecPair<lxA, lyA, lzA, lxB, lyB, lzB>::kineticEnergy() const
 {
 	return Constants::pi_sqrt_pi * f().weights().transpose()
-		* gto_kinetic_primitive_generic(f().ls(), g().ls(),
+		* gto_kinetic_primitive_specialized<lxA, lyA, lzA, lxB, lyB, lzB>(
 			alpha(), beta(), asum(), ared(), exp_ared(),
 			r()).matrix()
 		* g().weights();
 }
 
-template <int lx1, int ly1, int lz1, int lx2, int ly2, int lz2>
-void CGTOSpecPair<lx1, ly1, lz1, lx2, ly2, lz2>::oneElectron(double &S, double &T) const
+template <int lxA, int lyA, int lzA, int lxB, int lyB, int lzB>
+void CGTOSpecPair<lxA, lyA, lzA, lxB, lyB, lzB>::oneElectron(double &S, double &T) const
 {
 	Eigen::ArrayXXd Sp, Tp;
-	gto_one_elec_primitive_generic(f().ls(), g().ls(),
+	gto_one_elec_primitive_specialized<lxA, lyA, lzA, lxB, lyB, lzB>(
 		alpha(), beta(), asum(), ared(), exp_ared(), r(), Sp, Tp);
 	S = Constants::pi_sqrt_pi * f().weights().transpose()
 		* Sp.matrix() * g().weights();
 	T = Constants::pi_sqrt_pi * f().weights().transpose()
 		* Tp.matrix() * g().weights();
+}
+
+template <int lxA, int lyA, int lzA, int lxB, int lyB, int lzB>
+double CGTOSpecPair<lxA, lyA, lzA, lxB, lyB, lzB>::nuclearAttraction(
+	const Eigen::MatrixXd& nuc_pos, const Eigen::VectorXd& nuc_charge) const
+{
+	return 2 * M_PI * f().weights().transpose()
+		* gto_nuc_attr_primitive_specialized<lxA, lyA, lzA, lxB, lyB, lzB>(
+			alpha(), beta(), f().center(), g().center(),
+			asum(), exp_ared(), nuc_pos, nuc_charge).matrix()
+		* g().weights();
 }
 
 #endif // CGTOSPECPAIR_HH

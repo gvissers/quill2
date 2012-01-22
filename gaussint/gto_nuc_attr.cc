@@ -5,6 +5,35 @@
 #include "gaussint/boys.hh"
 #include <Exception.hh>
 
+template<>
+Eigen::ArrayXXd gto_nuc_attr_primitive_specialized<0, 0, 0, 0, 0, 0>(
+	const Eigen::ArrayXXd& alpha, const Eigen::ArrayXXd& beta,
+	const Eigen::Vector3d& posA, const Eigen::Vector3d& posB,
+	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& exp_ared,
+	const Eigen::MatrixXd& nuc_pos, const Eigen::VectorXd& nuc_charge)
+{
+	int nr_nuc = nuc_pos.cols();
+	int nr_rows = alpha.rows(), nr_cols = alpha.cols();
+	Eigen::ArrayXXd U = Eigen::ArrayXXd::Zero(nr_rows, nr_cols*nr_nuc);
+	Eigen::ArrayXXd dPC(nr_rows, nr_cols*nr_nuc);
+
+	for (int i = 0; i < 3; i++)
+	{
+		Eigen::ArrayXXd P = (alpha*posA[i] + beta*posB[i]) / asum;
+		for (int iC = 0; iC < nr_nuc; ++iC)
+			dPC.block(0, iC*nr_cols, nr_rows, nr_cols) = P - nuc_pos(i, iC);
+		U += dPC.square();
+	}
+	U *= asum.replicate(1, nr_nuc);
+
+	Eigen::ArrayXXd Am = Fm(0, U);
+	Eigen::ArrayXXd A = Eigen::ArrayXXd::Zero(nr_rows, nr_cols);
+	for (int iC = 0; iC < nr_nuc; ++iC)
+		A += -nuc_charge[iC] * Am.block(0, iC*nr_cols, nr_rows, nr_cols);
+	
+	return exp_ared * A / asum;
+}
+
 static std::vector<Eigen::ArrayXXd> gto_nuc_attr_primitive_generic_1d(
 	int lA, int lB, double xA, double xB,
 	const Eigen::ArrayXXd& theta,
@@ -69,12 +98,12 @@ Eigen::ArrayXXd gto_nuc_attr_primitive_generic(
 	int nr_rows = alpha.rows(), nr_cols = alpha.cols();
 	Eigen::ArrayXXd theta = asum.replicate(1, nr_nuc);
 	Eigen::ArrayXXd U = Eigen::ArrayXXd::Zero(nr_rows, nr_cols*nr_nuc);
+	Eigen::ArrayXXd dPC(nr_rows, nr_cols*nr_nuc);
 	std::vector<Eigen::ArrayXXd> Axyz[3];
 
 	for (int i = 0; i < 3; i++)
 	{
 		Eigen::ArrayXXd P = (alpha*posA[i] + beta*posB[i]) / asum;
-		Eigen::ArrayXXd dPC(nr_rows, nr_cols*nr_nuc);
 		for (int iC = 0; iC < nr_nuc; ++iC)
 			dPC.block(0, iC*nr_cols, nr_rows, nr_cols) = P - nuc_pos(i, iC);
 		U += dPC.square();
@@ -97,7 +126,7 @@ Eigen::ArrayXXd gto_nuc_attr_primitive_generic(
 
 	for (int m = lsum-1; m >= 0; --m)
 	{
-		Am = Eigen::ArrayXXd::Zero(nr_rows, nr_cols*nr_nuc);
+		Am.setZero();
 		for (int ix = 0; ix <= std::min(m, lsAB.x()); ++ix)
 		{
 			for (int iy = 0; iy <= std::min(m-ix, lsAB.y()); ++iy)
