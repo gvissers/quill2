@@ -1,6 +1,9 @@
 #include "CGTOPair.hh"
+#include "Dispatcher.hh"
 #include "gaussint/gto_one_elec.hh"
 #include "gaussint/gto_nuc_attr.hh"
+
+const size_t CGTOPair::cid = Dispatcher::singleton().classID<CGTOPair>();
 
 double CGTOPair::overlap() const
 {

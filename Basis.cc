@@ -34,14 +34,13 @@ void Basis::setQuads() const
 	if (!_status.test(PAIRS_CURRENT))
 		setPairs();
 
+	const Dispatcher& dispatcher = Dispatcher::singleton();
+
 	_quads.clear();
 	for (PairList::const_iterator iit = _pairs.begin(); iit != _pairs.end(); ++iit)
 	{
 		for (PairList::const_iterator jit = _pairs.begin(); jit <= iit; ++jit)
-		{
-			AbstractBFQuad *q = new AbstractBFQuad(**iit, **jit);
-			_quads.push_back(std::unique_ptr<AbstractBFQuad>(q));
-		}
+			_quads.push_back(dispatcher.quad(**iit, **jit));
 	}
 	
 	_status.set(QUADS_CURRENT);

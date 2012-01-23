@@ -69,6 +69,8 @@ public:
 	const Eigen::VectorXd& widths() const { return _widths; }
 	//! Return the center position of this orbital
 	const Eigen::Vector3d& center() const { return _center; }
+	//! Return the \a i coordinate of the center of this orbital
+	double center(int i) const { return _center[i]; }
 
 	/*!
 	 * \brief Print this CGTO

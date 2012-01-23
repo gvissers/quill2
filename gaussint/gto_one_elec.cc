@@ -136,29 +136,29 @@ void gto_one_elec_primitive_generic(
 	}
 }
 
-void gto_one_elec_generic(const Eigen::Vector3i& ls1,
-	const Eigen::VectorXd& weights1, const Eigen::VectorXd& widths1,
-	const Eigen::Vector3d& pos1,
-	const Eigen::Vector3i& ls2,
-	const Eigen::VectorXd& weights2, const Eigen::VectorXd& widths2,
-	const Eigen::Vector3d& pos2,
+void gto_one_elec_generic(const Eigen::Vector3i& lsA,
+	const Eigen::VectorXd& weightsA, const Eigen::VectorXd& widthsA,
+	const Eigen::Vector3d& posA,
+	const Eigen::Vector3i& lsB,
+	const Eigen::VectorXd& weightsB, const Eigen::VectorXd& widthsB,
+	const Eigen::Vector3d& posB,
 	double *S, double *T)
 {
-	int n1 = widths1.size(), n2 = widths2.size();
-	Eigen::ArrayXXd alpha = widths1.replicate(1, n2);
-	Eigen::ArrayXXd beta = widths2.transpose().replicate(n1, 1);
+	int nA = widthsA.size(), nB = widthsB.size();
+	Eigen::ArrayXXd alpha = widthsA.replicate(1, nB);
+	Eigen::ArrayXXd beta = widthsB.transpose().replicate(nA, 1);
 	Eigen::ArrayXXd asum = alpha + beta;
-	Eigen::ArrayXXd ared = (widths1 * widths2.transpose()).array() / asum;
-	Eigen::Vector3d r = pos2 - pos1;
+	Eigen::ArrayXXd ared = (widthsA * widthsB.transpose()).array() / asum;
+	Eigen::Vector3d r = posB - posA;
 	Eigen::ArrayXXd exp_ared = (-r.squaredNorm() * ared).exp();
 	Eigen::ArrayXXd Sp, Tp;
 
-	gto_one_elec_primitive_generic(ls1, ls2, alpha, beta, asum, ared,
+	gto_one_elec_primitive_generic(lsA, lsB, alpha, beta, asum, ared,
 		exp_ared, r, Sp, Tp);
 
 	*S = Constants::pi_sqrt_pi
-		* weights1.transpose() * Sp.matrix() * weights2;
+		* weightsA.transpose() * Sp.matrix() * weightsB;
 	*T = Constants::pi_sqrt_pi
-		* weights1.transpose() * Tp.matrix() * weights2;
+		* weightsA.transpose() * Tp.matrix() * weightsB;
 }
 

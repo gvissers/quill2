@@ -275,15 +275,15 @@ Eigen::ArrayXXd gto_overlap_primitive_specialized<0, 0, 0, 0, 0, 2>(
 		/ (asum.cube() * asum.sqrt());
 }
 
-Eigen::ArrayXXd gto_overlap_primitive_1d(int l1, int l2, double x,
+Eigen::ArrayXXd gto_overlap_primitive_1d(int lA, int lB, double x,
 	const Eigen::ArrayXXd& beta, const Eigen::ArrayXXd& asum)
 {
 #ifdef DEBUG
-	if (l1 < l2)
-		throw Li::Exception("l1 must not be smaller than l2");
+	if (lA < lB)
+		throw Li::Exception("lA must not be smaller than lB");
 #endif
 
-	int powsum = l1 + l2;
+	int powsum = lA + lB;
 	if (powsum == 0)
 		return Eigen::ArrayXXd::Ones(beta.rows(), beta.cols());
 	if (powsum == 1)
@@ -291,17 +291,17 @@ Eigen::ArrayXXd gto_overlap_primitive_1d(int l1, int l2, double x,
 
 	std::vector<Eigen::ArrayXXd> coefs;
 	coefs.push_back(x*beta/asum);
-	// Recursion in l1:
-	// S_l+1,0 = [l/2 S_l-1,0 + x beta S_l,0] / (alpha + beta)
+	// Recursion in lA:
+	// S_lA+1,0 = [lA/2 S_lA-1,0 + x beta S_lA,0] / (alpha + beta)
 	coefs.push_back((0.5 + x*beta*coefs[0]) / asum);
 	for (int i = 2; i < powsum; i++)
 		coefs.push_back((0.5*i*coefs[i-2] + x*beta*coefs[i-1]) / asum);
 
 	// recursion in l2:
-	// S_l1,l2 = S_l1+1,l2-1 - x S_l1,l2-1
-	for (int j = 0; j < l2; j++)
+	// S_lA,lB = S_lA+1,lB-1 - x S_lA,lB-1
+	for (int j = 0; j < lB; j++)
 	{
-		for (int i = powsum-1; i >= l1+j; i--)
+		for (int i = powsum-1; i >= lA+j; i--)
 			coefs[i] -= x * coefs[i-1];
 	}
 

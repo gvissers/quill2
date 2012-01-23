@@ -15,6 +15,7 @@
 // Forward declarations
 class AbstractBF;
 class AbstractBFPair;
+class AbstractBFQuad;
 
 /*!
  * \brief Class for looking up basis function pairs
@@ -34,6 +35,10 @@ public:
 	typedef AbstractBFPair* (*PairCreatorPtr)(const AbstractBF& f, const AbstractBF& g);
 	//! Local typedef for a lookup table of pair creation functions
 	typedef std::unordered_map<std::pair<size_t, size_t>, PairCreatorPtr> PairMap;
+	//! Local typedef for a quartet creation function
+	typedef AbstractBFQuad* (*QuadCreatorPtr)(const AbstractBFPair& p, const AbstractBFPair& q);
+	//! Local typedef for a lookup table of pair creation functions
+	typedef std::unordered_map<std::pair<size_t, size_t>, QuadCreatorPtr> QuadMap;
 
 	//! Constructor
 	Dispatcher();
@@ -60,25 +65,52 @@ public:
 	 */
 	std::unique_ptr<AbstractBFPair> pair(const AbstractBF& f,
 		const AbstractBF& g) const;
+	/*!
+	 * \brief Create a quartet of basis functions
+	 *
+	 * Create the basis function quarter from function pairs \a p and \a q,
+	 * by looking up the types of \a p and \a q in the lookup table, and
+	 * calling the appropriate constructor function.
+	 * \param p The first function pair in the quartet
+	 * \param q The second function pair in the quartet
+	 * \return Pointer to the basis function quartet (p,q)
+	 */
+	std::unique_ptr<AbstractBFQuad> quad(const AbstractBFPair& p,
+		const AbstractBFPair& q) const;
 
 	//! Return the number of type pairs in this dispatcher
 	int nrPairs() { return _pair_funs.size(); }
+	//! Return the number of type quartets in this dispatcher
+	int nrQuads() { return _quad_funs.size(); }
 
 private:
 	//! Hash function object for creating class IDs
 	std::hash<std::string> _hasher;
 	//! The map of pair creation functions
 	PairMap _pair_funs;
+	//! The map of quartet creation functions
+	QuadMap _quad_funs;
 
 	template <int lx1, int ly1, int lz1, int lx2, int ly2, int lz2, int lsum>
 	friend struct SpecSpecAdder;
 	template <int lx1, int ly1, int lz1>
 	friend struct SpecGenericAdder;
 
-	//! Set the pair creation function for orbitals with type ids \a id1 and \a id2 to \a fun
+	/*!
+	 * \brief Set the pair creation function for orbitals with type ids
+	 *    \a id1 and \a id2 to \a fun.
+	 */
 	void setPairCreator(size_t id1, size_t id2, PairCreatorPtr pc)
 	{
 		_pair_funs.insert(std::make_pair(std::make_pair(id1, id2), pc));
+	}
+	/*!
+	 * \brief Set the quartet creation function for orbital pairs with type
+	 *    ids \a id1 and \a id2 to \a fun.
+	 */
+	void setQuadCreator(size_t id1, size_t id2, QuadCreatorPtr qc)
+	{
+		_quad_funs.insert(std::make_pair(std::make_pair(id1, id2), qc));
 	}
 };
 

@@ -21,8 +21,11 @@
 class CGTOPair: public AbstractBFPair
 {
 	public:
+		static const size_t cid;
+
 		//! Constructor
-		CGTOPair(const CGTO& f, const CGTO& g): AbstractBFPair(f, g) {}
+		CGTOPair(const CGTO& f, const CGTO& g):
+			AbstractBFPair(cid, f, g) {}
 
 		//! Return the first orbital in the pair
 		const CGTO& f() const
@@ -60,6 +63,14 @@ class CGTOPair: public AbstractBFPair
 			const Eigen::VectorXd& nuc_charge) const;
 
 		/*!
+		 * \brief Return the total number of primitive pairs in this
+		 *    pair of contractions
+		 */
+		int size() const
+		{
+			return f().size() * g().size();
+		}
+		/*!
 		 * \brief Return the widths of the primitives in the first
 		 *    contraction, for all primitives in the second contraction.
 		 */
@@ -94,6 +105,14 @@ class CGTOPair: public AbstractBFPair
 		Eigen::Vector3d r() const
 		{
 			return g().center() - f().center();
+		}
+		/*!
+		 * \brief Return the weighted average \a i coordinate, for each
+		 *    combination of primitive weights.
+		 */
+		Eigen::ArrayXXd P(int i) const
+		{
+			return (alpha()*f().center(i) + beta()*g().center(i)) / asum();
 		}
 
 		/*!
