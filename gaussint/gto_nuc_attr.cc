@@ -14,15 +14,14 @@ Eigen::ArrayXXd gto_nuc_attr_primitive_specialized<0, 0, 0, 0, 0, 0>(
 {
 	int nr_nuc = nuc_pos.cols();
 	int nr_rows = alpha.rows(), nr_cols = alpha.cols();
+	Eigen::ArrayXXd P;
 	Eigen::ArrayXXd U = Eigen::ArrayXXd::Zero(nr_rows, nr_cols*nr_nuc);
-	Eigen::ArrayXXd dPC(nr_rows, nr_cols*nr_nuc);
 
 	for (int i = 0; i < 3; i++)
 	{
-		Eigen::ArrayXXd P = (alpha*posA[i] + beta*posB[i]) / asum;
+		P = (alpha*posA[i] + beta*posB[i]) / asum;
 		for (int iC = 0; iC < nr_nuc; ++iC)
-			dPC.block(0, iC*nr_cols, nr_rows, nr_cols) = P - nuc_pos(i, iC);
-		U += dPC.square();
+			U.block(0, iC*nr_cols, nr_rows, nr_cols) += (P - nuc_pos(i, iC)).square();
 	}
 	U *= asum.replicate(1, nr_nuc);
 
@@ -34,10 +33,11 @@ Eigen::ArrayXXd gto_nuc_attr_primitive_specialized<0, 0, 0, 0, 0, 0>(
 	return exp_ared * A / asum;
 }
 
-static std::vector<Eigen::ArrayXXd> gto_nuc_attr_primitive_generic_1d(
+static void gto_nuc_attr_primitive_generic_1d(
 	int lA, int lB, double xA, double xB,
 	const Eigen::ArrayXXd& theta,
-	const Eigen::ArrayXXd& P, const Eigen::ArrayXXd& dPC)
+	const Eigen::ArrayXXd& P, const Eigen::ArrayXXd& dPC,
+	std::vector<Eigen::ArrayXXd>& res)
 {
 	if (lA < lB)
 	{
@@ -48,7 +48,10 @@ static std::vector<Eigen::ArrayXXd> gto_nuc_attr_primitive_generic_1d(
 	int rows = P.rows();
 	int cols = dPC.cols();
 	if (lA == 0)
-		return std::vector<Eigen::ArrayXXd>(1, Eigen::ArrayXXd::Ones(rows, cols));
+	{
+		res.assign(1, Eigen::ArrayXXd::Ones(rows, cols));
+		return;
+	}
 
 	int lsum = lA+lB;
 	std::vector< std::vector<Eigen::ArrayXXd> > As(lsum+1);
@@ -84,7 +87,7 @@ static std::vector<Eigen::ArrayXXd> gto_nuc_attr_primitive_generic_1d(
 		}
 	}
 	
-	return As.back();
+	res.swap(As.back());
 }
 
 Eigen::ArrayXXd gto_nuc_attr_primitive_generic(
@@ -97,19 +100,20 @@ Eigen::ArrayXXd gto_nuc_attr_primitive_generic(
 	int nr_nuc = nuc_pos.cols();
 	int nr_rows = alpha.rows(), nr_cols = alpha.cols();
 	Eigen::ArrayXXd theta = asum.replicate(1, nr_nuc);
+	Eigen::ArrayXXd P;
 	Eigen::ArrayXXd U = Eigen::ArrayXXd::Zero(nr_rows, nr_cols*nr_nuc);
 	Eigen::ArrayXXd dPC(nr_rows, nr_cols*nr_nuc);
 	std::vector<Eigen::ArrayXXd> Axyz[3];
 
 	for (int i = 0; i < 3; i++)
 	{
-		Eigen::ArrayXXd P = (alpha*posA[i] + beta*posB[i]) / asum;
+		P = (alpha*posA[i] + beta*posB[i]) / asum;
 		for (int iC = 0; iC < nr_nuc; ++iC)
 			dPC.block(0, iC*nr_cols, nr_rows, nr_cols) = P - nuc_pos(i, iC);
 		U += dPC.square();
 
-		Axyz[i] = gto_nuc_attr_primitive_generic_1d(lsA[i], lsB[i],
-			posA[i], posB[i], theta, P, dPC);
+		gto_nuc_attr_primitive_generic_1d(lsA[i], lsB[i],
+			posA[i], posB[i], theta, P, dPC, Axyz[i]);
 	}
 	U *= theta;
 
