@@ -1,5 +1,6 @@
 # /
 /*.d
+/*.o
 
 # /basis_sets/
 /basis_sets/cookies.dat
