@@ -17,7 +17,8 @@ int main()
 		PeriodicTable table("data/elements.dat");
 		IndentingOStream os(std::cout);
 
-		std::string job("C 0 0 0\nH 1 1 1\nH -1 -1 1\nH -1 1 -1\nH 1 -1 -1");
+		//std::string job("C 0 0 0\nH 1 1 1\nH -1 -1 1\nH -1 1 -1\nH 1 -1 -1");
+		std::string job("H 0.7 0 0\nH -0.7 0 0");
 		std::istringstream iss(job);
 		JobIStream jis(iss);
 
@@ -43,6 +44,7 @@ int main()
 		os << basis.overlap() << "\n\n" << basis.kineticEnergy() << "\n\n"
 			<< basis.nuclearAttraction(geom.positions(), geom.charges())
 			<< "\n";
+		basis.electronRepulsion();
 /*
 		std::string mat = "C\n"
 			"H   1 1.089000\n"

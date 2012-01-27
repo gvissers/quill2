@@ -27,36 +27,72 @@ public:
 	{
 		return static_cast< const CGTOPair& >(AbstractBFQuad::q());
 	}
+	
+	double electronRepulsion() const;
 
-	//! Reduced widths for the first pair, for all primitives in the second pair
-	Eigen::ArrayXXd alpha() const
+	/*!
+	 * \brief Sums of primitive widths for the first pair, for all
+	 *     primitives in the second pair
+	 */
+	Eigen::ArrayXXd widthsAB() const
 	{
-		return Eigen::ArrayXd::Map(p().ared().data(), p().size())
+		return Eigen::ArrayXd::Map(p().widthsSum().data(), p().size())
 			.replicate(1, q().size());
 	}
-	//! Reduced widths for the second pair, for all primitives in the first pair
-	Eigen::ArrayXXd beta() const
+	/*!
+	 * \brief Sums of primitive widths for the second pair, for all
+	 *    primitives in the first pair
+	 */
+	Eigen::ArrayXXd widthsCD() const
 	{
-		return Eigen::ArrayXd::Map(q().ared().data(), q().size())
+		return Eigen::ArrayXd::Map(q().widthsSum().data(), q().size())
 			.transpose().replicate(p().size(), 1);
 	}
-	//! Sums of reduced widths, for all primitives in the quartet
-	Eigen::ArrayXXd asum() const
+	//! Sums of primitve widths, for all combination of primitives GTOs
+	Eigen::ArrayXXd widthsSum() const
 	{
-		return alpha() + beta();
+		return widthsAB() + widthsCD();
 	}
-	//! Overall reduced widths \f$\xi = \alpha\beta / (\alpha+\beta)\f$
-	Eigen::ArrayXXd ared() const
+	//! Reduced widths \f$\rho = \frac{\zeta\eta}{\zeta+\eta}\f$
+	Eigen::ArrayXXd widthsReduced() const
 	{
-		return alpha()*beta() / asum();
+		return widthsAB() * widthsCD() / widthsSum();
 	}
+	
+	Eigen::VectorXd weightsAB() const
+	{
+		return Eigen::VectorXd::Map(p().weights().data(), p().size());
+	}
+	Eigen::VectorXd weightsCD() const
+	{
+		return Eigen::VectorXd::Map(q().weights().data(), q().size());
+	}
+
+	Eigen::ArrayXXd P(int i) const
+	{
+		return Eigen::ArrayXd::Map(p().P(i).data(), p().size())
+			.replicate(1, q().size());
+	}
+	Eigen::ArrayXXd Q(int i) const
+	{
+		return Eigen::ArrayXd::Map(q().P(i).data(), q().size())
+			.transpose().replicate(p().size(), 1);
+	}
+	
 	/*!
 	 * \brief Return the weighted average \a i coordinate, for each
 	 *    combination of primitive weights.
 	 */
-	Eigen::ArrayXXd P(int i) const
+	Eigen::ArrayXXd W(int i) const
 	{
-		return (alpha()*p().P(i) + beta()*q().P(i)) / asum();
+		return (widthsAB()*P(i) + widthsCD()*Q(i)) / widthsSum();
+	}
+	Eigen::ArrayXXd KK() const
+	{
+		Eigen::ArrayXd K1 = Eigen::ArrayXd::Map(p().K().data(), p().size());
+		Eigen::ArrayXd K2 = Eigen::ArrayXd::Map(q().K().data(), q().size());
+		return K1.replicate(1, q().size())
+			* K2.transpose().replicate(p().size(), 1);
 	}
 
 	/*!

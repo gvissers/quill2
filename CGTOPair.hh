@@ -10,6 +10,7 @@
 #include <Eigen/Core>
 #include "AbstractBFPair.hh"
 #include "CGTO.hh"
+#include "constants.hh"
 
 /*!
  * \brief Class for pairs of contracted GTOs
@@ -20,124 +21,136 @@
  */
 class CGTOPair: public AbstractBFPair
 {
-	public:
-		static const size_t cid;
+public:
+	static const size_t cid;
 
-		//! Constructor
-		CGTOPair(const CGTO& f, const CGTO& g):
-			AbstractBFPair(cid, f, g) {}
+	//! Constructor
+	CGTOPair(const CGTO& f, const CGTO& g):
+		AbstractBFPair(cid, f, g) {}
 
-		//! Return the first orbital in the pair
-		const CGTO& f() const
-		{
-			return static_cast< const CGTO& >(AbstractBFPair::f());
-		}
-		//! Return the second orbital in the pair
-		const CGTO& g() const
-		{
-			return static_cast< const CGTO& >(AbstractBFPair::g());
-		}
+	//! Return the first orbital in the pair
+	const CGTO& f() const
+	{
+		return static_cast< const CGTO& >(AbstractBFPair::f());
+	}
+	//! Return the second orbital in the pair
+	const CGTO& g() const
+	{
+		return static_cast< const CGTO& >(AbstractBFPair::g());
+	}
 
-		//! Compute the overlap between the two orbitals in this pair
-		virtual double overlap() const;
-		//! Compute the kinetic energy integral between the two orbitals in this pair
-		virtual double kineticEnergy() const;
-		/*!
-		 * \brief Compute one-electron integrals
-		 *
-		 * Compute the overlap and kinetic energy integral between the
-		 * two functions in this pair.
-		 * \param S Place to store the overlap
-		 * \param T Place to store the kinetic energy
-		 */
-		virtual void oneElectron(double& S, double& T) const;
+	//! Compute the overlap between the two orbitals in this pair
+	virtual double overlap() const;
+	//! Compute the kinetic energy integral between the two orbitals in this pair
+	virtual double kineticEnergy() const;
+	/*!
+	 * \brief Compute one-electron integrals
+	 *
+	 * Compute the overlap and kinetic energy integral between the two
+	 * functions in this pair.
+	 * \param S Place to store the overlap
+	 * \param T Place to store the kinetic energy
+	 */
+	virtual void oneElectron(double& S, double& T) const;
+	/*!
+	 * \brief Compute nuclear attraction integrals
+	 * 
+	 * Compute the nuclear attraction integrals, due to the nuclei with
+	 * positions \a nuc_pos and charges \a nuc_charge, between the functions
+	 * in this pair.
+	 * \param nuc_pos    The positions of the nuclei
+	 * \param nuc_charge The nuclear charges
+	 */
+	virtual double nuclearAttraction(const Eigen::MatrixXd& nuc_pos,
+		const Eigen::VectorXd& nuc_charge) const;
 
-		/*!
-		 * Compute the nuclear attraction integrals, due to the nuclei
-		 * with positions \a nuc_pos and charges \a nuc_charge, between
-		 * the functions in this pair.
-		 * \param nuc_pos    The positions of the nuclei
-		 * \param nuc_charge The nuclear charges
-		 */
-		virtual double nuclearAttraction(const Eigen::MatrixXd& nuc_pos,
-			const Eigen::VectorXd& nuc_charge) const;
+	/*!
+	 * \brief Return the total number of primitive pairs in this
+	 *    pair of contractions
+	 */
+	int size() const
+	{
+		return f().size() * g().size();
+	}
+	/*!
+	 * \brief Return the widths of the primitives in the first contraction,
+	 *    for all primitives in the second contraction.
+	 */
+	Eigen::ArrayXXd widthsA() const
+	{
+		return f().widths().replicate(1, g().size());
+	}
+	/*!
+	 * \brief Return the widths of the primitives in the second
+	 *    contraction, for all primitives in the first contraction.
+	 */
+	Eigen::ArrayXXd widthsB() const
+	{
+		return g().widths().transpose().replicate(f().size(), 1);
+	}
+	//! The sums of primitive widths, equivalent to alpha() + beta()
+	Eigen::ArrayXXd widthsSum() const
+	{
+		return widthsA() + widthsB();
+	}
+	//! The "reduced" primitive widths \f$\xi = \alpha\beta / (\alpha+\beta)\f$
+	Eigen::ArrayXXd widthsReduced() const
+	{
+		return widthsA()*widthsB() / widthsSum();
+	}
+	//! \f$\exp(-\xi r^2)\f$ with \f$r\f$ the distance between the centers of the two orbitals
+	Eigen::ArrayXXd exp_ared() const
+	{
+		return (-r().squaredNorm()*widthsReduced()).exp();
+	}
+	//! Return the vector from the first to the second orbital center
+	Eigen::Vector3d r() const
+	{
+		return g().center() - f().center();
+	}
+	/*!
+	 * \brief Return the weighted average \a i coordinate, for each
+	 *    combination of primitive weights.
+	 */
+	Eigen::ArrayXXd P(int i) const
+	{
+		return (widthsA()*f().center(i) + widthsB()*g().center(i)) / widthsSum();
+	}
+	Eigen::ArrayXXd K() const
+	{
+		return Constants::sqrt_2_pi_5_4 * exp_ared() / widthsSum();
+	}
+	/*!
+	 * \brief Return the products of the weights for each combination of
+	 *    primitives in the contraction
+	 */
+	Eigen::ArrayXXd weights() const
+	{
+		return f().weights() * g().weights().transpose();
+	}
 
-		/*!
-		 * \brief Return the total number of primitive pairs in this
-		 *    pair of contractions
-		 */
-		int size() const
+	/*!
+	 * \brief Create a new CGTOPair
+	 *
+	 * Create a new pairs of CGTOs. This pseudo-constructor provides a
+	 * common interface that allows the Dispatcher to add pair creation
+	 * functions for arbitrary pairs of basis function types.
+	 * \param f The first orbital in the pair. Should be a CGTO.
+	 * \param g The second orbital in the pair. Should be a CGTO.
+	 */
+	static AbstractBFPair *create(const AbstractBF& f, const AbstractBF& g)
+	{
+		try
 		{
-			return f().size() * g().size();
+			const CGTO& ff = dynamic_cast< const CGTO& >(f);
+			const CGTO& gg = dynamic_cast< const CGTO& >(g);
+			return new CGTOPair(ff, gg);
 		}
-		/*!
-		 * \brief Return the widths of the primitives in the first
-		 *    contraction, for all primitives in the second contraction.
-		 */
-		Eigen::ArrayXXd alpha() const
+		catch (const std::bad_cast&)
 		{
-			return f().widths().replicate(1, g().size());
+			throw Li::Exception("Invalid basis function type");
 		}
-		/*!
-		 * \brief Return the widths of the primitives in the second
-		 *    contraction, for all primitives in the first contraction.
-		 */
-		Eigen::ArrayXXd beta() const
-		{
-			return g().widths().transpose().replicate(f().size(), 1);
-		}
-		//! The sums of primitive widths, equivalent to alpha() + beta()
-		Eigen::ArrayXXd asum() const
-		{
-			return alpha() + beta();
-		}
-		//! The "reduced" primitive widths \f$\xi = \alpha\beta / (\alpha+\beta)\f$
-		Eigen::ArrayXXd ared() const
-		{
-			return alpha()*beta() / asum();
-		}
-		//! \f$\exp(-\xi r^2)\f$ with \f$r\f$ the distance between the centers of the two orbitals
-		Eigen::ArrayXXd exp_ared() const
-		{
-			return (-r().squaredNorm()*ared()).exp();
-		}
-		//! Return the vector from the first to the second orbital center
-		Eigen::Vector3d r() const
-		{
-			return g().center() - f().center();
-		}
-		/*!
-		 * \brief Return the weighted average \a i coordinate, for each
-		 *    combination of primitive weights.
-		 */
-		Eigen::ArrayXXd P(int i) const
-		{
-			return (alpha()*f().center(i) + beta()*g().center(i)) / asum();
-		}
-
-		/*!
-		 * \brief Create a new CGTOPair
-		 *
-		 * Create a new pairs of CGTOs. This pseudo-constructor
-		 * provides a common interface that allows the Dispatcher to
-		 * add pair creation functions for arbitrary pairs of basis
-		 * function types.
-		 * \param f The first orbital in the pair. Should be a CGTO.
-		 * \param g The second orbital in the pair. Should be a CGTO.
-		 */
-		static AbstractBFPair *create(const AbstractBF& f, const AbstractBF& g)
-		{
-			try
-			{
-				const CGTO& ff = dynamic_cast< const CGTO& >(f);
-				const CGTO& gg = dynamic_cast< const CGTO& >(g);
-				return new CGTOPair(ff, gg);
-			}
-			catch (const std::bad_cast&)
-			{
-				throw Li::Exception("Invalid basis function type");
-			}
-		}
+	}
 };
 
 #endif // CGTOPAIR_HH

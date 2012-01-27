@@ -21,7 +21,8 @@ const double c = 299792458 * meter / second;    //!< speed of light
 const double Debye = 0.1 * Coulomb * Ang * Ang / (second * c); //!< Debye in e*a0
 const double cm1 = 1.0 / 219474.6313705;        //!< cm^-1 in E_h
 
-const double pi_sqrt_pi = 5.5683279968317078;   //!< pi^3/2
+const double pi_sqrt_pi    = 5.5683279968317078; //!< \f$\pi^{3/2}\f$
+const double sqrt_2_pi_5_4 = 5.9149671727956129; //!< \f$\sqrt{2}\pi^{5/4}\f$
 
 } // namespace Constants
 

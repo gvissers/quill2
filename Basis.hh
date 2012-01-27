@@ -47,6 +47,8 @@ class Basis
 			KINETIC_CURRENT,
 			//! Set when the nuclear attraction matrix is computed and up to date
 			NUC_ATTR_CURRENT,
+			//! Set when the electron repulsion integrals are computed and up to date
+			ELEC_REP_CURRENT,
 			//! The number of status flags
 			NR_FLAGS
 		};
@@ -114,6 +116,12 @@ class Basis
 				calcNuclearAttraction(nuc_pos, nuc_charge);
 			return _nuc_attr;
 		}
+		
+		void electronRepulsion()
+		{
+			if (!_status.test(ELEC_REP_CURRENT))
+				calcElectronRepulsion();
+		}
 
 		/*!
 		 * \brief Print this basis
@@ -140,6 +148,7 @@ class Basis
 		mutable Eigen::MatrixXd _kinetic;
 		//! The nuclear attraction matrix for this basis
 		mutable Eigen::MatrixXd _nuc_attr;
+		mutable Eigen::ArrayXd _elec_rep;
 
 		//! Create the list of basis function pairs
 		void setPairs() const;
@@ -161,6 +170,7 @@ class Basis
 		 */
 		void calcNuclearAttraction(const Eigen::MatrixXd& nuc_pos,
 			const Eigen::VectorXd& nuc_charge) const;
+		void calcElectronRepulsion() const;
 };
 
 namespace {

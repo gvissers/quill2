@@ -96,8 +96,8 @@ double CGTOSpecPair<lxA, lyA, lzA, lxB, lyB, lzB>::overlap() const
 {
 	return Constants::pi_sqrt_pi * f().weights().transpose()
 		* gto_overlap_primitive_specialized<lxA, lyA, lzA, lxB, lyB, lzB>(
-			alpha(), beta(), asum(), ared(), exp_ared(),
-			r()).matrix()
+			widthsA(), widthsB(), widthsSum(), widthsReduced(),
+			exp_ared(), r()).matrix()
 		* g().weights();
 }
 
@@ -106,8 +106,8 @@ double CGTOSpecPair<lxA, lyA, lzA, lxB, lyB, lzB>::kineticEnergy() const
 {
 	return Constants::pi_sqrt_pi * f().weights().transpose()
 		* gto_kinetic_primitive_specialized<lxA, lyA, lzA, lxB, lyB, lzB>(
-			alpha(), beta(), asum(), ared(), exp_ared(),
-			r()).matrix()
+			widthsA(), widthsB(), widthsSum(), widthsReduced(),
+			exp_ared(), r()).matrix()
 		* g().weights();
 }
 
@@ -116,7 +116,8 @@ void CGTOSpecPair<lxA, lyA, lzA, lxB, lyB, lzB>::oneElectron(double &S, double &
 {
 	Eigen::ArrayXXd Sp, Tp;
 	gto_one_elec_primitive_specialized<lxA, lyA, lzA, lxB, lyB, lzB>(
-		alpha(), beta(), asum(), ared(), exp_ared(), r(), Sp, Tp);
+		widthsA(), widthsB(), widthsSum(), widthsReduced(),
+		exp_ared(), r(), Sp, Tp);
 	S = Constants::pi_sqrt_pi * f().weights().transpose()
 		* Sp.matrix() * g().weights();
 	T = Constants::pi_sqrt_pi * f().weights().transpose()
@@ -129,8 +130,8 @@ double CGTOSpecPair<lxA, lyA, lzA, lxB, lyB, lzB>::nuclearAttraction(
 {
 	return 2 * M_PI * f().weights().transpose()
 		* gto_nuc_attr_primitive_specialized<lxA, lyA, lzA, lxB, lyB, lzB>(
-			alpha(), beta(), f().center(), g().center(),
-			asum(), exp_ared(), nuc_pos, nuc_charge).matrix()
+			widthsA(), widthsB(), f().center(), g().center(),
+			widthsSum(), exp_ared(), nuc_pos, nuc_charge).matrix()
 		* g().weights();
 }
 

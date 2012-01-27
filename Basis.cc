@@ -129,3 +129,33 @@ void Basis::calcNuclearAttraction(const Eigen::MatrixXd& nuc_pos,
 
 	_status.set(NUC_ATTR_CURRENT);
 }
+
+#include <CGTOQuad.hh>
+void Basis::calcElectronRepulsion() const
+{
+	if (!_status.test(QUADS_CURRENT))
+		setQuads();
+	
+	_elec_rep.resize(_quads.size());
+	for (unsigned int i = 0; i < _quads.size(); ++i)
+	{
+		_elec_rep[i] = _quads[i]->electronRepulsion();
+/*
+		if (isnan(_elec_rep[i]))
+		{
+			CGTOQuad *qd = static_cast<CGTOQuad*>(_quads[i].get());
+			std::cout << qd->p().f().ls().transpose() << ", "
+				<< qd->p().g().ls().transpose() << ", "
+				<< qd->q().f().ls().transpose() << ", "
+				<< qd->q().g().ls().transpose() << "\n";
+			std::cout << qd->p().f().center().transpose() << ", "
+				<< qd->p().g().center().transpose() << ", "
+				<< qd->q().f().center().transpose() << ", "
+				<< qd->q().g().center().transpose() << "\n";
+		}
+*/
+		std::cout << i << " " << _elec_rep[i] << "\n";
+	}
+	
+	_status.set(ELEC_REP_CURRENT);
+}

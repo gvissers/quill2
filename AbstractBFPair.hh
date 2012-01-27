@@ -3,7 +3,7 @@
 
 /*!
  * \file AbstractBFPair.hh
- * \brief Definition of the AbstractBDPair class
+ * \brief Definition of the AbstractBFPair class
  */
 
 #include "AbstractBF.hh"
