@@ -49,6 +49,8 @@ public:
 	int ly() const { return _ls.y(); }
 	//! Return the angular momentum in the \f$z\f$ direction
 	int lz() const { return _ls.z(); }
+	//! Return the angular momentum in the \a i direction
+	int l(int i) const { return _ls[i]; }
 	//! Return the total angular momentum
 	int lsum() const { return _ls.sum(); }
 	//! Return the weight of the \a i'th primitive

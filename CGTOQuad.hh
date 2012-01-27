@@ -28,7 +28,34 @@ public:
 		return static_cast< const CGTOPair& >(AbstractBFQuad::q());
 	}
 	
+	/*!
+	 * Compute the electron repulsion integral
+	 * \f$\langle ab|\frac{1}{r_{12}}|cd\rangle\f$, where orbitals \f$a\f$
+	 * and \f$b\f$ are stored in the first orbital pair of this quartet, and 
+	 * \f$c\f$ and \f$d\f$ are stored in the second pair.
+	 */
 	double electronRepulsion() const;
+
+	//! Return the angular momentum in the \a i direction for the first orbital
+	int lA(int i) const
+	{
+		return p().lA(i);
+	}
+	//! Return the angular momentum in the \a i direction for the second orbital
+	int lB(int i) const
+	{
+		return p().lB(i);
+	}
+	//! Return the angular momentum in the \a i direction for the third orbital
+	int lC(int i) const
+	{
+		return q().lA(i);
+	}
+	//! Return the angular momentum in the \a i direction for the fourth orbital
+	int lD(int i) const
+	{
+		return q().lB(i);
+	}
 
 	/*!
 	 * \brief Sums of primitive widths for the first pair, for all
@@ -66,6 +93,37 @@ public:
 	Eigen::VectorXd weightsCD() const
 	{
 		return Eigen::VectorXd::Map(q().weights().data(), q().size());
+	}
+	
+	//! Return the \a i coordinate of the first orbital center
+	double centerA(int i) const
+	{
+		return p().centerA(i);
+	}
+	//! Return the \a i coordinate of the second orbital center
+	double centerB(int i) const
+	{
+		return p().centerB(i);
+	}
+	//! Return the \a i coordinate of the third orbital center
+	double centerC(int i) const
+	{
+		return q().centerA(i);
+	}
+	//! Return the \a i coordinate of the fourth orbital center
+	double centerD(int i) const
+	{
+		return q().centerB(i);
+	}
+	//! Return the distance in the \a i direction between the first two orbital centers
+	double rAB(int i) const
+	{
+		return p().r(i);
+	}
+	//! Return the distance in the \a i direction between the second two orbital centers
+	double rCD(int i) const
+	{
+		return q().r(i);
 	}
 
 	Eigen::ArrayXXd P(int i) const
@@ -118,6 +176,9 @@ public:
 			throw Li::Exception("Invalid basis function pair type");
 		}
 	}
+
+private:
+	std::vector<Eigen::ArrayXXd> elecRepPrim1d(int i) const;
 };
 
 #endif // CGTOQUAD_HH

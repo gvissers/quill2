@@ -72,6 +72,16 @@ public:
 	{
 		return f().size() * g().size();
 	}
+	//! Return the angular momentum in the \a i direction for the first orbital
+	int lA(int i) const
+	{
+		return f().l(i);
+	}
+	//! Return the angular momentum in the \a i direction for the second orbital
+	int lB(int i) const
+	{
+		return g().l(i);
+	}
 	/*!
 	 * \brief Return the widths of the primitives in the first contraction,
 	 *    for all primitives in the second contraction.
@@ -103,10 +113,25 @@ public:
 	{
 		return (-r().squaredNorm()*widthsReduced()).exp();
 	}
+	//! Return the \a i coordinate of the first orbital center
+	double centerA(int i) const
+	{
+		return f().center(i);
+	}
+	//! Return the \a i coordinate of the second orbital center
+	double centerB(int i) const
+	{
+		return g().center(i);
+	}
 	//! Return the vector from the first to the second orbital center
 	Eigen::Vector3d r() const
 	{
 		return g().center() - f().center();
+	}
+	//! Return the distance in the \a i direction between the two centers
+	double r(int i) const
+	{
+		return g().center(i) - f().center(i);
 	}
 	/*!
 	 * \brief Return the weighted average \a i coordinate, for each
