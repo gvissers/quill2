@@ -1,15 +1,18 @@
 #include "CGTOQuad.hh"
 #include "gaussint/boys.hh"
 
-std::vector<Eigen::ArrayXXd> CGTOQuad::elecRepPrim1d(int i) const
+void CGTOQuad::elecRepPrim1d(int i, std::vector<Eigen::ArrayXXd>& Ci) const
 {
 	int lA = this->lA(i), lB = this->lB(i),
 		lC = this->lC(i), lD = this->lD(i);
 	int l1 = lA+lB, l2 = lC+lD, lsum = l1+l2;
 	int nr_rows = p().size(), nr_cols = q().size();
 	if (lsum == 0)
-		return std::vector<Eigen::ArrayXXd>(1, Eigen::ArrayXXd::Ones(nr_rows, nr_cols));
-
+	{
+		Ci.assign(1, Eigen::ArrayXXd::Ones(nr_rows, nr_cols));
+		return;
+	}
+	
 	double xA = centerA(i), xB = centerB(i), xC = centerC(i), xD = centerD(i);
 	if (lA < lB)
 	{
@@ -143,7 +146,7 @@ std::vector<Eigen::ArrayXXd> CGTOQuad::elecRepPrim1d(int i) const
 		}
 	}
 	
-	return coefs[l1][l2];
+	return Ci.swap(coefs[l1][l2]);
 }
 
 double CGTOQuad::electronRepulsion() const
@@ -160,7 +163,7 @@ double CGTOQuad::electronRepulsion() const
 		Eigen::ArrayXXd Pi = P(i);
 		Eigen::ArrayXXd Qi = Q(i);
 		
-		Axyz[i] = elecRepPrim1d(i);
+		elecRepPrim1d(i, Axyz[i]);
 		T += (Qi-Pi).square();
 	}
 	T *= widthsReduced();

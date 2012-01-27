@@ -178,7 +178,7 @@ public:
 	}
 
 private:
-	std::vector<Eigen::ArrayXXd> elecRepPrim1d(int i) const;
+	void elecRepPrim1d(int i, std::vector<Eigen::ArrayXXd>& Ci) const;
 };
 
 #endif // CGTOQUAD_HH

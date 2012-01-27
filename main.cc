@@ -25,6 +25,8 @@ int main()
 		Geometry geom;
 		jis >> geom;
 		os << geom << "\n";
+		geom.toPrincipalAxes();
+		os << geom << "\n";
 
 		BasisSet set;
 		std::ifstream is("basis_sets/STO-3G.molcas");

@@ -40,6 +40,11 @@ class Geometry
 		{
 			return _charges;
 		}
+		//! Return the masses of the atoms
+		const Eigen::VectorXd& masses() const
+		{
+			return _masses;
+		}
 		//! Return the position of atom \a idx
 		Eigen::Vector3d position(int idx) const
 		{
@@ -51,6 +56,9 @@ class Geometry
 		{
 			return _positions;
 		}
+		
+		//! Compute the moment of inertia tensor for this molecule
+		Eigen::Matrix3d inertia() const;
 
 		/*!
 		 * \brief Change the size of the Geometry
@@ -93,6 +101,14 @@ class Geometry
 			checkIndex(idx);
 			_positions.col(idx) = pos;
 		}
+		/*!
+		 * \brief Rotate to a principal axis frame
+		 *
+		 * Shift and rotate the system so that its center of mass is
+		 * located at the origin, and its principal axes align with the
+		 * \f$x\f$, \f$y\f$ and \f$z\f$ axes.
+		 */
+		void toPrincipalAxes();
 
 		/*!
 		 * \brief print this Geometry
