@@ -1,5 +1,0 @@
-cookies.dat
-*.turbomole
-*.molpro
-*.dalton
-*.molcas
