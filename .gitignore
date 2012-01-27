@@ -1,0 +1,19 @@
+# /
+/*.d
+
+# /basis_sets/
+/basis_sets/cookies.dat
+/basis_sets/*.turbomole
+/basis_sets/*.molpro
+/basis_sets/*.dalton
+/basis_sets/*.molcas
+
+# /data/
+/data/*.d
+
+# /eigen/
+/eigen/*
+
+# /papers/
+/papers/*
+
