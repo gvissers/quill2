@@ -3,6 +3,37 @@
 #include "Dispatcher.hh"
 #include "io/manipulators.hh"
 
+Eigen::MatrixXd Basis::electronRepulsion(const Eigen::MatrixXd& P)
+{
+	if (!_status.test(ELEC_REP_CURRENT))
+		calcElectronRepulsion();
+
+	int n = P.rows();
+#ifdef DEBUG
+	if (P.cols() != n)
+		throw Li::Exception("Density matrix is not square");
+#endif
+	Eigen::MatrixXd G(n, n);
+	for (int i = 0; i < n; ++i)
+	{
+		for (int j = 0; j <= i; ++j)
+		{
+			double gij = 0;
+			for (int k = 0; k < n; ++k)
+			{
+				for (int l = 0; l < n; ++l)
+				{
+					gij += P(k,l)
+						* (eri(i, k, j, l) - 0.5*eri(i, k, l, j));
+				}
+			}
+			G(i,j) = G(j,i) = gij;
+		}
+	}
+
+	return G;
+}
+
 std::ostream& Basis::print(std::ostream& os) const
 {
 	os << "Basis (\n" << indent;
