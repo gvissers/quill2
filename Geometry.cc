@@ -12,7 +12,7 @@ double Geometry::nuclearRepulsion() const
 
 	for (int j = 1; j < size(); ++j)
 	{
-		sum += (charges().head(j).array()
+		sum += (charges().head(j).transpose().array()
 			/ (positions().block(0, 0, 3, j).colwise() - position(j))
 				.colwise().norm().array())
 			.sum();
