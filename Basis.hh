@@ -122,7 +122,7 @@ public:
 	 * matrix \a P.
 	 * \param P The electron density matrix
 	 */
-	Eigen::MatrixXd electronRepulsion(const Eigen::MatrixXd& P);
+	Eigen::MatrixXd electronRepulsion(const Eigen::MatrixXd& P) const;
 
 	/*!
 	 * \brief Print this basis

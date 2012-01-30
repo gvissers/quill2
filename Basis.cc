@@ -3,7 +3,7 @@
 #include "Dispatcher.hh"
 #include "io/manipulators.hh"
 
-Eigen::MatrixXd Basis::electronRepulsion(const Eigen::MatrixXd& P)
+Eigen::MatrixXd Basis::electronRepulsion(const Eigen::MatrixXd& P) const
 {
 	if (!_status.test(ELEC_REP_CURRENT))
 		calcElectronRepulsion();
@@ -161,7 +161,7 @@ void Basis::calcNuclearAttraction(const Eigen::MatrixXd& nuc_pos,
 	_status.set(NUC_ATTR_CURRENT);
 }
 
-#include <CGTOQuad.hh>
+//#include <CGTOQuad.hh>
 void Basis::calcElectronRepulsion() const
 {
 	if (!_status.test(QUADS_CURRENT))
@@ -184,8 +184,8 @@ void Basis::calcElectronRepulsion() const
 				<< qd->q().f().center().transpose() << ", "
 				<< qd->q().g().center().transpose() << "\n";
 		}
-*/
 		std::cout << i << " " << _elec_rep[i] << "\n";
+*/
 	}
 	
 	_status.set(ELEC_REP_CURRENT);
