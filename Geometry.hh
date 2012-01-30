@@ -35,16 +35,26 @@ class Geometry
 			checkIndex(idx);
 			return _symbols[idx];
 		}
+
 		//! Return the nuclear charges of the atoms
 		const Eigen::VectorXd& charges() const
 		{
 			return _charges;
 		}
+		//! Return the total charge of the the nuclei
+		double totalCharge() const
+		{
+			return _charges.sum();
+		}
+		//! Return the energy due to mutual repulsion of the nuclei
+		double nuclearRepulsion() const;
+
 		//! Return the masses of the atoms
 		const Eigen::VectorXd& masses() const
 		{
 			return _masses;
 		}
+
 		//! Return the position of atom \a idx
 		Eigen::Vector3d position(int idx) const
 		{

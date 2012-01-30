@@ -6,6 +6,21 @@
 #include "io/manipulators.hh"
 #include "exceptions.hh"
 
+double Geometry::nuclearRepulsion() const
+{
+	double sum = 0;
+
+	for (int j = 1; j < size(); ++j)
+	{
+		sum += (charges().head(j).array()
+			/ (positions().block(0, 0, 3, j).colwise() - position(j))
+				.colwise().norm().array())
+			.sum();
+	}
+
+	return sum;
+}
+
 void Geometry::setAtom(int idx, const std::string& symbol,
 	double x, double y, double z)
 {
