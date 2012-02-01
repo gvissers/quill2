@@ -85,6 +85,11 @@ public:
 	{
 		return g().l(i);
 	}
+	//! Return the sum of angular momenta in the \a i direction for the two orbitals
+	int lAB(int i) const
+	{
+		return lA(i) + lB(i);
+	}
 	/*!
 	 * \brief Return the widths of the primitives in the first contraction,
 	 *    for all primitives in the second contraction.

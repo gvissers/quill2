@@ -46,6 +46,11 @@ public:
 	{
 		return p().lB(i);
 	}
+	//! Return the sum of angular momenta for the orbitals in the first pair
+	int lAB(int i) const
+	{
+		return p().lAB(i);
+	}
 	//! Return the angular momentum in the \a i direction for the third orbital
 	int lC(int i) const
 	{
@@ -55,6 +60,16 @@ public:
 	int lD(int i) const
 	{
 		return q().lB(i);
+	}
+	//! Return the sum of angular momenta for the orbitals in the first pair
+	int lCD(int i) const
+	{
+		return q().lAB(i);
+	}
+	//! Return the sum of all for angular momenta in direction \a i.
+	int lsum(int i) const
+	{
+		return lAB(i) + lCD(i);
 	}
 
 	/*!
@@ -180,10 +195,19 @@ public:
 	}
 
 private:
-	void elecRepPrim1d_psss(int i, const Eigen::ArrayXXd& Pi, const Eigen::ArrayXXd& Qi,
+	void elecRepPrim1d_psss(int i,
+		const Eigen::ArrayXXd& Pi, const Eigen::ArrayXXd& Qi,
 		Eigen::ArrayXXd& C0, Eigen::ArrayXXd& C1) const;
-	void elecRepPrim1d(int i, const Eigen::ArrayXXd& Pi, const Eigen::ArrayXXd& Qi,
+	void elecRepPrim1d_ppss(int i,
+		const Eigen::ArrayXXd& Pi, const Eigen::ArrayXXd& Qi,
+		Eigen::ArrayXXd& C0, Eigen::ArrayXXd& C1, Eigen::ArrayXXd& C2) const;
+	void elecRepPrim1d_psps(int i,
+		const Eigen::ArrayXXd& Pi, const Eigen::ArrayXXd& Qi,
+		Eigen::ArrayXXd& C0, Eigen::ArrayXXd& C1, Eigen::ArrayXXd& C2) const;
+	void elecRepPrim1d(int i,
+		const Eigen::ArrayXXd& Pi, const Eigen::ArrayXXd& Qi,
 		std::vector<Eigen::ArrayXXd>& Ci) const;
+
 	double electronRepulsion_ssss() const;
 	double electronRepulsion_psss(const Eigen::Vector3i& ls) const;
 };

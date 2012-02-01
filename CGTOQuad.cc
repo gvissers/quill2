@@ -5,26 +5,87 @@ void CGTOQuad::elecRepPrim1d_psss(int i,
 	const Eigen::ArrayXXd& Pi, const Eigen::ArrayXXd& Qi,
 	Eigen::ArrayXXd& C0, Eigen::ArrayXXd& C1) const
 {
-	int lA = this->lA(i), lB = this->lB(i),
-		lC = this->lC(i), lD = this->lD(i);
-	int l1 = lA+lB, l2 = lC+lD;
 #ifdef DEBUG
-	if (l1 + l2 != 1)
+	if (lsum(i) != 1)
 		throw Li::Exception("Total angular momentum should be 1");
 #endif
 
-	if (l1 == 1)
+	if (lAB(i) == 1)
 	{
-		double x = lA == 1 ? centerA(i) : centerB(i);
+		double x = lA(i) == 1 ? centerA(i) : centerB(i);
 		C0 = Pi - x;
 		C1 = widthsCD() * (Qi - Pi) / widthsSum();
 	}
 	else
 	{
-		double x = lC == 1 ? centerC(i) : centerD(i);
+		double x = lC(i) == 1 ? centerC(i) : centerD(i);
 		C0 = Qi - x;
 		C1 = -widthsAB() * (Qi - Pi) / widthsSum();
 	}
+}
+
+void CGTOQuad::elecRepPrim1d_ppss(int i,
+	const Eigen::ArrayXXd& Pi, const Eigen::ArrayXXd& Qi,
+	Eigen::ArrayXXd& C0, Eigen::ArrayXXd& C1, Eigen::ArrayXXd& C2) const
+{
+#ifdef DEBUG
+	if (lsum(i) != 2
+		|| ((lA(i) != 1 || lB(i) != 1) && (lC(i) != 1 || lD(i) != 1)))
+		throw Li::Exception("angular momentum should be 1,1,0,0, or 0,0,1,1"); 
+#endif
+	Eigen::ArrayXXd inv_zeta = 0.5 * widthsAB().inverse();
+	Eigen::ArrayXXd inv_eta = 0.5 * widthsCD().inverse();
+	auto inv_ez = inv_eta + inv_zeta;
+
+	if (lAB(i) > 0)
+	{
+		double xA = centerA(i), xB = centerB(i), dAB = xB - xA;
+		Eigen::ArrayXXd dAP = Pi - xA;
+		Eigen::ArrayXXd dPW = widthsCD() * (Qi - Pi) / widthsSum();
+		auto rho1 = inv_zeta * inv_zeta / inv_ez;
+
+		C0 = dAP.square() + inv_zeta + dAB*dAP;
+		C1 = (2*dAP + dAB)*dPW - rho1;
+		C2 = dPW.square();
+	}
+	else
+	{
+		double xC = centerC(i), xD = centerD(i), dCD = xD - xC;
+		Eigen::ArrayXXd dCQ = Qi - xC;
+		Eigen::ArrayXXd dQW = -widthsAB() * (Qi - Pi) / widthsSum();
+		auto rho2 = inv_eta * inv_eta / inv_ez;
+
+		C0 = dCQ.square() + inv_eta + dCD*dCQ;
+		C1 = (2*dCQ + dCD)*dQW - rho2;
+		C2 = dQW.square();
+	}
+}
+
+void CGTOQuad::elecRepPrim1d_psps(int i,
+	const Eigen::ArrayXXd& Pi, const Eigen::ArrayXXd& Qi,
+	Eigen::ArrayXXd& C0, Eigen::ArrayXXd& C1, Eigen::ArrayXXd& C2) const
+{
+	int lA = this->lA(i), lB = this->lB(i),
+		lC = this->lC(i), lD = this->lD(i);
+	int l1 = lA+lB, l2 = lC+lD;
+#ifdef DEBUG
+	if (l1 != 1 || l2 != 1)
+		throw Li::Exception("Angular momentum should be 1 for both orbital pairs");
+#endif
+
+	double xA = lA == 1 ? centerA(i) : centerB(i);
+	double xC = lC == 1 ? centerC(i) : centerD(i);
+
+	Eigen::ArrayXXd asum = widthsSum();
+	Eigen::ArrayXXd dAP = Pi - xA;
+	Eigen::ArrayXXd dCQ = Qi - xC;
+	Eigen::ArrayXXd dPQ = Qi - Pi;
+	Eigen::ArrayXXd dPW = widthsCD() * dPQ / asum;
+	Eigen::ArrayXXd dQW = -widthsAB() * dPQ / asum;
+
+	C0 = dAP*dCQ;
+	C1 = dAP*dQW + dPW*dCQ + 0.5*asum.inverse();
+	C2 = dPW*dQW;
 }
 
 void CGTOQuad::elecRepPrim1d(int i,
@@ -46,6 +107,21 @@ void CGTOQuad::elecRepPrim1d(int i,
 		Ci.resize(2);
 		elecRepPrim1d_psss(i, Pi, Qi, Ci[0], Ci[1]);
 		return;
+	}
+	else if (lsum == 2)
+	{
+		if ((l1 == 2 && lA == 1) || (l2 == 2 && lC == 1))
+		{
+			Ci.resize(3);
+			elecRepPrim1d_ppss(i, Pi, Qi, Ci[0], Ci[1], Ci[2]);
+			return;
+		}
+		else if (l1 == 1 && l2 == 1)
+		{
+			Ci.resize(3);
+			elecRepPrim1d_psps(i, Pi, Qi, Ci[0], Ci[1], Ci[2]);
+			return;
+		}
 	}
 	
 	double xA = centerA(i), xB = centerB(i), xC = centerC(i), xD = centerD(i);
@@ -179,7 +255,7 @@ void CGTOQuad::elecRepPrim1d(int i,
 		}
 	}
 	
-	return Ci.swap(coefs[l1][l2]);
+	Ci.swap(coefs[l1][l2]);
 }
 
 double CGTOQuad::electronRepulsion_ssss() const
