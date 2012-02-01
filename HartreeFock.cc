@@ -7,11 +7,13 @@
 const int HartreeFock::default_max_iter = 50;
 const double HartreeFock::default_tolerance = 1.e-10;
 
-HartreeFock::HartreeFock(): _status(), _max_iter(default_max_iter),
+HartreeFock::HartreeFock(): _max_iter(default_max_iter),
+	_tolerance(default_tolerance), _status(),
 	_orbitals(), _orb_ener(), _density() {}
 
 HartreeFock::HartreeFock(const Basis& basis, const Geometry& geometry,
-	int multiplicity): _status(), _max_iter(default_max_iter),
+	int multiplicity): _max_iter(default_max_iter),
+	_tolerance(default_tolerance), _status(),
 	_orbitals(), _orb_ener(), _density()
 {
 	iterate(basis, geometry, multiplicity);
@@ -44,12 +46,13 @@ void HartreeFock::iterate(const Basis& basis, const Geometry& geometry,
 		Eigen::MatrixXd G = basis.electronRepulsion(P);
 		_energy = (H + 0.5*G).cwiseProduct(P).sum() + nuc_rep;
  		std::cout << "Energy: " << std::setprecision(15) << _energy << "\n";
-		std::cout << "orbital energies: " << _orb_ener.transpose() << "\n";
+		//std::cout << "orbital energies: " << _orb_ener.transpose() << "\n";
 
 		if (std::abs(_energy - last_energy) < _tolerance)
 		{
 			_status.set(ENERGY_CONVERGED);
 			return;
+		}
 
 		Eigen::MatrixXd F = G + H;
 		calcOrbitals(F, basis.overlap());
