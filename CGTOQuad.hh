@@ -100,7 +100,10 @@ public:
 	//! Reduced widths \f$\rho = \frac{\zeta\eta}{\zeta+\eta}\f$
 	Eigen::ArrayXXd widthsReduced() const
 	{
-		return widthsAB() * widthsCD() / widthsSum();
+		//return widthsAB() * widthsCD() / widthsSum();
+		return (Eigen::VectorXd::Map(p().widthsSum().data(), p().size())
+			* Eigen::VectorXd::Map(q().widthsSum().data(), q().size()).transpose()).array()
+			/ widthsSum();
 	}
 	
 	Eigen::VectorXd weightsAB() const
