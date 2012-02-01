@@ -32,7 +32,7 @@ void CGTOQuad::elecRepPrim1d(int i, std::vector<Eigen::ArrayXXd>& Ci) const
 	Eigen::ArrayXXd inv_ez = inv_eta + inv_zeta;
 	Eigen::ArrayXXd rho1 = inv_zeta * inv_zeta / inv_ez;
 	Eigen::ArrayXXd rho2 = inv_eta * inv_eta / inv_ez;
-	double dAB = xB = xA;
+	double dAB = xB - xA;
 	double dCD = xD - xC;
 	Eigen::ArrayXXd P = this->P(i);
 	Eigen::ArrayXXd Q = this->Q(i);
@@ -105,7 +105,7 @@ void CGTOQuad::elecRepPrim1d(int i, std::vector<Eigen::ArrayXXd>& Ci) const
 			for (int iC = 1; iC <= l2; ++iC)
 			{
 				coefs[iA+1][iC].push_back(dAP*coefs[iA][iC][0]
-					+ iA*coefs[iA-1][iC][0]);
+					+ iA*inv_zeta*coefs[iA-1][iC][0]);
 				for (int m = 1; m < iA+iC; ++m)
 				{
 					coefs[iA+1][iC].push_back(dAP*coefs[iA][iC][m]
