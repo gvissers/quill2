@@ -77,7 +77,7 @@ class CGTODef: public AbstractBFDef
 		//! Weights of the primitive GTOs in this contraction
 		Eigen::VectorXd _weights;
 		//! Widths of the primitive GTOs in this contraction
-		Eigen::VectorXd _widths;
+		Eigen::ArrayXd _widths;
 };
 
 template <unsigned int l>

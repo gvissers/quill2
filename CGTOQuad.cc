@@ -1,7 +1,9 @@
 #include "CGTOQuad.hh"
 #include "gaussint/boys.hh"
 
-void CGTOQuad::elecRepPrim1d(int i, std::vector<Eigen::ArrayXXd>& Ci) const
+void CGTOQuad::elecRepPrim1d(int i,
+	const Eigen::ArrayXXd& Pi, const Eigen::ArrayXXd& Qi,
+	std::vector<Eigen::ArrayXXd>& Ci) const
 {
 	int lA = this->lA(i), lB = this->lB(i),
 		lC = this->lC(i), lD = this->lD(i);
@@ -34,11 +36,9 @@ void CGTOQuad::elecRepPrim1d(int i, std::vector<Eigen::ArrayXXd>& Ci) const
 	Eigen::ArrayXXd rho2 = inv_eta * inv_eta / inv_ez;
 	double dAB = xB - xA;
 	double dCD = xD - xC;
-	Eigen::ArrayXXd P = this->P(i);
-	Eigen::ArrayXXd Q = this->Q(i);
-	Eigen::ArrayXXd dAP = P - xA;
-	Eigen::ArrayXXd dCQ = Q - xC;
-	Eigen::ArrayXXd dPQ = Q - P;
+	Eigen::ArrayXXd dAP = Pi - xA;
+	Eigen::ArrayXXd dCQ = Qi - xC;
+	Eigen::ArrayXXd dPQ = Qi - Pi;
 	Eigen::ArrayXXd dPW = widthsCD() * dPQ / asum;
 	Eigen::ArrayXXd dQW = -widthsAB() * dPQ / asum;
 	
@@ -149,27 +149,63 @@ void CGTOQuad::elecRepPrim1d(int i, std::vector<Eigen::ArrayXXd>& Ci) const
 	return Ci.swap(coefs[l1][l2]);
 }
 
+double CGTOQuad::electronRepulsion_ssss() const
+{
+	Eigen::ArrayXXd T = ((Q(0) - P(0)).square()
+		+ (Q(1) - P(1)).square()
+		+ (Q(2) - P(2)).square()) * widthsReduced();
+	return weightsAB().transpose()
+		* (KK() * Fm(0, T) / widthsSum().sqrt()).matrix()
+		* weightsCD();
+}
+
+double CGTOQuad::electronRepulsion_psss(const Eigen::Vector3i& ls) const
+{
+	std::vector<Eigen::ArrayXXd> Ax;
+	Eigen::ArrayXXd T = Eigen::ArrayXXd::Zero(p().size(), q().size());
+	Eigen::ArrayXXd Pi, Qi;
+	for (int i = 0; i < 3; i++)
+	{
+		Pi = P(i);
+		Qi = Q(i);
+		if (ls[i] == 1)
+			elecRepPrim1d(i, Pi, Qi, Ax);
+		T += (Qi - Pi).square();
+	}
+	T *= widthsReduced();
+	
+	Eigen::ArrayXXd F = Fm(1, T);
+	Eigen::ArrayXXd A = Ax[1] * F + Ax[0] * ((-T).exp() + 2*T*F);
+	return weightsAB().transpose()
+		* (KK() * A / widthsSum().sqrt()).matrix()
+		* weightsCD();
+}
+
 double CGTOQuad::electronRepulsion() const
 {
 	const Eigen::Vector3i& lsA = p().f().ls();
 	const Eigen::Vector3i& lsB = p().g().ls();
 	const Eigen::Vector3i& lsC = q().f().ls();
 	const Eigen::Vector3i& lsD = q().g().ls();
-
-	Eigen::ArrayXXd T = Eigen::ArrayXXd::Zero(p().size(), q().size());
-	std::vector<Eigen::ArrayXXd> Axyz[3];
-	for (int i = 0; i < 3; i++)
-	{
-		Eigen::ArrayXXd Pi = P(i);
-		Eigen::ArrayXXd Qi = Q(i);
-		
-		elecRepPrim1d(i, Axyz[i]);
-		T += (Qi-Pi).square();
-	}
-	T *= widthsReduced();
-
 	Eigen::Vector3i ls = lsA + lsB + lsC + lsD;
 	int lsum = ls.sum();
+
+	if (lsum == 0)
+		return electronRepulsion_ssss();
+	else if (lsum == 1)
+		return electronRepulsion_psss(ls);
+
+	std::vector<Eigen::ArrayXXd> Axyz[3];
+	Eigen::ArrayXXd T = Eigen::ArrayXXd::Zero(p().size(), q().size());
+	Eigen::ArrayXXd Pi, Qi;
+	for (int i = 0; i < 3; i++)
+	{
+		Pi = P(i);
+		Qi = Q(i);
+		elecRepPrim1d(i, Pi, Qi, Axyz[i]);
+		T += (Qi - Pi).square();
+	}
+	T *= widthsReduced();
 
 	Eigen::ArrayXXd F = Fm(lsum, T);
 	Eigen::ArrayXXd expmT = (-T).exp();
@@ -192,5 +228,7 @@ double CGTOQuad::electronRepulsion() const
 		A += Am * F;
 	}
 
-	return weightsAB().transpose() * (KK() * A / widthsSum().sqrt()).matrix() * weightsCD();
+	return weightsAB().transpose()
+		* (KK() * A / widthsSum().sqrt()).matrix()
+		* weightsCD();
 }

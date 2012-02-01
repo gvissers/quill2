@@ -20,7 +20,7 @@ double CGTO::eval(const Eigen::Vector3d& pos) const
 {
 	Eigen::Vector3d dr = pos-center();
 	double rn = dr.squaredNorm();
-	double res = (-rn * _widths).array().exp().sum();
+	double res = (-rn * _widths).exp().sum();
 	for (int p = 0; p < lx(); p++) res *= dr.x();
 	for (int p = 0; p < ly(); p++) res *= dr.y();
 	for (int p = 0; p < lz(); p++) res *= dr.z();

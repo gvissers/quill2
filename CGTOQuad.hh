@@ -75,10 +75,12 @@ public:
 		return Eigen::ArrayXd::Map(q().widthsSum().data(), q().size())
 			.transpose().replicate(p().size(), 1);
 	}
-	//! Sums of primitve widths, for all combination of primitives GTOs
+	//! Sums of primitive widths, for all combination of primitives GTOs
 	Eigen::ArrayXXd widthsSum() const
 	{
-		return widthsAB() + widthsCD();
+		//return widthsAB() + widthsCD();
+		return widthsAB().rowwise()
+			+ Eigen::ArrayXd::Map(q().widthsSum().data(), q().size()).transpose();
 	}
 	//! Reduced widths \f$\rho = \frac{\zeta\eta}{\zeta+\eta}\f$
 	Eigen::ArrayXXd widthsReduced() const
@@ -178,7 +180,10 @@ public:
 	}
 
 private:
-	void elecRepPrim1d(int i, std::vector<Eigen::ArrayXXd>& Ci) const;
+	void elecRepPrim1d(int i, const Eigen::ArrayXXd& Pi, const Eigen::ArrayXXd& Qi,
+		std::vector<Eigen::ArrayXXd>& Ci) const;
+	double electronRepulsion_ssss() const;
+	double electronRepulsion_psss(const Eigen::Vector3i& ls) const;
 };
 
 #endif // CGTOQUAD_HH

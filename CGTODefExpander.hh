@@ -32,7 +32,7 @@ struct CGTODefExpander
 	 * \param basis   The basis to be filled
 	 */
 	static void exec(const Eigen::VectorXd& weights,
-		const Eigen::VectorXd& widths, const Eigen::Vector3d& pos,
+		const Eigen::ArrayXd& widths, const Eigen::Vector3d& pos,
 		Basis *basis)
 	{
 		if (Limits::lmax_specialized >= int(lx+ly+lz))
@@ -48,7 +48,7 @@ template <unsigned int ly, unsigned int lz>
 struct CGTODefExpander<0, ly, lz>
 {
 	static void exec(const Eigen::VectorXd& weights,
-		const Eigen::VectorXd& widths, const Eigen::Vector3d& pos,
+		const Eigen::ArrayXd& widths, const Eigen::Vector3d& pos,
 		Basis *basis)
 	{
 		if (Limits::lmax_specialized >= int(ly+lz))
@@ -64,7 +64,7 @@ template <unsigned int lz>
 struct CGTODefExpander<0, 0, lz>
 {
 	static void exec(const Eigen::VectorXd& weights,
-		const Eigen::VectorXd& widths, const Eigen::Vector3d& pos,
+		const Eigen::ArrayXd& widths, const Eigen::Vector3d& pos,
 		Basis *basis)
 	{
 		if (Limits::lmax_specialized >= int(lz))

@@ -38,7 +38,7 @@ struct CGTOSpec: public CGTO
 	 * on position \a center. The weights of the primitives are
 	 * given in weights, the widths in \a widths.
 	 */
-	CGTOSpec(const Eigen::VectorXd& weights, const Eigen::VectorXd& widths,
+	CGTOSpec(const Eigen::VectorXd& weights, const Eigen::ArrayXd& widths,
 		const Eigen::Vector3d& center):
 		CGTO(cid, Eigen::Vector3i(tlx, tly, tlz), weights, widths, center) {}
 

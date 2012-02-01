@@ -35,7 +35,7 @@ public:
 	 * \a widths.
 	 */
 	CGTO(const Eigen::Vector3i& ls, const Eigen::VectorXd& weights,
-		const Eigen::VectorXd& widths, const Eigen::Vector3d& center):
+		const Eigen::ArrayXd& widths, const Eigen::Vector3d& center):
 		AbstractBF(cid), _ls(ls), _weights(weights), _widths(widths),
 		_center(center) { normalizeWeights(); }
 
@@ -68,7 +68,7 @@ public:
 	//! Return the weights of all primitives in this orbital
 	const Eigen::VectorXd& weights() const { return _weights; }
 	//! Return the widths of all primitives in this orbital
-	const Eigen::VectorXd& widths() const { return _widths; }
+	const Eigen::ArrayXd& widths() const { return _widths; }
 	//! Return the center position of this orbital
 	const Eigen::Vector3d& center() const { return _center; }
 	//! Return the \a i coordinate of the center of this orbital
@@ -103,7 +103,7 @@ protected:
 	 * \a widths.
 	 */
 	CGTO(size_t cid, const Eigen::Vector3i& ls,
-		const Eigen::VectorXd& weights, const Eigen::VectorXd& widths,
+		const Eigen::VectorXd& weights, const Eigen::ArrayXd& widths,
 		const Eigen::Vector3d& center):
 		AbstractBF(cid), _ls(ls), _weights(weights), _widths(widths),
 		_center(center) { normalizeWeights(); }
@@ -114,7 +114,7 @@ private:
 	//! The weights of the primitives in this contraction
 	Eigen::VectorXd _weights;
 	//! The widths of the primitive Gaussians
-	Eigen::VectorXd _widths;
+	Eigen::ArrayXd _widths;
 	//! The center position of this function
 	Eigen::Vector3d _center;
 	

@@ -26,7 +26,10 @@ public:
 
 	//! Constructor
 	CGTOPair(const CGTO& f, const CGTO& g):
-		AbstractBFPair(cid, f, g) {}
+		AbstractBFPair(cid, f, g),
+		_widths_A(f.widths().replicate(1, g.size())),
+		_widths_B(g.widths().transpose().replicate(f.size(), 1)),
+		_widths_sum(_widths_A + _widths_B) {}
 
 	//! Return the first orbital in the pair
 	const CGTO& f() const
@@ -86,22 +89,25 @@ public:
 	 * \brief Return the widths of the primitives in the first contraction,
 	 *    for all primitives in the second contraction.
 	 */
-	Eigen::ArrayXXd widthsA() const
+	const Eigen::ArrayXXd& widthsA() const
 	{
-		return f().widths().replicate(1, g().size());
+		//return f().widths().replicate(1, g().size());
+		return _widths_A;
 	}
 	/*!
 	 * \brief Return the widths of the primitives in the second
 	 *    contraction, for all primitives in the first contraction.
 	 */
-	Eigen::ArrayXXd widthsB() const
+	const Eigen::ArrayXXd& widthsB() const
 	{
-		return g().widths().transpose().replicate(f().size(), 1);
+		//return g().widths().transpose().replicate(f().size(), 1);
+		return _widths_B;
 	}
 	//! The sums of primitive widths, equivalent to alpha() + beta()
-	Eigen::ArrayXXd widthsSum() const
+	const Eigen::ArrayXXd& widthsSum() const
 	{
-		return widthsA() + widthsB();
+		//return widthsA() + widthsB();
+		return _widths_sum;
 	}
 	//! The "reduced" primitive widths \f$\xi = \alpha\beta / (\alpha+\beta)\f$
 	Eigen::ArrayXXd widthsReduced() const
@@ -176,6 +182,14 @@ public:
 			throw Li::Exception("Invalid basis function type");
 		}
 	}
+
+private:
+	//! Primitives widths in first orbital, for all primitives in second orbital.
+	Eigen::ArrayXXd _widths_A;
+	//! Primitives widths in second orbital, for all primitives in first orbital.
+	Eigen::ArrayXXd _widths_B;
+	//! Sum of primitive widths, for all combinations of primitives
+	Eigen::ArrayXXd _widths_sum;
 };
 
 #endif // CGTOPAIR_HH

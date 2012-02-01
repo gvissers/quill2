@@ -171,6 +171,6 @@ void Basis::calcElectronRepulsion() const
 	_elec_rep.resize(_quads.size());
 	for (unsigned int i = 0; i < _quads.size(); ++i)
 		_elec_rep[i] = _quads[i]->electronRepulsion();
-	
+
 	_status.set(ELEC_REP_CURRENT);
 }
