@@ -1,4 +1,4 @@
-#include <tr1/cmath>
+#include <cmath>
 #include "gaussint/boys.hh"
 #include "exceptions.hh"
 
@@ -54,7 +54,7 @@ static double Fm_Q_cf(double a, double t, double expmt)
 		del = d * c;
 		h *= del;
 		if (std::abs(del - 1.0) < depsilon)
-			return 0.5 * std::exp(std::tr1::lgamma(a) - a*std::log(t))
+			return 0.5 * std::exp(std::lgamma(a) - a*std::log(t))
 				- h * expmt;
 	}
 
@@ -80,7 +80,7 @@ double Fm_no_taylor(int m, double t, double expmt)
 	else if (m == 0)
 	{
 		double st = std::sqrt(t);
-		return std::tr1::erf(st) / (M_2_SQRTPI * st);
+		return std::erf(st) / (M_2_SQRTPI * st);
 	}
 	else if (t < 20 || t < 0.5*a)
 	{
