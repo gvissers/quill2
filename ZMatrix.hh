@@ -102,7 +102,7 @@ class ZMatrix
 		 *
 		 * Add a new label for the atom with index \a idx in the
 		 * position list to the label map. If the label is already
-		 * already in the map, nothing is doen.
+		 * already in the map, nothing is done.
 		 * \param lbl The label of the atom
 		 * \param idx The index of the atom in the position list
 		 */
