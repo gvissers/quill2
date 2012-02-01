@@ -23,8 +23,6 @@ Eigen::MatrixXd Basis::electronRepulsion(const Eigen::MatrixXd& P) const
 			{
 				for (int l = 0; l < n; ++l)
 				{
-//					gij += P(k,l)
-//						* (eri(i, k, j, l) - 0.5*eri(i, k, l, j));
 					gij += P(k,l)
 						* (eri(i,j,k,l) - 0.5*eri(i,k,j,l));
 				}

@@ -180,6 +180,8 @@ public:
 	}
 
 private:
+	void elecRepPrim1d_psss(int i, const Eigen::ArrayXXd& Pi, const Eigen::ArrayXXd& Qi,
+		Eigen::ArrayXXd& C0, Eigen::ArrayXXd& C1) const;
 	void elecRepPrim1d(int i, const Eigen::ArrayXXd& Pi, const Eigen::ArrayXXd& Qi,
 		std::vector<Eigen::ArrayXXd>& Ci) const;
 	double electronRepulsion_ssss() const;

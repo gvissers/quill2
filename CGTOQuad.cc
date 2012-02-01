@@ -1,6 +1,32 @@
 #include "CGTOQuad.hh"
 #include "gaussint/boys.hh"
 
+void CGTOQuad::elecRepPrim1d_psss(int i,
+	const Eigen::ArrayXXd& Pi, const Eigen::ArrayXXd& Qi,
+	Eigen::ArrayXXd& C0, Eigen::ArrayXXd& C1) const
+{
+	int lA = this->lA(i), lB = this->lB(i),
+		lC = this->lC(i), lD = this->lD(i);
+	int l1 = lA+lB, l2 = lC+lD;
+#ifdef DEBUG
+	if (l1 + l2 != 1)
+		throw Li::Exception("Total angular momentum should be 1");
+#endif
+
+	if (l1 == 1)
+	{
+		double x = lA == 1 ? centerA(i) : centerB(i);
+		C0 = Pi - x;
+		C1 = widthsCD() * (Qi - Pi) / widthsSum();
+	}
+	else
+	{
+		double x = lC == 1 ? centerC(i) : centerD(i);
+		C0 = Qi - x;
+		C1 = -widthsAB() * (Qi - Pi) / widthsSum();
+	}
+}
+
 void CGTOQuad::elecRepPrim1d(int i,
 	const Eigen::ArrayXXd& Pi, const Eigen::ArrayXXd& Qi,
 	std::vector<Eigen::ArrayXXd>& Ci) const
@@ -9,9 +35,16 @@ void CGTOQuad::elecRepPrim1d(int i,
 		lC = this->lC(i), lD = this->lD(i);
 	int l1 = lA+lB, l2 = lC+lD, lsum = l1+l2;
 	int nr_rows = p().size(), nr_cols = q().size();
+
 	if (lsum == 0)
 	{
 		Ci.assign(1, Eigen::ArrayXXd::Ones(nr_rows, nr_cols));
+		return;
+	}
+	else if (lsum == 1)
+	{
+		Ci.resize(2);
+		elecRepPrim1d_psss(i, Pi, Qi, Ci[0], Ci[1]);
 		return;
 	}
 	
@@ -161,7 +194,7 @@ double CGTOQuad::electronRepulsion_ssss() const
 
 double CGTOQuad::electronRepulsion_psss(const Eigen::Vector3i& ls) const
 {
-	std::vector<Eigen::ArrayXXd> Ax;
+	Eigen::ArrayXXd C0, C1;
 	Eigen::ArrayXXd T = Eigen::ArrayXXd::Zero(p().size(), q().size());
 	Eigen::ArrayXXd Pi, Qi;
 	for (int i = 0; i < 3; i++)
@@ -169,13 +202,13 @@ double CGTOQuad::electronRepulsion_psss(const Eigen::Vector3i& ls) const
 		Pi = P(i);
 		Qi = Q(i);
 		if (ls[i] == 1)
-			elecRepPrim1d(i, Pi, Qi, Ax);
+			elecRepPrim1d_psss(i, Pi, Qi, C0, C1);
 		T += (Qi - Pi).square();
 	}
 	T *= widthsReduced();
 	
 	Eigen::ArrayXXd F = Fm(1, T);
-	Eigen::ArrayXXd A = Ax[1] * F + Ax[0] * ((-T).exp() + 2*T*F);
+	Eigen::ArrayXXd A = C1 * F + C0 * ((-T).exp() + 2*T*F);
 	return weightsAB().transpose()
 		* (KK() * A / widthsSum().sqrt()).matrix()
 		* weightsCD();
