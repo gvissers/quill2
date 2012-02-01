@@ -9,6 +9,7 @@
 #include "Basis.hh"
 #include "Dispatcher.hh"
 #include "gaussint/boys.hh"
+#include "HartreeFock.hh"
 
 int main()
 {
@@ -17,16 +18,16 @@ int main()
 		PeriodicTable table("data/elements.dat");
 		IndentingOStream os(std::cout);
 
-		//std::string job("C 0 0 0\nH 1 1 1\nH -1 -1 1\nH -1 1 -1\nH 1 -1 -1");
-		std::string job("H 0.7 0 0\nH -0.7 0 0");
+		std::string job("C 0 0 0\nH 1 1 1\nH -1 -1 1\nH -1 1 -1\nH 1 -1 -1");
+		//std::string job("H 0.7 0 0\nH -0.7 0 0");
 		std::istringstream iss(job);
 		JobIStream jis(iss);
 
 		Geometry geom;
 		jis >> geom;
 		os << geom << "\n";
-		geom.toPrincipalAxes();
-		os << geom << "\n";
+		//geom.toPrincipalAxes();
+		//os << geom << "\n";
 
 		BasisSet set;
 		std::ifstream is("basis_sets/STO-3G.molcas");
@@ -46,7 +47,9 @@ int main()
 		os << basis.overlap() << "\n\n" << basis.kineticEnergy() << "\n\n"
 			<< basis.nuclearAttraction(geom.positions(), geom.charges())
 			<< "\n";
-		basis.electronRepulsion();
+
+		HartreeFock hf(basis, geom, 1);
+		std::cout << "Total energy: " << hf.energy() << "\n";
 /*
 		std::string mat = "C\n"
 			"H   1 1.089000\n"
