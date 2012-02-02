@@ -59,7 +59,7 @@ class CGTODef: public AbstractBFDef
 		 */
 		void expand(const Eigen::Vector3d& pos, Basis *basis) const
 		{
-			CGTODefExpander<l, 0, 0>::exec(_widths, _weights,
+			CGTODefExpander<l, 0, 0>::exec(_weights, _widths,
 				pos, basis);
 		}
 
