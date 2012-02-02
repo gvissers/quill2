@@ -195,6 +195,9 @@ private:
 	Eigen::ArrayXXd _widths_B;
 	//! Sum of primitive widths, for all combinations of primitives
 	Eigen::ArrayXXd _widths_sum;
+
+	//! Integrate the overlap and kinetic energy matrices for this pair over dimension \a i.
+	void oneElecPrim1D(int i, Eigen::ArrayXXd& Sp, Eigen::ArrayXXd& Tp);
 };
 
 #endif // CGTOPAIR_HH
