@@ -39,23 +39,23 @@ struct CGTODefExpander
 			basis->add(new CGTOSpec<lx, ly, lz>(weights, widths, pos));
 		else
 			basis->add(new CGTO(Eigen::Vector3i(lx, ly, lz), weights, widths, pos));
-		CGTODefExpander<lx-1, ly+1, lz>::exec(weights, widths,
+		CGTODefExpander<lx, ly-1, lz+1>::exec(weights, widths,
 			pos, basis);
 	}
 };
 
-template <unsigned int ly, unsigned int lz>
-struct CGTODefExpander<0, ly, lz>
+template <unsigned int lx, unsigned int lz>
+struct CGTODefExpander<lx, 0, lz>
 {
 	static void exec(const Eigen::VectorXd& weights,
 		const Eigen::ArrayXd& widths, const Eigen::Vector3d& pos,
 		Basis *basis)
 	{
-		if (Limits::lmax_specialized >= int(ly+lz))
-			basis->add(new CGTOSpec<0, ly, lz>(weights, widths, pos));
+		if (Limits::lmax_specialized >= int(lx+lz))
+			basis->add(new CGTOSpec<lx, 0, lz>(weights, widths, pos));
 		else
-			basis->add(new CGTO(Eigen::Vector3i(0, ly, lz), weights, widths, pos));
-		CGTODefExpander<ly-1, 0, lz+1>::exec(weights, widths,
+			basis->add(new CGTO(Eigen::Vector3i(lx, 0, lz), weights, widths, pos));
+		CGTODefExpander<lx-1, lz+1, 0>::exec(weights, widths,
 			pos, basis);
 	}
 };
