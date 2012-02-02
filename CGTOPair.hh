@@ -86,7 +86,7 @@ public:
 		return g().l(i);
 	}
 	//! Return the sum of angular momenta in the \a i direction for the two orbitals
-	int lAB(int i) const
+	int lsum(int i) const
 	{
 		return lA(i) + lB(i);
 	}

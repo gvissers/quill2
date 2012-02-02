@@ -49,7 +49,7 @@ public:
 	//! Return the sum of angular momenta for the orbitals in the first pair
 	int lAB(int i) const
 	{
-		return p().lAB(i);
+		return p().lsum(i);
 	}
 	//! Return the angular momentum in the \a i direction for the third orbital
 	int lC(int i) const
@@ -64,7 +64,7 @@ public:
 	//! Return the sum of angular momenta for the orbitals in the first pair
 	int lCD(int i) const
 	{
-		return q().lAB(i);
+		return q().lsum(i);
 	}
 	//! Return the sum of all for angular momenta in direction \a i.
 	int lsum(int i) const
