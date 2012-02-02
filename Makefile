@@ -2,8 +2,8 @@ FEATURES =
 FEATURES += DEBUG
 
 CXX = ccache g++
-OPT = -std=c++0x -Wall -W -ggdb
-#OPT = -std=c++0x -Wall -W -O2
+#OPT = -std=c++0x -Wall -W -ggdb
+OPT = -std=c++0x -Wall -W -O2
 
 VPATH = io gaussint
 
@@ -15,7 +15,7 @@ LDFLAGS = -L /home/ge/Programs/lithium/lib -lli_base \
 
 OBJS = main.o Basis.o BasisSet.o boys.o CGTO.o CGTOPair.o CGTOQuad.o \
 	CommentFilter.o Dispatcher.o Element.o Geometry.o \
-	gto_kinetic.o gto_one_elec.o gto_nuc_attr.o gto_overlap.o \
+	gto_kinetic.o gto_nuc_attr.o gto_overlap.o \
 	HartreeFock.o IndentFilter.o JobFilter.o LineIStream.o manipulators.o \
 	PeriodicTable.o support.o XYZMatrix.o ZMatrix.o
 

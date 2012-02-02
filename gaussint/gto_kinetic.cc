@@ -90,31 +90,3 @@ Eigen::ArrayXXd gto_kinetic_primitive_specialized<0, 0, 0, 0, 0, 1>(
 	return -r.z() * alpha * ared * (5 - 2*r.squaredNorm()*ared) * exp_ared
 		/ (asum.square() * asum.sqrt());
 }
-
-Eigen::ArrayXXd gto_kinetic_primitive_generic(
-	const Eigen::Vector3i& ls1, const Eigen::Vector3i& ls2,
-	const Eigen::ArrayXXd& alpha, const Eigen::ArrayXXd& beta,
-	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& ared,
-	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r)
-{
-	// We need to compute overlaps to do the recursion for the kinetic
-	// energy, so compute both and only return the kinetic energy.
-	Eigen::ArrayXXd Sp, Tp;
-	gto_one_elec_primitive_generic(ls1, ls2, alpha, beta, asum, ared,
-		exp_ared, r, Sp, Tp);
-	return Tp;
-}
-
-double gto_kinetic_generic(const Eigen::Vector3i& ls1,
-	const Eigen::VectorXd& weights1, const Eigen::VectorXd& widths1,
-	const Eigen::Vector3d& pos1,
-	const Eigen::Vector3i& ls2,
-	const Eigen::VectorXd& weights2, const Eigen::VectorXd& widths2,
-	const Eigen::Vector3d& pos2)
-{
-	// We need to compute overlaps to do the recursion for the kinetic
-	// energy, so compute both and only return the kinetic energy.
-	double S, T;
-	gto_one_elec_generic(ls1, weights1, widths1, pos1, ls2, weights2, widths2, pos2, &S, &T);
-	return T;
-}

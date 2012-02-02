@@ -13,26 +13,6 @@
 /*!
  * \brief Compute the kinetic energy between primitives
  *
- * Compute the kinetic energy integrals between the primitive Gaussians in a
- * contracted GTO, without the normalization factor.
- * \param ls1      Angular momentum quantum numbers of the first orbital
- * \param ls2      Angular momentum quantum numbers of the second orbital
- * \param alpha    Primitive widths in the first orbital, for all second primitives
- * \param beta     Primitive widths in the second orbital, for all first primitives
- * \param asum     Sum of \a alpha and \a beta
- * \param ared     "Reduced" widths \f$\xi = \alpha\beta / (\alpha+\beta)\f$
- * \param exp_ared \f$\exp(-\xi r^2) with \f$r\$ the distance between the orbital centers
- * \param r        Vector from first to second orbital center
- */
-Eigen::ArrayXXd gto_kinetic_primitive_generic(
-	const Eigen::Vector3i& ls1, const Eigen::Vector3i& ls2,
-	const Eigen::ArrayXXd& alpha, const Eigen::ArrayXXd& beta,
-	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& ared,
-	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r);
-
-/*!
- * \brief Compute the kinetic energy between primitives
- *
  * Specializations of this template compute the kinetic energy integrals
  * between the primitive Gaussians in a contracted GTO, minus a normalization
  * factor.
@@ -51,13 +31,11 @@ Eigen::ArrayXXd gto_kinetic_primitive_generic(
  */
 template <int lxA, int lyA, int lzA, int lxB, int lyB, int lzB>
 Eigen::ArrayXXd gto_kinetic_primitive_specialized(
-	const Eigen::ArrayXXd& alpha, const Eigen::ArrayXXd& beta,
-	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& ared,
-	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r)
+	const Eigen::ArrayXXd&, const Eigen::ArrayXXd&,
+	const Eigen::ArrayXXd&, const Eigen::ArrayXXd&,
+	const Eigen::ArrayXXd&, const Eigen::Vector3d&)
 {
-	return gto_kinetic_primitive_generic(
-		Eigen::Vector3i(lxA, lyA, lzA), Eigen::Vector3i(lxB, lyB, lzB),
-		alpha, beta, asum, ared, exp_ared, r);
+	throw Li::Exception("Not implemented");
 }
 template <>
 Eigen::ArrayXXd gto_kinetic_primitive_specialized<0, 0, 0, 0, 0, 0>(
@@ -94,30 +72,6 @@ Eigen::ArrayXXd gto_kinetic_primitive_specialized<0, 0, 0, 0, 0, 1>(
 	const Eigen::ArrayXXd& alpha, const Eigen::ArrayXXd&,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& ared,
 	const Eigen::ArrayXXd& exp_ared, const Eigen::Vector3d& r);
-
-/*!
- * \brief Compute the kinetic energy between contracted GTOs
- *
- * Compute the kinetic energy integral between two contracted Gaussian type
- * orbitals. This is the generic function which works for any combination of
- * angular momentum quantum numbers. Spcialized version for specific angular
- * momentum numbers may be computed using gto_kinetic_specialized().
- * \param ls1      Angular momentum quantum numbers of the first orbital
- * \param weights1 Weights of the primitives in the first orbital
- * \param widths1  Widths of the primitives in the first orbital
- * \param pos1     Center of the first orbital
- * \param ls2      Angular momentum quantum numbers of the second orbital
- * \param weights2 Weights of the primitives in the second orbital
- * \param widths2  Widths of the primitives in the second orbital
- * \param pos2     Center of the second orbital
- * \return The kinetic energy integral between the two orbitals
- */
-double gto_kinetic_generic(const Eigen::Vector3i& ls1,
-	const Eigen::VectorXd& weights1, const Eigen::VectorXd& widths1,
-	const Eigen::Vector3d& pos1,
-	const Eigen::Vector3i& ls2,
-	const Eigen::VectorXd& weights2, const Eigen::VectorXd& widths2,
-	const Eigen::Vector3d& pos2);
 
 /*!
  * \brief Compute the kinetic energy between contracted GTOs

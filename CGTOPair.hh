@@ -196,8 +196,14 @@ private:
 	//! Sum of primitive widths, for all combinations of primitives
 	Eigen::ArrayXXd _widths_sum;
 
+	//! Integrate the overlap matrix for this pair over dimension \a i.
+	void overlapPrim1D(int i, Eigen::ArrayXXd& Sp) const;
 	//! Integrate the overlap and kinetic energy matrices for this pair over dimension \a i.
-	void oneElecPrim1D(int i, Eigen::ArrayXXd& Sp, Eigen::ArrayXXd& Tp);
+	void oneElecPrim1D(int i, Eigen::ArrayXXd& Sp, Eigen::ArrayXXd& Tp) const;
+	//! Integrate the coefficients for nuclear attraction integrals over dimension \a i.
+	void nucAttrPrim1D(int i, const Eigen::ArrayXXd& theta,
+		const Eigen::ArrayXXd& Pi, const Eigen::ArrayXXd& dPC,
+		std::vector<Eigen::ArrayXXd>& res) const;
 };
 
 #endif // CGTOPAIR_HH

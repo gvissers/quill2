@@ -201,30 +201,6 @@ Eigen::ArrayXXd gto_overlap_primitive_specialized<0, 0, 0, 0, 0, 2>(
  * \brief Compute the overlap between contracted GTOs
  *
  * Compute the overlap between two contracted Gaussian type orbitals. This
- * is the generic function which works for any combination of angular momentum
- * quantum numbers. Spcialized version for specific angular momentum numbers
- * may be computed using gto_overlap_specialized().
- * \param ls1      Angular momentum quantum numbers of the first orbital
- * \param weights1 Weights of the primitives in the first orbital
- * \param widths1  Widths of the primitives in the first orbital
- * \param pos1     Center of the first orbital
- * \param ls2      Angular momentum quantum numbers of the second orbital
- * \param weights2 Weights of the primitives in the second orbital
- * \param widths2  Widths of the primitives in the second orbital
- * \param pos2     Center of the second orbital
- * \return The overlap between the two orbitals
- */
-double gto_overlap_generic(const Eigen::Vector3i& ls1,
-	const Eigen::VectorXd& weights1, const Eigen::VectorXd& widths1,
-	const Eigen::Vector3d& pos1,
-	const Eigen::Vector3i& ls2,
-	const Eigen::VectorXd& weights2, const Eigen::VectorXd& widths2,
-	const Eigen::Vector3d& pos2);
-
-/*!
- * \brief Compute the overlap between contracted GTOs
- *
- * Compute the overlap between two contracted Gaussian type orbitals. This
  * template function only works for combinations of angular momentum
  * quantum number for which gto_overlap_primitive_specialized() is implemented.
  * For a generic overlap function, see gto_overlap_generic().
