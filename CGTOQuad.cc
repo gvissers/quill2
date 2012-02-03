@@ -42,10 +42,10 @@ void CGTOQuad::elecRepPrim1d_ppss(int i,
 		double xA = centerA(i), xB = centerB(i), dAB = xB - xA;
 		Eigen::ArrayXXd dAP = Pi - xA;
 		Eigen::ArrayXXd dPW = widthsCD() * (Qi - Pi) / widthsSum();
-		auto rho1 = inv_zeta * inv_zeta / inv_ez;
+		auto rho1 = inv_zeta.square() / inv_ez;
 
-		C0 = dAP.square() + inv_zeta + dAB*dAP;
-		C1 = (2*dAP + dAB)*dPW - rho1;
+		C0 = dAP.square() + inv_zeta - dAB*dAP;
+		C1 = (2*dAP - dAB)*dPW - rho1;
 		C2 = dPW.square();
 	}
 	else
@@ -53,10 +53,10 @@ void CGTOQuad::elecRepPrim1d_ppss(int i,
 		double xC = centerC(i), xD = centerD(i), dCD = xD - xC;
 		Eigen::ArrayXXd dCQ = Qi - xC;
 		Eigen::ArrayXXd dQW = -widthsAB() * (Qi - Pi) / widthsSum();
-		auto rho2 = inv_eta * inv_eta / inv_ez;
+		auto rho2 = inv_eta.square() / inv_ez;
 
-		C0 = dCQ.square() + inv_eta + dCD*dCQ;
-		C1 = (2*dCQ + dCD)*dQW - rho2;
+		C0 = dCQ.square() + inv_eta - dCD*dCQ;
+		C1 = (2*dCQ - dCD)*dQW - rho2;
 		C2 = dQW.square();
 	}
 }
@@ -240,7 +240,7 @@ void CGTOQuad::elecRepPrim1d(int i,
 			for (int iC = l2; iC >= lC+iD; --iC)
 			{
 				for (int m = 0; m < iA+iC; ++m)
-					coefs[iA][iC][m] += dCD*coefs[iA][iC-1][m];
+					coefs[iA][iC][m] -= dCD*coefs[iA][iC-1][m];
 			}
 		}
 	}
@@ -251,7 +251,7 @@ void CGTOQuad::elecRepPrim1d(int i,
 		for (int iA = l1; iA >= lA+iB; --iA)
 		{
 			for (int m = 0; m < iA+l2; ++m)
-				coefs[iA][l2][m] += dAB*coefs[iA-1][l2][m];
+				coefs[iA][l2][m] -= dAB*coefs[iA-1][l2][m];
 		}
 	}
 	
