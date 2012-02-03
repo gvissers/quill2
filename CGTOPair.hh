@@ -29,7 +29,8 @@ public:
 		AbstractBFPair(cid, f, g),
 		_widths_A(f.widths().replicate(1, g.size())),
 		_widths_B(g.widths().transpose().replicate(f.size(), 1)),
-		_widths_sum(_widths_A + _widths_B) {}
+		_widths_sum(_widths_A + _widths_B),
+		_widths_red(_widths_A * _widths_B / _widths_sum) {}
 
 	//! Return the first orbital in the pair
 	const CGTO& f() const
@@ -115,9 +116,9 @@ public:
 		return _widths_sum;
 	}
 	//! The "reduced" primitive widths \f$\xi = \alpha\beta / (\alpha+\beta)\f$
-	Eigen::ArrayXXd widthsReduced() const
+	const Eigen::ArrayXXd& widthsReduced() const
 	{
-		return widthsA()*widthsB() / widthsSum();
+		return _widths_red;
 	}
 	//! \f$\exp(-\xi r^2)\f$ with \f$r\f$ the distance between the centers of the two orbitals
 	Eigen::ArrayXXd exp_ared() const
@@ -195,6 +196,8 @@ private:
 	Eigen::ArrayXXd _widths_B;
 	//! Sum of primitive widths, for all combinations of primitives
 	Eigen::ArrayXXd _widths_sum;
+	//! Reduced primitive widths, for all combinations of primitives
+	Eigen::ArrayXXd _widths_red;
 
 	//! Integrate the overlap matrix for this pair over dimension \a i.
 	void overlapPrim1D(int i, Eigen::ArrayXXd& Sp) const;
