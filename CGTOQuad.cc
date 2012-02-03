@@ -7,7 +7,7 @@ void CGTOQuad::elecRepPrim1d_psss(int i,
 {
 #ifdef DEBUG
 	if (lsum(i) != 1)
-		throw Li::Exception("Total angular momentum should be 1");
+		throw Li::Exception("Not a (p,s,s,s) quad");
 #endif
 
 	if (lAB(i) == 1)
@@ -31,8 +31,9 @@ void CGTOQuad::elecRepPrim1d_ppss(int i,
 #ifdef DEBUG
 	if (lsum(i) != 2
 		|| ((lA(i) != 1 || lB(i) != 1) && (lC(i) != 1 || lD(i) != 1)))
-		throw Li::Exception("angular momentum should be 1,1,0,0, or 0,0,1,1"); 
+		throw Li::Exception("Not a (p,p,s,s) quad");
 #endif
+
 	Eigen::ArrayXXd inv_zeta = 0.5 * widthsAB().inverse();
 	Eigen::ArrayXXd inv_eta = 0.5 * widthsCD().inverse();
 	auto inv_ez = inv_eta + inv_zeta;
@@ -57,6 +58,44 @@ void CGTOQuad::elecRepPrim1d_ppss(int i,
 
 		C0 = dCQ.square() + inv_eta - dCD*dCQ;
 		C1 = (2*dCQ - dCD)*dQW - rho2;
+		C2 = dQW.square();
+	}
+}
+
+void CGTOQuad::elecRepPrim1d_dsss(int i,
+	const Eigen::ArrayXXd& Pi, const Eigen::ArrayXXd& Qi,
+	Eigen::ArrayXXd& C0, Eigen::ArrayXXd& C1, Eigen::ArrayXXd& C2) const
+{
+#ifdef DEBUG
+	if (lsum(i) != 2
+		|| (lA(i) != 2 && lB(i) != 2 && lC(i) != 2 && lD(i) != 2))
+		throw Li::Exception("Not a (d,s,s,s) quad");
+#endif
+
+	Eigen::ArrayXXd inv_zeta = 0.5 * widthsAB().inverse();
+	Eigen::ArrayXXd inv_eta = 0.5 * widthsCD().inverse();
+	auto inv_ez = inv_eta + inv_zeta;
+
+	if (lAB(i) > 0)
+	{
+		double x = lA(i) > 0 ? centerA(i) : centerB(i);
+		Eigen::ArrayXXd dAP = Pi - x;
+		Eigen::ArrayXXd dPW = widthsCD() * (Qi - Pi) / widthsSum();
+		auto rho1 = inv_zeta.square() / inv_ez;
+
+		C0 = dAP.square() + inv_zeta;
+		C1 = 2*dAP*dPW - rho1;
+		C2 = dPW.square();
+	}
+	else
+	{
+		double x = lA(i) > 0 ? centerC(i) : centerD(i);
+		Eigen::ArrayXXd dCQ = Qi - x;
+		Eigen::ArrayXXd dQW = -widthsAB() * (Qi - Pi) / widthsSum();
+		auto rho2 = inv_eta.square() / inv_ez;
+
+		C0 = dCQ.square() + inv_eta;
+		C1 = 2*dCQ*dQW - rho2;
 		C2 = dQW.square();
 	}
 }
@@ -110,18 +149,14 @@ void CGTOQuad::elecRepPrim1d(int i,
 	}
 	else if (lsum == 2)
 	{
-		if ((l1 == 2 && lA == 1) || (l2 == 2 && lC == 1))
-		{
-			Ci.resize(3);
-			elecRepPrim1d_ppss(i, Pi, Qi, Ci[0], Ci[1], Ci[2]);
-			return;
-		}
-		else if (l1 == 1 && l2 == 1)
-		{
-			Ci.resize(3);
+		Ci.resize(3);
+		if (l1 == 1)
 			elecRepPrim1d_psps(i, Pi, Qi, Ci[0], Ci[1], Ci[2]);
-			return;
-		}
+		else if (lA == 2 || lB == 2 || lC == 2 || lD == 2)
+			elecRepPrim1d_dsss(i, Pi, Qi, Ci[0], Ci[1], Ci[2]);
+		else
+			elecRepPrim1d_ppss(i, Pi, Qi, Ci[0], Ci[1], Ci[2]);
+		return;
 	}
 	
 	double xA = centerA(i), xB = centerB(i), xC = centerC(i), xD = centerD(i);
@@ -141,8 +176,8 @@ void CGTOQuad::elecRepPrim1d(int i,
 	Eigen::ArrayXXd inv_eta = 0.5 * widthsCD().inverse();
 	Eigen::ArrayXXd inv_sum = 0.5 * asum.inverse();
 	Eigen::ArrayXXd inv_ez = inv_eta + inv_zeta;
-	Eigen::ArrayXXd rho1 = inv_zeta * inv_zeta / inv_ez;
-	Eigen::ArrayXXd rho2 = inv_eta * inv_eta / inv_ez;
+	Eigen::ArrayXXd rho1 = inv_zeta.square() / inv_ez;
+	Eigen::ArrayXXd rho2 = inv_eta.square() / inv_ez;
 	double dAB = xB - xA;
 	double dCD = xD - xC;
 	Eigen::ArrayXXd dAP = Pi - xA;
