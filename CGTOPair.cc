@@ -100,7 +100,7 @@ void CGTOPair::oneElecPrim1D(int i, Eigen::ArrayXXd& Sp,
 	const Eigen::ArrayXXd& alpha = swapAB ? widthsB() : widthsA();
 	const Eigen::ArrayXXd& beta = swapAB ? widthsA() : widthsB();
 	const Eigen::ArrayXXd& asum = widthsSum();
-	Eigen::ArrayXXd ared = widthsReduced();
+	const Eigen::ArrayXXd& ared = widthsReduced();
 	
 	if (lAB == 1)
 	{
