@@ -1,7 +1,6 @@
 #include <vector>
 #include <Exception.hh>
 #include "gaussint/gto_kinetic.hh"
-#include "gaussint/gto_one_elec.hh"
 
 // d/dx G_0 = -2 alpha G_1
 // <0| d^2/dx^2 |0>

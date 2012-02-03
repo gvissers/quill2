@@ -30,12 +30,12 @@ int main()
 		//os << geom << "\n";
 
 		BasisSet set;
-		std::ifstream is("basis_sets/STO-3G.molcas");
-		//std::ifstream is("basis_sets/6-31G**.turbomole");
+		//std::ifstream is("basis_sets/STO-3G.molcas");
+		std::ifstream is("basis_sets/6-31G**.turbomole");
 		if (!is.good())
 			throw Li::Exception("Failed to open basis set");
-		set.scan<BasisSet::Molcas>(is);
-		//set.scan<BasisSet::Turbomole>(is);
+		//set.scan<BasisSet::Molcas>(is);
+		set.scan<BasisSet::Turbomole>(is);
 		os << set << "\n";
 
 		Basis basis;

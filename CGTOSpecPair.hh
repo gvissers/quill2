@@ -9,7 +9,7 @@
 #include <Eigen/Dense>
 #include "CGTOPair.hh"
 #include "CGTOSpec.hh"
-#include "gaussint/gto_one_elec.hh"
+#include "gaussint/gto_kinetic.hh"
 #include "gaussint/gto_nuc_attr.hh"
 #include "constants.hh"
 
@@ -94,12 +94,64 @@ struct CGTOSpecPair: public CGTOPair
 template <int lxA, int lyA, int lzA, int lxB, int lyB, int lzB>
 double CGTOSpecPair<lxA, lyA, lzA, lxB, lyB, lzB>::overlap() const
 {
-	return Constants::pi_sqrt_pi * f().weights().transpose()
-		* gto_overlap_primitive_specialized<lxA, lyA, lzA, lxB, lyB, lzB>(
-			widthsA(), widthsB(), widthsSum(), widthsReduced(),
-			exp_ared(), r()).matrix()
-		* g().weights();
+	return CGTOPair::overlap();
 }
+template <>
+double CGTOSpecPair<0, 0, 0, 0, 0, 0>::overlap() const;
+template <>
+double CGTOSpecPair<1, 0, 0, 0, 0, 0>::overlap() const;
+template <>
+double CGTOSpecPair<0, 1, 0, 0, 0, 0>::overlap() const;
+template <>
+double CGTOSpecPair<0, 0, 1, 0, 0, 0>::overlap() const;
+template <>
+double CGTOSpecPair<0, 0, 0, 1, 0, 0>::overlap() const;
+template <>
+double CGTOSpecPair<0, 0, 0, 0, 1, 0>::overlap() const;
+template <>
+double CGTOSpecPair<0, 0, 0, 0, 0, 1>::overlap() const;
+template <>
+double CGTOSpecPair<2, 0, 0, 0, 0, 0>::overlap() const;
+template <>
+double CGTOSpecPair<1, 1, 0, 0, 0, 0>::overlap() const;
+template <>
+double CGTOSpecPair<1, 0, 1, 0, 0, 0>::overlap() const;
+template <>
+double CGTOSpecPair<1, 0, 0, 1, 0, 0>::overlap() const;
+template <>
+double CGTOSpecPair<1, 0, 0, 0, 1, 0>::overlap() const;
+template <>
+double CGTOSpecPair<1, 0, 0, 0, 0, 1>::overlap() const;
+template <>
+double CGTOSpecPair<0, 2, 0, 0, 0, 0>::overlap() const;
+template <>
+double CGTOSpecPair<0, 1, 1, 0, 0, 0>::overlap() const;
+template <>
+double CGTOSpecPair<0, 1, 0, 1, 0, 0>::overlap() const;
+template <>
+double CGTOSpecPair<0, 1, 0, 0, 1, 0>::overlap() const;
+template <>
+double CGTOSpecPair<0, 1, 0, 0, 0, 1>::overlap() const;
+template <>
+double CGTOSpecPair<0, 0, 2, 0, 0, 0>::overlap() const;
+template <>
+double CGTOSpecPair<0, 0, 1, 1, 0, 0>::overlap() const;
+template <>
+double CGTOSpecPair<0, 0, 1, 0, 1, 0>::overlap() const;
+template <>
+double CGTOSpecPair<0, 0, 1, 0, 0, 1>::overlap() const;
+template <>
+double CGTOSpecPair<0, 0, 0, 2, 0, 0>::overlap() const;
+template <>
+double CGTOSpecPair<0, 0, 0, 1, 1, 0>::overlap() const;
+template <>
+double CGTOSpecPair<0, 0, 0, 1, 0, 1>::overlap() const;
+template <>
+double CGTOSpecPair<0, 0, 0, 0, 2, 0>::overlap() const;
+template <>
+double CGTOSpecPair<0, 0, 0, 0, 1, 1>::overlap() const;
+template <>
+double CGTOSpecPair<0, 0, 0, 0, 0, 2>::overlap() const;
 
 template <int lxA, int lyA, int lzA, int lxB, int lyB, int lzB>
 double CGTOSpecPair<lxA, lyA, lzA, lxB, lyB, lzB>::kineticEnergy() const
@@ -114,12 +166,11 @@ double CGTOSpecPair<lxA, lyA, lzA, lxB, lyB, lzB>::kineticEnergy() const
 template <int lxA, int lyA, int lzA, int lxB, int lyB, int lzB>
 void CGTOSpecPair<lxA, lyA, lzA, lxB, lyB, lzB>::oneElectron(double &S, double &T) const
 {
-	Eigen::ArrayXXd Sp, Tp;
-	gto_one_elec_primitive_specialized<lxA, lyA, lzA, lxB, lyB, lzB>(
-		widthsA(), widthsB(), widthsSum(), widthsReduced(),
-		exp_ared(), r(), Sp, Tp);
-	S = Constants::pi_sqrt_pi * f().weights().transpose()
-		* Sp.matrix() * g().weights();
+CGTOPair::oneElectron(S,T);
+return;
+	S = overlap();
+	Eigen::ArrayXXd Tp = gto_kinetic_primitive_specialized<lxA, lyA, lzA, lxB, lyB, lzB>(
+		widthsA(), widthsB(), widthsSum(), widthsReduced(), exp_ared(), r());
 	T = Constants::pi_sqrt_pi * f().weights().transpose()
 		* Tp.matrix() * g().weights();
 }

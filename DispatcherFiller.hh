@@ -9,7 +9,6 @@
 #include "Dispatcher.hh"
 #include "CGTOSpecPair.hh"
 #include "gaussint/gto_kinetic.hh"
-#include "gaussint/gto_one_elec.hh"
 
 /*!
  * \brief Set pair creation function
