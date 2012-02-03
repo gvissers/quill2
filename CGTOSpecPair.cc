@@ -1,4 +1,5 @@
 #include "CGTOSpecPair.hh"
+#include "gaussint/boys.hh"
 
 static Eigen::ArrayXXd overlap_ps(double x, const Eigen::ArrayXXd& beta,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& exp_ared)
@@ -341,3 +342,31 @@ double CGTOSpecPair<0, 0, 0, 0, 0, 1>::kineticEnergy() const
 			widthsReduced(), exp_ared()).matrix()
 		* g().weights();
 }
+
+template<>
+double CGTOSpecPair<0, 0, 0, 0, 0, 0>::nuclearAttraction(
+	const Eigen::MatrixXd& nuc_pos, const Eigen::VectorXd& nuc_charge) const
+{
+	int nr_nuc = nuc_pos.cols();
+	int nr_rows = f().size(), nr_cols = g().size();
+	Eigen::ArrayXXd Pi;
+	Eigen::ArrayXXd U = Eigen::ArrayXXd::Zero(nr_rows, nr_cols*nr_nuc);
+
+	for (int i = 0; i < 3; i++)
+	{
+		Pi = P(i);
+		for (int iC = 0; iC < nr_nuc; ++iC)
+			U.block(0, iC*nr_cols, nr_rows, nr_cols) += (Pi - nuc_pos(i, iC)).square();
+	}
+	U *= widthsSum().replicate(1, nr_nuc);
+
+	Eigen::ArrayXXd Am = Fm(0, U);
+	Eigen::ArrayXXd A = Eigen::ArrayXXd::Zero(nr_rows, nr_cols);
+	for (int iC = 0; iC < nr_nuc; ++iC)
+		A += -nuc_charge[iC] * Am.block(0, iC*nr_cols, nr_rows, nr_cols);
+
+	return 2 * M_PI * f().weights().transpose()
+		* (exp_ared() * A / widthsSum()).matrix()
+		* g().weights();
+}
+

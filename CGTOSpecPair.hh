@@ -9,7 +9,6 @@
 #include <Eigen/Dense>
 #include "CGTOPair.hh"
 #include "CGTOSpec.hh"
-#include "gaussint/gto_nuc_attr.hh"
 #include "constants.hh"
 
 /*!
@@ -43,9 +42,15 @@ struct CGTOSpecPair: public CGTOPair
 	}
 
 	//! Compute the overlap between the two orbitals in this pair
-	double overlap() const;
+	double overlap() const
+	{
+		return CGTOPair::overlap();
+	}
 	//! Compute the kinetic energy integral between the two orbitals in this pair
-	double kineticEnergy() const;
+	double kineticEnergy() const
+	{
+		return CGTOPair::kineticEnergy();
+	}
 	/*!
 	 * \brief Compute one-electron integrals
 	 *
@@ -54,7 +59,18 @@ struct CGTOSpecPair: public CGTOPair
 	 * \param S Place to store the overlap
 	 * \param T Place to store the kinetic energy
 	 */
-	void oneElectron(double& S, double& T) const;
+	void oneElectron(double& S, double& T) const
+	{
+		if (lxA+lyA+lzA+lxB+lyB+lzB <= 1)
+		{
+			S = overlap();
+			T = kineticEnergy();
+		}
+		else
+		{
+			CGTOPair::oneElectron(S, T);
+		}
+	}
 
 	/*!
 	 * Compute the nuclear attraction integrals, due to the nuclei
@@ -64,7 +80,10 @@ struct CGTOSpecPair: public CGTOPair
 	 * \param nuc_charge The nuclear charges
 	 */
 	double nuclearAttraction(const Eigen::MatrixXd& nuc_pos,
-		const Eigen::VectorXd& nuc_charge) const;
+		const Eigen::VectorXd& nuc_charge) const
+	{
+		return CGTOPair::nuclearAttraction(nuc_pos, nuc_charge);
+	}
 
 	/*!
 	 * \brief Create a new CGTOSpecPair
@@ -90,11 +109,6 @@ struct CGTOSpecPair: public CGTOPair
 	}
 };
 
-template <int lxA, int lyA, int lzA, int lxB, int lyB, int lzB>
-double CGTOSpecPair<lxA, lyA, lzA, lxB, lyB, lzB>::overlap() const
-{
-	return CGTOPair::overlap();
-}
 template <>
 double CGTOSpecPair<0, 0, 0, 0, 0, 0>::overlap() const;
 template <>
@@ -152,11 +166,6 @@ double CGTOSpecPair<0, 0, 0, 0, 1, 1>::overlap() const;
 template <>
 double CGTOSpecPair<0, 0, 0, 0, 0, 2>::overlap() const;
 
-template <int lxA, int lyA, int lzA, int lxB, int lyB, int lzB>
-double CGTOSpecPair<lxA, lyA, lzA, lxB, lyB, lzB>::kineticEnergy() const
-{
-	return CGTOPair::kineticEnergy();
-}
 template<>
 double CGTOSpecPair<0, 0, 0, 0, 0, 0>::kineticEnergy() const;
 template<>
@@ -172,21 +181,8 @@ double CGTOSpecPair<0, 0, 0, 0, 1, 0>::kineticEnergy() const;
 template<>
 double CGTOSpecPair<0, 0, 0, 0, 0, 1>::kineticEnergy() const;
 
-template <int lxA, int lyA, int lzA, int lxB, int lyB, int lzB>
-void CGTOSpecPair<lxA, lyA, lzA, lxB, lyB, lzB>::oneElectron(double &S, double &T) const
-{
-	CGTOPair::oneElectron(S, T);
-}
-
-template <int lxA, int lyA, int lzA, int lxB, int lyB, int lzB>
-double CGTOSpecPair<lxA, lyA, lzA, lxB, lyB, lzB>::nuclearAttraction(
-	const Eigen::MatrixXd& nuc_pos, const Eigen::VectorXd& nuc_charge) const
-{
-	return 2 * M_PI * f().weights().transpose()
-		* gto_nuc_attr_primitive_specialized<lxA, lyA, lzA, lxB, lyB, lzB>(
-			widthsA(), widthsB(), f().center(), g().center(),
-			widthsSum(), exp_ared(), nuc_pos, nuc_charge).matrix()
-		* g().weights();
-}
+template<>
+double CGTOSpecPair<0, 0, 0, 0, 0, 0>::nuclearAttraction(
+	const Eigen::MatrixXd& nuc_pos, const Eigen::VectorXd& nuc_charge) const;
 
 #endif // CGTOSPECPAIR_HH
