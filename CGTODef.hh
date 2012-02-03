@@ -54,13 +54,15 @@ class CGTODef: public AbstractBFDef
 		 *
 		 * Expand this definition, adding contracted GTO functions
 		 * centered on position \a pos to basis \a basis.
+		 * \param ipos  Position identifier
 		 * \param pos   Position on which the functions are centered
 		 * \param basis The basis to which the functions are added
 		 */
-		void expand(const Eigen::Vector3d& pos, Basis *basis) const
+		void expand(int ipos, const Eigen::Vector3d& pos,
+			Basis *basis) const
 		{
 			CGTODefExpander<l, 0, 0>::exec(_weights, _widths,
-				pos, basis);
+				ipos, pos, basis);
 		}
 
 		/*!
@@ -92,26 +94,28 @@ CGTODef<l>::CGTODef(const std::vector< std::pair<double, double> >& ww):
 }
 
 template <>
-void CGTODef<0>::expand(const Eigen::Vector3d& pos, Basis* basis) const
+void CGTODef<0>::expand(int ipos, const Eigen::Vector3d& pos,
+	Basis* basis) const
 {
 #if LMAX_SPECIALIZED >= 0
-	basis->add(new CGTOSpec<0, 0, 0>(_weights, _widths, pos));
+	basis->add(new CGTOSpec<0, 0, 0>(_weights, _widths, ipos, pos));
 #else
-	basis->add(new CGTO(Eigen::Vector3i(0, 0, 0), _weights, _widths, pos));
+	basis->add(new CGTO(Eigen::Vector3i(0, 0, 0), _weights, _widths, ipos, pos));
 #endif
 }
 
 template <>
-void CGTODef<1>::expand(const Eigen::Vector3d& pos, Basis* basis) const
+void CGTODef<1>::expand(int ipos, const Eigen::Vector3d& pos,
+	Basis* basis) const
 {
 #if LMAX_SPECIALIZED >= 1
-	basis->add(new CGTOSpec<1, 0, 0>(_weights, _widths, pos));
-	basis->add(new CGTOSpec<0, 1, 0>(_weights, _widths, pos));
-	basis->add(new CGTOSpec<0, 0, 1>(_weights, _widths, pos));
+	basis->add(new CGTOSpec<1, 0, 0>(_weights, _widths, ipos, pos));
+	basis->add(new CGTOSpec<0, 1, 0>(_weights, _widths, ipos, pos));
+	basis->add(new CGTOSpec<0, 0, 1>(_weights, _widths, ipos, pos));
 #else
-	basis->add(new CGTO(Eigen::Vector3i(1, 0, 0), _weights, _widths, pos));
-	basis->add(new CGTO(Eigen::Vector3i(0, 1, 0), _weights, _widths, pos));
-	basis->add(new CGTO(Eigen::Vector3i(0, 0, 1), _weights, _widths, pos));
+	basis->add(new CGTO(Eigen::Vector3i(1, 0, 0), _weights, _widths, ipos, pos));
+	basis->add(new CGTO(Eigen::Vector3i(0, 1, 0), _weights, _widths, ipos, pos));
+	basis->add(new CGTO(Eigen::Vector3i(0, 0, 1), _weights, _widths, ipos, pos));
 #endif
 }
 

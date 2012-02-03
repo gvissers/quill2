@@ -21,7 +21,7 @@ void BasisSet::expand(const Geometry& geom, Basis *basis) const
 		for (BFList::const_iterator fit = eit->second.begin();
 			fit != eit->second.end(); ++fit)
 		{
-			(*fit)->expand(pos, basis);
+			(*fit)->expand(i, pos, basis);
 		}
 	}
 }

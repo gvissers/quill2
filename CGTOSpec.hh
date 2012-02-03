@@ -35,12 +35,16 @@ struct CGTOSpec: public CGTO
 	 * \brief Constructor
 	 *
 	 * Create a new contraction of primitive Gaussian type orbitals
-	 * on position \a center. The weights of the primitives are
-	 * given in weights, the widths in \a widths.
+	 * on position \a center.
+	 * \param weights The weights of the primitives in the contraction
+	 * \param widths  The widths of the primitives int the contraction
+	 * \param ipos    Position identifier
+	 * \param center  The position of the contracted orbital
 	 */
 	CGTOSpec(const Eigen::VectorXd& weights, const Eigen::ArrayXd& widths,
-		const Eigen::Vector3d& center):
-		CGTO(cid, Eigen::Vector3i(tlx, tly, tlz), weights, widths, center) {}
+		int ipos, const Eigen::Vector3d& center):
+		CGTO(cid, Eigen::Vector3i(tlx, tly, tlz), weights, widths,
+			ipos, center) {}
 
 	/*!
 	 * \brief Print this orbital

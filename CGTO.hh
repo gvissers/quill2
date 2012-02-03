@@ -30,14 +30,18 @@ public:
 	 * \brief Constructor
 	 *
 	 * Create a new contraction of primitive Gaussian type orbitals with
-	 * angular momentum quantum numbers \a ls on position \a center. The
-	 * weights of the primitives are given in \a weights, the widths in
-	 * \a widths.
+	 * angular momentum quantum numbers \a ls on position \a center.
+	 * \param ls      Angular momentum of the orbital
+	 * \param weights The weights of the primitives in the contraction
+	 * \param widths  The widths of the primitives int the contraction
+	 * \param ipos    Position identifier
+	 * \param center  The position of the contracted orbital
 	 */
 	CGTO(const Eigen::Vector3i& ls, const Eigen::VectorXd& weights,
-		const Eigen::ArrayXd& widths, const Eigen::Vector3d& center):
+		const Eigen::ArrayXd& widths, int ipos,
+		const Eigen::Vector3d& center):
 		AbstractBF(cid), _ls(ls), _weights(weights), _widths(widths),
-		_center(center) { normalizeWeights(); }
+		_ipos(ipos), _center(center) { normalizeWeights(); }
 
 	//! Return the number of primitives in this contraction
 	int size() const { return _weights.size(); }
@@ -98,15 +102,21 @@ protected:
 	 * \brief Constructor
 	 *
 	 * Create a new contraction of primitive Gaussian type orbitals with
-	 * angular momentum quantum numbers \a ls on position \a center. The
-	 * weights of the primitives are given in \a weights, the widths in
-	 * \a widths.
+	 * angular momentum quantum numbers \a ls on position \a center. This
+	 * contructor is used by child classes that pass their own class ID
+	 * for specialized integral calculations.
+	 * \param cid     Class ID of the child class
+	 * \param ls      Angular momentum of the orbital
+	 * \param weights The weights of the primitives in the contraction
+	 * \param widths  The widths of the primitives int the contraction
+	 * \param ipos    Position identifier
+	 * \param center  The position of the contracted orbital
 	 */
 	CGTO(size_t cid, const Eigen::Vector3i& ls,
 		const Eigen::VectorXd& weights, const Eigen::ArrayXd& widths,
-		const Eigen::Vector3d& center):
+		int ipos, const Eigen::Vector3d& center):
 		AbstractBF(cid), _ls(ls), _weights(weights), _widths(widths),
-		_center(center) { normalizeWeights(); }
+		_ipos(ipos), _center(center) { normalizeWeights(); }
 
 private:
 	//! The angular momentum quantum numbers
@@ -115,6 +125,8 @@ private:
 	Eigen::VectorXd _weights;
 	//! The widths of the primitive Gaussians
 	Eigen::ArrayXd _widths;
+	//! Position identifier of the center
+	int _ipos;
 	//! The center position of this function
 	Eigen::Vector3d _center;
 	
