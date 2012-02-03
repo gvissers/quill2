@@ -1,5 +1,5 @@
 #include <cmath>
-#include "gaussint/boys.hh"
+#include "boys.hh"
 #include "exceptions.hh"
 
 static const int maxiter = 200;

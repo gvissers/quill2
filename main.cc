@@ -8,7 +8,7 @@
 #include "CGTO.hh"
 #include "Basis.hh"
 #include "Dispatcher.hh"
-#include "gaussint/boys.hh"
+#include "boys.hh"
 #include "HartreeFock.hh"
 
 int main()

@@ -1,6 +1,6 @@
 #include "CGTOPair.hh"
 #include "Dispatcher.hh"
-#include "gaussint/boys.hh"
+#include "boys.hh"
 
 const size_t CGTOPair::cid = Dispatcher::singleton().classID<CGTOPair>();
 

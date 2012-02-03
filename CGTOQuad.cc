@@ -1,5 +1,5 @@
 #include "CGTOQuad.hh"
-#include "gaussint/boys.hh"
+#include "boys.hh"
 
 void CGTOQuad::elecRepPrim1d_psss(int i,
 	const Eigen::ArrayXXd& Pi, const Eigen::ArrayXXd& Qi,

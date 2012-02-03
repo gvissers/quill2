@@ -5,7 +5,7 @@ CXX = ccache g++
 #OPT = -std=c++0x -Wall -W -ggdb
 OPT = -std=c++0x -Wall -W -O2
 
-VPATH = io gaussint
+VPATH = io
 
 INCLUDES = -I . -I /home/ge/Programs/lithium/include -I eigen
 CXXFLAGS = $(OPT) $(INCLUDES) \

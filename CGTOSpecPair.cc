@@ -1,5 +1,5 @@
 #include "CGTOSpecPair.hh"
-#include "gaussint/boys.hh"
+#include "boys.hh"
 
 static Eigen::ArrayXXd overlap_ps(double x, const Eigen::ArrayXXd& beta,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& exp_ared)
