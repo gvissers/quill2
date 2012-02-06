@@ -4,10 +4,26 @@
 #include "AbstractBFQuad.hh"
 #include "CGTOPair.hh"
 
-#include <iostream>
+class FmCoefs;
+
 class CGTOQuad: public AbstractBFQuad
 {
 public:
+	//! Enumeration for the symmetry in center positions of the four orbitals
+	enum PositionSymmetry
+	{
+		//! All orbitals on different centers
+		POS_SYM_ABCD,
+		//! First pair is on the same center
+		POS_SYM_AACD,
+		//! Second pair is on the same center
+		POS_SYM_ABCC,
+		//! First pair is on one center, second pair on another
+		POS_SYM_AACC,
+		//! All orbitals are on the same center
+		POS_SYM_AAAA
+	};
+	
 	/*!
 	 * \brief Constructor
 	 * 
@@ -15,7 +31,7 @@ public:
 	 * \param p The first orbital pair in the quartet.
 	 * \param q The second orbital pair in the quartet.
 	 */
-	CGTOQuad(const CGTOPair& p, const CGTOPair& q): AbstractBFQuad(p, q) {}
+	CGTOQuad(const CGTOPair& p, const CGTOPair& q);
 	
 	//! Return the first orbital pair in the quartet
 	const CGTOPair& p() const
@@ -90,19 +106,23 @@ public:
 		return Eigen::ArrayXd::Map(q().widthsSum().data(), q().size())
 			.transpose().replicate(p().size(), 1);
 	}
-	//! Sums of primitive widths, for all combination of primitives GTOs
+	//! Sums of primitive widths, for all combinations of primitives GTOs
 	Eigen::ArrayXXd widthsSum() const
 	{
 		//return widthsAB() + widthsCD();
 		return widthsAB().rowwise()
 			+ Eigen::ArrayXd::Map(q().widthsSum().data(), q().size()).transpose();
 	}
+	//! Products of widths sums of the two pairs, for all combinations of primitives GTOs
+	Eigen::ArrayXXd widthsProduct() const
+	{
+		return Eigen::VectorXd::Map(p().widthsSum().data(), p().size())
+			* Eigen::VectorXd::Map(q().widthsSum().data(), q().size()).transpose();
+	}
 	//! Reduced widths \f$\rho = \frac{\zeta\eta}{\zeta+\eta}\f$
 	Eigen::ArrayXXd widthsReduced() const
 	{
-		return (Eigen::VectorXd::Map(p().widthsSum().data(), p().size())
-			* Eigen::VectorXd::Map(q().widthsSum().data(), q().size()).transpose()).array()
-			/ widthsSum();
+		return widthsProduct() / widthsSum();
 	}
 	
 	Eigen::VectorXd weightsAB() const
@@ -166,10 +186,8 @@ public:
 	}
 	Eigen::ArrayXXd KK() const
 	{
-		Eigen::ArrayXd K1 = Eigen::ArrayXd::Map(p().K().data(), p().size());
-		Eigen::ArrayXd K2 = Eigen::ArrayXd::Map(q().K().data(), q().size());
-		return K1.replicate(1, q().size())
-			* K2.transpose().replicate(p().size(), 1);
+		return Eigen::VectorXd::Map(p().K().data(), p().size())
+			* Eigen::VectorXd::Map(q().K().data(), q().size()).transpose();
 	}
 
 	/*!
@@ -197,24 +215,39 @@ public:
 	}
 
 private:
-	void elecRepPrim1d_psss(int i,
+	PositionSymmetry _pos_sym;
+	
+	void elecRepPrim1d_aacc_psss(int i, double Pi, double Qi,
+		FmCoefs& Cm) const;
+	void elecRepPrim1d_abcd_psss(int i,
 		const Eigen::ArrayXXd& Pi, const Eigen::ArrayXXd& Qi,
-		Eigen::ArrayXXd& C0, Eigen::ArrayXXd& C1) const;
-	void elecRepPrim1d_ppss(int i,
-		const Eigen::ArrayXXd& Pi, const Eigen::ArrayXXd& Qi,
-		Eigen::ArrayXXd& C0, Eigen::ArrayXXd& C1, Eigen::ArrayXXd& C2) const;
-	void elecRepPrim1d_psps(int i,
-		const Eigen::ArrayXXd& Pi, const Eigen::ArrayXXd& Qi,
-		Eigen::ArrayXXd& C0, Eigen::ArrayXXd& C1, Eigen::ArrayXXd& C2) const;
-	void elecRepPrim1d_dsss(int i,
-		const Eigen::ArrayXXd& Pi, const Eigen::ArrayXXd& Qi,
-		Eigen::ArrayXXd& C0, Eigen::ArrayXXd& C1, Eigen::ArrayXXd& C2) const;
-	void elecRepPrim1d(int i,
-		const Eigen::ArrayXXd& Pi, const Eigen::ArrayXXd& Qi,
-		std::vector<Eigen::ArrayXXd>& Ci) const;
+		FmCoefs& Cm) const;
 
-	double electronRepulsion_ssss() const;
-	double electronRepulsion_psss(const Eigen::Vector3i& ls) const;
+	void elecRepPrim1d_abcd_ppss(int i,
+		const Eigen::ArrayXXd& Pi, const Eigen::ArrayXXd& Qi,
+		FmCoefs& Cm) const;
+	void elecRepPrim1d_abcd_psps(int i,
+		const Eigen::ArrayXXd& Pi, const Eigen::ArrayXXd& Qi,
+		FmCoefs& Cm) const;
+	void elecRepPrim1d_abcd_dsss(int i,
+		const Eigen::ArrayXXd& Pi, const Eigen::ArrayXXd& Qi,
+		FmCoefs& Cm) const;
+
+	void elecRepPrim1d_aaaa(int i, FmCoefs& Cm) const;
+	void elecRepPrim1d_aacc(int i, double Pi, double Qi, FmCoefs& Cm) const;
+	void elecRepPrim1d_abcd(int i,
+		const Eigen::ArrayXXd& Pi, const Eigen::ArrayXXd& Qi,
+		FmCoefs& Cm) const;
+
+	double electronRepulsion_aaaa() const;
+	double electronRepulsion_aacc() const;
+	double electronRepulsion_abcd() const;
+
+	double electronRepulsion_aaaa_ssss() const;
+	double electronRepulsion_aacc_ssss() const;
+	double electronRepulsion_abcd_ssss() const;
+	double electronRepulsion_aacc_psss() const;
+	double electronRepulsion_abcd_psss() const;
 };
 
 #endif // CGTOQUAD_HH
