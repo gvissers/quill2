@@ -73,6 +73,8 @@ public:
 	const Eigen::VectorXd& weights() const { return _weights; }
 	//! Return the widths of all primitives in this orbital
 	const Eigen::ArrayXd& widths() const { return _widths; }
+	//! Return the position ID of this orbital's center
+	int positionId() const { return _ipos; }
 	//! Return the center position of this orbital
 	const Eigen::Vector3d& center() const { return _center; }
 	//! Return the \a i coordinate of the center of this orbital
