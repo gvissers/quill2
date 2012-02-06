@@ -125,10 +125,32 @@ public:
 	{
 		return (-r().squaredNorm()*widthsReduced()).exp();
 	}
+	int positionIdA() const
+	{
+		return f().positionId();
+	}
+	int positionIdB() const
+	{
+		return g().positionId();
+	}
+	bool samePositionId() const
+	{
+		return positionIdA() == positionIdB();
+	}
+	//! Return the first orbital center
+	const Eigen::Vector3d& centerA() const
+	{
+		return f().center();
+	}
 	//! Return the \a i coordinate of the first orbital center
 	double centerA(int i) const
 	{
 		return f().center(i);
+	}
+	//! Return the second orbital center
+	const Eigen::Vector3d& centerB() const
+	{
+		return g().center();
 	}
 	//! Return the \a i coordinate of the second orbital center
 	double centerB(int i) const
