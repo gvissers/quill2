@@ -30,7 +30,14 @@ public:
 		_widths_A(f.widths().replicate(1, g.size())),
 		_widths_B(g.widths().transpose().replicate(f.size(), 1)),
 		_widths_sum(_widths_A + _widths_B),
-		_widths_red(_widths_A * _widths_B / _widths_sum) {}
+		_widths_red(_widths_A * _widths_B / _widths_sum)
+	{
+		for (int i = 0; i < 3; ++i)
+		{
+			_P[i] = (_widths_A*f.center(i) + _widths_B*g.center(i))
+				/ _widths_sum;
+		}
+	}
 
 	//! Return the first orbital in the pair
 	const CGTO& f() const
@@ -171,9 +178,9 @@ public:
 	 * \brief Return the weighted average \a i coordinate, for each
 	 *    combination of primitive weights.
 	 */
-	Eigen::ArrayXXd P(int i) const
+	const Eigen::ArrayXXd& P(int i) const
 	{
-		return (widthsA()*f().center(i) + widthsB()*g().center(i)) / widthsSum();
+		return _P[i];
 	}
 	Eigen::ArrayXXd K() const
 	{
@@ -220,6 +227,8 @@ private:
 	Eigen::ArrayXXd _widths_sum;
 	//! Reduced primitive widths, for all combinations of primitives
 	Eigen::ArrayXXd _widths_red;
+	//! Weighted average coordinates
+	Eigen::ArrayXXd _P[3];
 
 	//! Integrate the overlap matrix for this pair over dimension \a i.
 	void overlapPrim1D(int i, Eigen::ArrayXXd& Sp) const;
