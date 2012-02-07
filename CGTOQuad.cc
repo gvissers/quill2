@@ -305,8 +305,8 @@ void CGTOQuad::elecRepPrim1d_abcd_psps(int i,
 {
 	int lA = this->lA(i), lB = this->lB(i),
 		lC = this->lC(i), lD = this->lD(i);
-	int l1 = lA+lB, l2 = lC+lD;
 #ifdef DEBUG
+	int l1 = lA+lB, l2 = lC+lD;
 	if (l1 != 1 || l2 != 1)
 		throw Li::Exception("Not a (p,s,p,s) quad");
 #endif
