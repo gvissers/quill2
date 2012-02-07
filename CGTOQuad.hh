@@ -94,7 +94,7 @@ public:
 	 */
 	Eigen::ArrayXXd widthsAB() const
 	{
-		return Eigen::ArrayXd::Map(p().widthsSum().data(), p().size())
+		return Eigen::ArrayXd::MapAligned(p().widthsSum().data(), p().size())
 			.replicate(1, q().size());
 	}
 	/*!
@@ -103,7 +103,7 @@ public:
 	 */
 	Eigen::ArrayXXd widthsCD() const
 	{
-		return Eigen::ArrayXd::Map(q().widthsSum().data(), q().size())
+		return Eigen::ArrayXd::MapAligned(q().widthsSum().data(), q().size())
 			.transpose().replicate(p().size(), 1);
 	}
 	//! Sums of primitive widths, for all combinations of primitives GTOs
@@ -111,13 +111,13 @@ public:
 	{
 		//return widthsAB() + widthsCD();
 		return widthsAB().rowwise()
-			+ Eigen::ArrayXd::Map(q().widthsSum().data(), q().size()).transpose();
+			+ Eigen::ArrayXd::MapAligned(q().widthsSum().data(), q().size()).transpose();
 	}
 	//! Products of widths sums of the two pairs, for all combinations of primitives GTOs
 	Eigen::ArrayXXd widthsProduct() const
 	{
-		return Eigen::VectorXd::Map(p().widthsSum().data(), p().size())
-			* Eigen::VectorXd::Map(q().widthsSum().data(), q().size()).transpose();
+		return Eigen::VectorXd::MapAligned(p().widthsSum().data(), p().size())
+			* Eigen::VectorXd::MapAligned(q().widthsSum().data(), q().size()).transpose();
 	}
 	//! Reduced widths \f$\rho = \frac{\zeta\eta}{\zeta+\eta}\f$
 	Eigen::ArrayXXd widthsReduced() const
@@ -127,11 +127,11 @@ public:
 	
 	Eigen::VectorXd weightsAB() const
 	{
-		return Eigen::VectorXd::Map(p().weights().data(), p().size());
+		return Eigen::VectorXd::MapAligned(p().weights().data(), p().size());
 	}
 	Eigen::VectorXd weightsCD() const
 	{
-		return Eigen::VectorXd::Map(q().weights().data(), q().size());
+		return Eigen::VectorXd::MapAligned(q().weights().data(), q().size());
 	}
 	
 	//! Return the \a i coordinate of the first orbital center
@@ -167,12 +167,12 @@ public:
 
 	Eigen::ArrayXXd P(int i) const
 	{
-		return Eigen::ArrayXd::Map(p().P(i).data(), p().size())
+		return Eigen::ArrayXd::MapAligned(p().P(i).data(), p().size())
 			.replicate(1, q().size());
 	}
 	Eigen::ArrayXXd Q(int i) const
 	{
-		return Eigen::ArrayXd::Map(q().P(i).data(), q().size())
+		return Eigen::ArrayXd::MapAligned(q().P(i).data(), q().size())
 			.transpose().replicate(p().size(), 1);
 	}
 	
@@ -186,8 +186,8 @@ public:
 	}
 	Eigen::ArrayXXd KK() const
 	{
-		return Eigen::VectorXd::Map(p().K().data(), p().size())
-			* Eigen::VectorXd::Map(q().K().data(), q().size()).transpose();
+		return Eigen::VectorXd::MapAligned(p().K().data(), p().size())
+			* Eigen::VectorXd::MapAligned(q().K().data(), q().size()).transpose();
 	}
 
 	/*!
