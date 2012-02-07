@@ -669,23 +669,20 @@ void CGTOQuad::elecRepPrim1d_abcd(int i,
 	Eigen::ArrayXXd asum = widthsSum();
 	Eigen::ArrayXXd inv_zeta = 0.5 * widthsAB().inverse();
 	Eigen::ArrayXXd inv_eta = 0.5 * widthsCD().inverse();
-	Eigen::ArrayXXd inv_sum = 0.5 * asum.inverse();
 	Eigen::ArrayXXd inv_ez = inv_eta + inv_zeta;
-	Eigen::ArrayXXd rho1 = inv_zeta.square() / inv_ez;
-	Eigen::ArrayXXd rho2 = inv_eta.square() / inv_ez;
 	double dAB = xB - xA;
 	double dCD = xD - xC;
-	Eigen::ArrayXXd dAP = Pi - xA;
-	Eigen::ArrayXXd dCQ = Qi - xC;
 	Eigen::ArrayXXd dPQ = Qi - Pi;
-	Eigen::ArrayXXd dPW = widthsCD() * dPQ / asum;
-	Eigen::ArrayXXd dQW = -widthsAB() * dPQ / asum;
 
 	EriCoefs coefs(l1, l2, p().size(), q().size());
 	// C_0,0,0,0
 	coefs(0, 0, 0).setOnes();
 	if (l2 > 0)
 	{
+		Eigen::ArrayXXd dCQ = Qi - xC;
+		Eigen::ArrayXXd dQW = -widthsAB() * dPQ / asum;
+		Eigen::ArrayXXd rho2 = inv_eta.square() / inv_ez;
+
 		// C_0,0,1,0
 		coefs(0, 1, 0) = dCQ;
 		coefs(0, 1, 1) = dQW;
@@ -710,6 +707,11 @@ void CGTOQuad::elecRepPrim1d_abcd(int i,
 
 	if (l1 > 0)
 	{
+		Eigen::ArrayXXd dAP = Pi - xA;
+		Eigen::ArrayXXd dPW = widthsCD() * dPQ / asum;
+		Eigen::ArrayXXd rho1 = inv_zeta.square() / inv_ez;
+		Eigen::ArrayXXd inv_sum = 0.5 * asum.inverse();
+
 		// C_1,0,c,0
 		for (int iC = 0; iC <= l2; ++iC)
 		{
