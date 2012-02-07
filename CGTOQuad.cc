@@ -303,10 +303,8 @@ void CGTOQuad::elecRepPrim1d_abcd_psps(int i,
 	const Eigen::ArrayXXd& Pi, const Eigen::ArrayXXd& Qi,
 	FmCoefs& Cm) const
 {
-	int lA = this->lA(i), lB = this->lB(i),
-		lC = this->lC(i), lD = this->lD(i);
 #ifdef DEBUG
-	int l1 = lA+lB, l2 = lC+lD;
+	int l1 = lA(i)+lB(i), l2 = lC(i)+lD(i);
 	if (l1 != 1 || l2 != 1)
 		throw Li::Exception("Not a (p,s,p,s) quad");
 #endif
