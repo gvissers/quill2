@@ -6,7 +6,7 @@ class EriCoefs
 public:
 	EriCoefs(int l1, int l2, int p_size, int q_size):
 		_imax(l1+1), _jmax(l2+1), _p_size(p_size), _q_size(q_size),
-		_C((_imax*_jmax*(_imax+_jmax)*p_size)/2, q_size) {}
+		_C(p_size, (_imax*_jmax*(_imax+_jmax)*q_size)/2) {}
 
 	int llIndex(int i, int j) const
 	{
@@ -17,17 +17,30 @@ public:
 	{
 		return (*this)(llIndex(i,j) + m);
 	}
-	const Eigen::Block<const Eigen::ArrayXXd> operator()(int i, int j, int m) const
+	const Eigen::Block<const Eigen::ArrayXXd> operator()(int i, int j,
+		int m) const
 	{
 		return (*this)(llIndex(i,j) + m);
 	}
 	Eigen::Block<Eigen::ArrayXXd> operator()(int idx)
 	{
-		return _C.block(idx*_p_size, 0, _p_size, _q_size);
+		return _C.block(0, idx*_q_size, _p_size, _q_size);
 	}
 	const Eigen::Block<const Eigen::ArrayXXd> operator()(int idx) const
 	{
-		return _C.block(idx*_p_size, 0, _p_size, _q_size);
+		return _C.block(0, idx*_q_size, _p_size, _q_size);
+	}
+
+	Eigen::Block<Eigen::ArrayXXd> operator()(int i, int j, int m, int count)
+	{
+		return _C.block(0, (llIndex(i,j) + m)*_q_size, _p_size,
+			count*_q_size);
+	}
+	const Eigen::Block<const Eigen::ArrayXXd> operator()(int i, int j,
+		int m, int count) const
+	{
+		return _C.block(0, (llIndex(i,j) + m)*_q_size, _p_size,
+			count*_q_size);
 	}
 
 private:
@@ -127,7 +140,7 @@ public:
 		{
 			C.setZero();
 			// i >= 0
-			// i <= ;sum
+			// i <= lsum
 			// m-i >= 0 => i <= m
 			// m-i <= _m => i >= m-_m
 			for (int i = std::max(0, m-_m); i <= std::min(lsum, m); ++i)
