@@ -88,36 +88,26 @@ public:
 		return lAB(i) + lCD(i);
 	}
 
-	/*!
-	 * \brief Sums of primitive widths for the first pair, for all
-	 *     primitives in the second pair
-	 */
-	Eigen::ArrayXXd widthsAB() const
+	//! Sums of primitive widths for the first pair
+	Eigen::ArrayXd widthsAB() const
 	{
-		return Eigen::ArrayXd::MapAligned(p().widthsSum().data(), p().size())
-			.replicate(1, q().size());
+		return Eigen::ArrayXd::MapAligned(p().widthsSum().data(), p().size());
 	}
-	/*!
-	 * \brief Sums of primitive widths for the second pair, for all
-	 *    primitives in the first pair
-	 */
-	Eigen::ArrayXXd widthsCD() const
+	//! Sums of primitive widths for the second pair
+	Eigen::Array<double, 1, Eigen::Dynamic> widthsCD() const
 	{
-		return Eigen::ArrayXd::MapAligned(q().widthsSum().data(), q().size())
-			.transpose().replicate(p().size(), 1);
+		return Eigen::Array<double, 1, Eigen::Dynamic>::MapAligned(
+			q().widthsSum().data(), q().size());
 	}
 	//! Sums of primitive widths, for all combinations of primitives GTOs
 	Eigen::ArrayXXd widthsSum() const
 	{
-		//return widthsAB() + widthsCD();
-		return widthsAB().rowwise()
-			+ Eigen::ArrayXd::MapAligned(q().widthsSum().data(), q().size()).transpose();
+		return widthsAB().replicate(1, q().size()).rowwise() + widthsCD();
 	}
 	//! Products of widths sums of the two pairs, for all combinations of primitives GTOs
 	Eigen::ArrayXXd widthsProduct() const
 	{
-		return Eigen::VectorXd::MapAligned(p().widthsSum().data(), p().size())
-			* Eigen::VectorXd::MapAligned(q().widthsSum().data(), q().size()).transpose();
+		return widthsAB().matrix() * widthsCD().matrix();
 	}
 	//! Reduced widths \f$\rho = \frac{\zeta\eta}{\zeta+\eta}\f$
 	Eigen::ArrayXXd widthsReduced() const
@@ -182,7 +172,8 @@ public:
 	 */
 	Eigen::ArrayXXd W(int i) const
 	{
-		return (widthsAB()*P(i) + widthsCD()*Q(i)) / widthsSum();
+		return (P(i).colwise()*widthsAB() + Q(i).rowwise()*widthsCD())
+			/ widthsSum();
 	}
 	Eigen::ArrayXXd KK() const
 	{
