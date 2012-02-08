@@ -58,96 +58,103 @@ public:
 		_p_size(p_size), _q_size(q_size), _C(p_size, (mmax+1)*q_size),
 		_m(0)
 	{
-		(*this)[0].setOnes();
+		block(0).setOnes();
 	}
 
 	int maxM() const { return _m; }
 
 	Eigen::Block<Eigen::ArrayXXd> operator[](int m)
 	{
-		return _C.block(0, m*_q_size, _p_size, _q_size);
+		return block(m);
 	}
 	const Eigen::Block<const Eigen::ArrayXXd> operator[](int m) const
 	{
-		return _C.block(0, m*_q_size, _p_size, _q_size);
+		return block(m);
 	}
 
-	void multiplyCol(const Eigen::ArrayXd& C0, const Eigen::ArrayXXd& C1)
+	Eigen::Block<Eigen::ArrayXXd> block(int m, int count=1)
 	{
-		(*this)[_m+1] = (*this)[_m] * C1;
+		return _C.block(0, m*_q_size, _p_size, count*_q_size);
+	}
+	const Eigen::Block<const Eigen::ArrayXXd> block(int m, int count=1) const
+	{
+		return _C.block(0, m*_q_size, _p_size, count*_q_size);
+	}
+
+	void multiplyCol(const CGTOQuad::ColArray& C0, const Eigen::ArrayXXd& C1)
+	{
+		block(_m+1) = block(_m) * C1;
 		for (int m = _m; m > 0; --m)
-			(*this)[m] = (*this)[m].colwise()*C0 + (*this)[m-1]*C1;
-		(*this)[0].colwise() *= C0;
+			block(m) = block(m).colwise()*C0 + block(m-1)*C1;
+		block(0).colwise() *= C0;
 		++_m;
 	}
-	void multiplyRow(const Eigen::Array<double, 1, Eigen::Dynamic>& C0,
-		const Eigen::ArrayXXd& C1)
+	void multiplyRow(const CGTOQuad::RowArray& C0, const Eigen::ArrayXXd& C1)
 	{
-		(*this)[_m+1] = (*this)[_m] * C1;
+		block(_m+1) = block(_m) * C1;
 		for (int m = _m; m > 0; --m)
-			(*this)[m] = (*this)[m].rowwise()*C0 + (*this)[m-1]*C1;
-		(*this)[0].rowwise() *= C0;
+			block(m) = block(m).rowwise()*C0 + block(m-1)*C1;
+		block(0).rowwise() *= C0;
 		++_m;
 	}
 	void multiply(const Eigen::ArrayXXd& C0, const Eigen::ArrayXXd& C1)
 	{
-		(*this)[_m+1] = (*this)[_m] * C1;
+		block(_m+1) = block(_m) * C1;
 		for (int m = _m; m > 0; --m)
-			(*this)[m] = (*this)[m]*C0 + (*this)[m-1]*C1;
-		(*this)[0] *= C0;
+			block(m) = block(m)*C0 + block(m-1)*C1;
+		block(0) *= C0;
 		++_m;
 	}
 	void multiply_noC0(const Eigen::ArrayXXd& C1)
 	{
-		(*this)[_m+1] = (*this)[_m] * C1;
-		for (int m = _m; m > 0; --m)
-			(*this)[m] = (*this)[m-1]*C1;
-		(*this)[0].setZero();
+		for (int m = _m; m >= 0; --m)
+			block(m+1) = block(m)*C1;
+		block(0).setZero();
 		++_m;
 	}
-	void multiplyCol(const Eigen::ArrayXd& C0, const Eigen::ArrayXXd& C1,
+	void multiplyCol(const CGTOQuad::ColArray& C0, const Eigen::ArrayXXd& C1,
 		const Eigen::ArrayXXd& C2)
 	{
 		if (_m == 0)
 		{
-			(*this)[_m+1] = (*this)[0]*C1;
-			(*this)[_m+2] = (*this)[0]*C2;
-			(*this)[0].colwise() *= C0;
+			block(2) = block(0)*C2;
+			block(1) = block(0)*C1;
+			block(0).colwise() *= C0;
 		}
 		else
 		{
-			(*this)[_m+1] = (*this)[_m]*C1 + (*this)[_m-1]*C2;
-			(*this)[_m+2] = (*this)[_m]*C2;
+			block(_m+2) = block(_m)*C2;
+			block(_m+1) = block(_m)*C1 + block(_m-1)*C2;
 			for (int m = _m; m > 1; --m)
 			{
-				(*this)[m] = (*this)[m].colwise()*C0 + (*this)[m-1]*C1
-					+ (*this)[m-2]*C2;
+				block(m) = block(m).colwise()*C0 + block(m-1)*C1
+					+ block(m-2)*C2;
 			}
-			(*this)[1] = (*this)[1].colwise()*C0 + (*this)[0]*C1;
-			(*this)[0].colwise() *= C0;
+			block(1) = block(1).colwise()*C0 + block(0)*C1;
+			block(0).colwise() *= C0;
 		}
 		_m += 2;
 	}
-	void multiplyRow(const Eigen::Array<double, 1, Eigen::Dynamic>& C0,
-		const Eigen::ArrayXXd& C1, const Eigen::ArrayXXd& C2)
+	void multiplyRow(const CGTOQuad::RowArray& C0, const Eigen::ArrayXXd& C1,
+		const Eigen::ArrayXXd& C2)
 	{
 		if (_m == 0)
 		{
-			(*this)[_m+1] = (*this)[0]*C1;
-			(*this)[_m+2] = (*this)[0]*C2;
-			(*this)[0].rowwise() *= C0;
+			block(2) = block(0)*C2;
+			block(1) = block(0)*C1;
+			block(0).rowwise() *= C0;
 		}
 		else
 		{
-			(*this)[_m+1] = (*this)[_m]*C1 + (*this)[_m-1]*C2;
-			(*this)[_m+2] = (*this)[_m]*C2;
+			block(_m+2) = block(_m)*C2;
+			block(_m+1) = block(_m)*C1 + block(_m-1)*C2;
 			for (int m = _m; m > 1; --m)
 			{
-				(*this)[m] = (*this)[m].rowwise()*C0 + (*this)[m-1]*C1
-					+ (*this)[m-2]*C2;
+				block(m) = block(m).rowwise()*C0 + block(m-1)*C1
+					+ block(m-2)*C2;
 			}
-			(*this)[1] = (*this)[1].rowwise()*C0 + (*this)[0]*C1;
-			(*this)[0].rowwise() *= C0;
+			block(1) = block(1).rowwise()*C0 + block(0)*C1;
+			block(0).rowwise() *= C0;
 		}
 		_m += 2;
 	}
@@ -156,21 +163,21 @@ public:
 	{
 		if (_m == 0)
 		{
-			(*this)[_m+1] = (*this)[0]*C1;
-			(*this)[_m+2] = (*this)[0]*C2;
-			(*this)[0] *= C0;
+			block(2) = block(0)*C2;
+			block(1) = block(0)*C1;
+			block(0) *= C0;
 		}
 		else
 		{
-			(*this)[_m+1] = (*this)[_m]*C1 + (*this)[_m-1]*C2;
-			(*this)[_m+2] = (*this)[_m]*C2;
+			block(_m+2) = block(_m)*C2;
+			block(_m+1) = block(_m)*C1 + block(_m-1)*C2;
 			for (int m = _m; m > 1; --m)
 			{
-				(*this)[m] = (*this)[m]*C0 + (*this)[m-1]*C1
-					+ (*this)[m-2]*C2;
+				block(m) = block(m)*C0 + block(m-1)*C1
+					+ block(m-2)*C2;
 			}
-			(*this)[1] = (*this)[1]*C0 + (*this)[0]*C1;
-			(*this)[0] *= C0;
+			block(1) = block(1)*C0 + block(0)*C1;
+			block(0) *= C0;
 		}
 		_m += 2;
 	}
@@ -178,20 +185,17 @@ public:
 	{
 		if (_m == 0)
 		{
-			(*this)[_m+1] = (*this)[0]*C1;
-			(*this)[_m+2] = (*this)[0]*C2;
-			(*this)[0].setZero();
+			block(2) = block(0)*C2;
+			block(1) = block(0)*C1;
+			block(0).setZero();
 		}
 		else
 		{
-			(*this)[_m+1] = (*this)[_m]*C1 + (*this)[_m-1]*C2;
-			(*this)[_m+2] = (*this)[_m]*C2;
-			for (int m = _m; m > 1; --m)
-			{
-				(*this)[m] = (*this)[m-1]*C1 + (*this)[m-2]*C2;
-			}
-			(*this)[1] = (*this)[0]*C1;
-			(*this)[0].setZero();
+			block(_m+2) = block(_m)*C2;
+			for (int m = _m; m > 0; --m)
+				block(m+1) = block(m)*C1 + block(m-1)*C2;
+			block(1) = block(0)*C1;
+			block(0).setZero();
 		}
 		_m += 2;
 	}
@@ -207,8 +211,8 @@ public:
 			// m-i >= 0 => i <= m
 			// m-i <= _m => i >= m-_m
 			for (int i = std::max(0, m-_m); i <= std::min(lsum, m); ++i)
-				C += coefs(l1, l2, i) * (*this)[m-i];
-			(*this)[m] = C;
+				C += coefs(l1, l2, i) * block(m-i);
+			block(m) = C;
 		}
 		_m += lsum;
 	}
@@ -296,14 +300,14 @@ void CGTOQuad::elecRepPrim1d_abcd_ppss(int i, FmCoefs& Cm) const
 		throw Li::Exception("Not a (p,p,s,s) quad");
 #endif
 
-	Eigen::ArrayXd inv_zeta = 0.5 * widthsAB().inverse();
-	Eigen::Array<double, 1, Eigen::Dynamic> inv_eta = 0.5 * widthsCD().inverse();
+	ColArray inv_zeta = 0.5 * widthsAB().inverse();
+	RowArray inv_eta = 0.5 * widthsCD().inverse();
 	auto inv_ez = inv_zeta.replicate(1, q().size()).rowwise() + inv_eta;
 
 	if (lAB(i) > 0)
 	{
 		double xA = centerA(i), xB = centerB(i), dAB = xB - xA;
-		Eigen::ArrayXd dAPi = dxP(i, xA);
+		ColArray dAPi = dxP(i, xA);
 		Eigen::ArrayXXd dPW = dPQ(i).rowwise() * widthsCD() / widthsSum();
 		auto rho1 = inv_ez.inverse().colwise() * inv_zeta.square();
 
@@ -314,7 +318,7 @@ void CGTOQuad::elecRepPrim1d_abcd_ppss(int i, FmCoefs& Cm) const
 	else
 	{
 		double xC = centerC(i), xD = centerD(i), dCD = xD - xC;
-		Eigen::Array<double, 1, Eigen::Dynamic> dCQi = dxQ(i, xC);
+		RowArray dCQi = dxQ(i, xC);
 		Eigen::ArrayXXd dQW = dPQ(i).colwise() * (-widthsAB()) / widthsSum();
 		auto rho2 = inv_ez.inverse().rowwise() * inv_eta.square();
 
@@ -332,14 +336,14 @@ void CGTOQuad::elecRepPrim1d_abcd_dsss(int i, FmCoefs& Cm) const
 		throw Li::Exception("Not a (d,s,s,s) quad");
 #endif
 
-	Eigen::ArrayXd inv_zeta = 0.5 * widthsAB().inverse();
-	Eigen::Array<double, 1, Eigen::Dynamic> inv_eta = 0.5 * widthsCD().inverse();
+	ColArray inv_zeta = 0.5 * widthsAB().inverse();
+	RowArray inv_eta = 0.5 * widthsCD().inverse();
 	auto inv_ez = inv_zeta.replicate(1, q().size()).rowwise() + inv_eta;
 
 	if (lAB(i) > 0)
 	{
 		double x = lA(i) > 0 ? centerA(i) : centerB(i);
-		Eigen::ArrayXd dAPi = dxP(i, x);
+		ColArray dAPi = dxP(i, x);
 		Eigen::ArrayXXd dPW = dPQ(i).rowwise() * widthsCD() / widthsSum();
 		auto rho1 = inv_zeta.square().replicate(1, q().size()) / inv_ez;
 
@@ -350,7 +354,7 @@ void CGTOQuad::elecRepPrim1d_abcd_dsss(int i, FmCoefs& Cm) const
 	else
 	{
 		double x = lC(i) > 0 ? centerC(i) : centerD(i);
-		Eigen::Array<double, 1, Eigen::Dynamic> dCQi = dxQ(i, x);
+		RowArray dCQi = dxQ(i, x);
 		Eigen::ArrayXXd dQW = dPQ(i).colwise() * (-widthsAB()) / widthsSum();
 		auto rho2 = inv_ez.inverse().rowwise() * inv_eta.square();
 
@@ -372,8 +376,8 @@ void CGTOQuad::elecRepPrim1d_abcd_psps(int i, FmCoefs& Cm) const
 	double xC = lC(i) == 1 ? centerC(i) : centerD(i);
 
 	Eigen::ArrayXXd asum = widthsSum();
-	Eigen::ArrayXd dAPi = dxP(i, xA);
-	Eigen::Array<double, 1, Eigen::Dynamic> dCQi = dxQ(i, xC);
+	ColArray dAPi = dxP(i, xA);
+	RowArray dCQi = dxQ(i, xC);
 	Eigen::ArrayXXd dPQi = dPQ(i);
 	Eigen::ArrayXXd dPW = dPQi.rowwise() * widthsCD() / asum;
 	Eigen::ArrayXXd dQW = dPQi.colwise() * (-widthsAB()) / asum;
@@ -732,7 +736,7 @@ void CGTOQuad::elecRepPrim1d_abcd(int i, FmCoefs& Cm) const
 	coefs(0, 0, 0).setOnes();
 	if (l2 > 0)
 	{
-		Eigen::Array<double, 1, Eigen::Dynamic> dCQi = dxQ(i, xC);
+		RowArray dCQi = dxQ(i, xC);
 		Eigen::ArrayXXd dQW = dPQi.colwise() * (-widthsAB()) / asum;
 		Eigen::ArrayXXd rho2 = inv_eta.square() / inv_ez;
 
@@ -760,7 +764,7 @@ void CGTOQuad::elecRepPrim1d_abcd(int i, FmCoefs& Cm) const
 
 	if (l1 > 0)
 	{
-		Eigen::ArrayXd dAPi = dxP(i, xA);
+		ColArray dAPi = dxP(i, xA);
 		Eigen::ArrayXXd dPW = dPQi.rowwise() * widthsCD() / asum;
 		Eigen::ArrayXXd rho1 = inv_zeta.square() / inv_ez;
 		Eigen::ArrayXXd inv_sum = 0.5 * asum.inverse();

@@ -23,6 +23,9 @@ public:
 		//! All orbitals are on the same center
 		POS_SYM_AAAA
 	};
+
+	typedef Eigen::ArrayXd ColArray;
+	typedef Eigen::Array<double, 1, Eigen::Dynamic> RowArray;
 	
 	/*!
 	 * \brief Constructor
@@ -89,15 +92,14 @@ public:
 	}
 
 	//! Sums of primitive widths for the first pair
-	Eigen::ArrayXd widthsAB() const
+	const ColArray widthsAB() const
 	{
-		return Eigen::ArrayXd::MapAligned(p().widthsSum().data(), p().size());
+		return ColArray::MapAligned(p().widthsSum().data(), p().size());
 	}
 	//! Sums of primitive widths for the second pair
-	Eigen::Array<double, 1, Eigen::Dynamic> widthsCD() const
+	const RowArray widthsCD() const
 	{
-		return Eigen::Array<double, 1, Eigen::Dynamic>::MapAligned(
-			q().widthsSum().data(), q().size());
+		return RowArray::MapAligned(q().widthsSum().data(), q().size());
 	}
 	//! Sums of primitive widths, for all combinations of primitives GTOs
 	Eigen::ArrayXXd widthsSum() const
@@ -155,20 +157,19 @@ public:
 		return q().r(i);
 	}
 
-	Eigen::ArrayXd P(int i) const
+	const ColArray P(int i) const
 	{
-		return Eigen::ArrayXd::MapAligned(p().P(i).data(), p().size());
+		return ColArray::MapAligned(p().P(i).data(), p().size());
 	}
-	Eigen::ArrayXd dxP(int i, double x) const
+	const ColArray dxP(int i, double x) const
 	{
 		return P(i) - x;
 	}
-	Eigen::Array<double, 1, Eigen::Dynamic> Q(int i) const
+	const RowArray Q(int i) const
 	{
-		return Eigen::Array<double, 1, Eigen::Dynamic>::MapAligned(
-			q().P(i).data(), q().size());
+		return RowArray::MapAligned(q().P(i).data(), q().size());
 	}
-	Eigen::Array<double, 1, Eigen::Dynamic> dxQ(int i, double x) const
+	const RowArray dxQ(int i, double x) const
 	{
 		return Q(i) - x;
 	}
