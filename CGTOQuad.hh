@@ -155,26 +155,28 @@ public:
 		return q().r(i);
 	}
 
-	Eigen::ArrayXXd P(int i) const
+	Eigen::ArrayXd P(int i) const
 	{
-		return Eigen::ArrayXd::MapAligned(p().P(i).data(), p().size())
-			.replicate(1, q().size());
+		return Eigen::ArrayXd::MapAligned(p().P(i).data(), p().size());
 	}
-	Eigen::ArrayXXd Q(int i) const
+	Eigen::ArrayXXd dxP(int i, double x) const
 	{
-		return Eigen::ArrayXd::MapAligned(q().P(i).data(), q().size())
-			.transpose().replicate(p().size(), 1);
+		return (P(i) - x).replicate(1, q().size());
+	}
+	Eigen::Array<double, 1, Eigen::Dynamic> Q(int i) const
+	{
+		return Eigen::Array<double, 1, Eigen::Dynamic>::MapAligned(
+			q().P(i).data(), q().size());
+	}
+	Eigen::ArrayXXd dxQ(int i, double x) const
+	{
+		return (Q(i) - x).replicate(p().size(), 1);
+	}
+	Eigen::ArrayXXd dPQ(int i) const
+	{
+		return Q(i).replicate(p().size(), 1).colwise() - P(i);
 	}
 	
-	/*!
-	 * \brief Return the weighted average \a i coordinate, for each
-	 *    combination of primitive weights.
-	 */
-	Eigen::ArrayXXd W(int i) const
-	{
-		return (P(i).colwise()*widthsAB() + Q(i).rowwise()*widthsCD())
-			/ widthsSum();
-	}
 	Eigen::ArrayXXd KK() const
 	{
 		return Eigen::VectorXd::MapAligned(p().K().data(), p().size())
@@ -208,27 +210,16 @@ public:
 private:
 	PositionSymmetry _pos_sym;
 	
-	void elecRepPrim1d_aacc_psss(int i, double Pi, double Qi,
-		FmCoefs& Cm) const;
-	void elecRepPrim1d_abcd_psss(int i,
-		const Eigen::ArrayXXd& Pi, const Eigen::ArrayXXd& Qi,
-		FmCoefs& Cm) const;
+	void elecRepPrim1d_aacc_psss(int i, FmCoefs& Cm) const;
+	void elecRepPrim1d_abcd_psss(int i, FmCoefs& Cm) const;
 
-	void elecRepPrim1d_abcd_ppss(int i,
-		const Eigen::ArrayXXd& Pi, const Eigen::ArrayXXd& Qi,
-		FmCoefs& Cm) const;
-	void elecRepPrim1d_abcd_psps(int i,
-		const Eigen::ArrayXXd& Pi, const Eigen::ArrayXXd& Qi,
-		FmCoefs& Cm) const;
-	void elecRepPrim1d_abcd_dsss(int i,
-		const Eigen::ArrayXXd& Pi, const Eigen::ArrayXXd& Qi,
-		FmCoefs& Cm) const;
+	void elecRepPrim1d_abcd_ppss(int i, FmCoefs& Cm) const;
+	void elecRepPrim1d_abcd_psps(int i, FmCoefs& Cm) const;
+	void elecRepPrim1d_abcd_dsss(int i, FmCoefs& Cm) const;
 
 	void elecRepPrim1d_aaaa(int i, FmCoefs& Cm) const;
-	void elecRepPrim1d_aacc(int i, double Pi, double Qi, FmCoefs& Cm) const;
-	void elecRepPrim1d_abcd(int i,
-		const Eigen::ArrayXXd& Pi, const Eigen::ArrayXXd& Qi,
-		FmCoefs& Cm) const;
+	void elecRepPrim1d_aacc(int i, FmCoefs& Cm) const;
+	void elecRepPrim1d_abcd(int i, FmCoefs& Cm) const;
 
 	double electronRepulsion_aaaa() const;
 	double electronRepulsion_aacc() const;
