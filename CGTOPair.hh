@@ -30,7 +30,8 @@ public:
 		_widths_A(f.widths().replicate(1, g.size())),
 		_widths_B(g.widths().transpose().replicate(f.size(), 1)),
 		_widths_sum(_widths_A + _widths_B),
-		_widths_red(_widths_A * _widths_B / _widths_sum)
+		_widths_red(_widths_A * _widths_B / _widths_sum),
+		_gauss_red((-(g.center()-f.center()).squaredNorm() * _widths_red).exp())
 	{
 		for (int i = 0; i < 3; ++i)
 		{
@@ -128,9 +129,9 @@ public:
 		return _widths_red;
 	}
 	//! \f$\exp(-\xi r^2)\f$ with \f$r\f$ the distance between the centers of the two orbitals
-	Eigen::ArrayXXd exp_ared() const
+	const Eigen::ArrayXXd& gaussReduced() const
 	{
-		return (-r().squaredNorm()*widthsReduced()).exp();
+		return _gauss_red;
 	}
 	int positionIdA() const
 	{
@@ -184,7 +185,7 @@ public:
 	}
 	Eigen::ArrayXXd K() const
 	{
-		return Constants::sqrt_2_pi_5_4 * exp_ared() / widthsSum();
+		return Constants::sqrt_2_pi_5_4 * gaussReduced() / widthsSum();
 	}
 	/*!
 	 * \brief Return the products of the weights for each combination of
@@ -227,6 +228,8 @@ private:
 	Eigen::ArrayXXd _widths_sum;
 	//! Reduced primitive widths, for all combinations of primitives
 	Eigen::ArrayXXd _widths_red;
+	//! \f$\exp(-\xi r^2)\f$ with \f$r\f$ the distance between the two centers
+	Eigen::ArrayXXd _gauss_red;
 	//! Weighted average coordinates
 	Eigen::ArrayXXd _P[3];
 
