@@ -92,12 +92,12 @@ public:
 	}
 
 	//! Sums of primitive widths for the first pair
-	const ColArray widthsAB() const
+	ColArray::ConstAlignedMapType widthsAB() const
 	{
 		return ColArray::MapAligned(p().widthsSum().data(), p().size());
 	}
 	//! Sums of primitive widths for the second pair
-	const RowArray widthsCD() const
+	RowArray::ConstAlignedMapType widthsCD() const
 	{
 		return RowArray::MapAligned(q().widthsSum().data(), q().size());
 	}
@@ -157,7 +157,7 @@ public:
 		return q().r(i);
 	}
 
-	const ColArray P(int i) const
+	ColArray::ConstAlignedMapType P(int i) const
 	{
 		return ColArray::MapAligned(p().P(i).data(), p().size());
 	}
@@ -169,7 +169,7 @@ public:
 	{
 		return (dPQ(i) * invWidthsSum()).rowwise() * widthsCD();
 	}
-	const RowArray Q(int i) const
+	RowArray::ConstAlignedMapType Q(int i) const
 	{
 		return RowArray::MapAligned(q().P(i).data(), q().size());
 	}
