@@ -178,10 +178,11 @@ public:
 		return Q(i).replicate(p().size(), 1).colwise() - P(i);
 	}
 	
-	Eigen::ArrayXXd KK() const
+	Eigen::ArrayXXd KKW() const
 	{
-		return Eigen::VectorXd::MapAligned(p().K().data(), p().size())
-			* Eigen::VectorXd::MapAligned(q().K().data(), q().size()).transpose();
+		return (invWidthsSum().sqrt().colwise()
+			* ColArray::MapAligned(p().K().data(), p().size())).rowwise()
+			* RowArray::MapAligned(q().K().data(), q().size());
 	}
 
 	/*!

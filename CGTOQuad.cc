@@ -958,12 +958,12 @@ double CGTOQuad::electronRepulsion_aacc() const
 		return electronRepulsion_aacc_psss();
 
 	FmCoefs Cm(lsum, p().size(), q().size());
-	Eigen::ArrayXXd T = (p().centerA() - q().centerA()).squaredNorm()
-		* widthsReduced();
 	for (int i = 0; i < 3; i++)
 		elecRepPrim1d_aacc(i, Cm);
 
 	int m = Cm.maxM();
+	Eigen::ArrayXXd T = (p().centerA() - q().centerA()).squaredNorm()
+		* widthsReduced();
 	Eigen::ArrayXXd F = Fm(m, T);
 	Eigen::ArrayXXd expmT = (-T).exp();
 	Eigen::ArrayXXd A = Cm[m] * F;
@@ -992,16 +992,13 @@ double CGTOQuad::electronRepulsion_abcd() const
 		return electronRepulsion_abcd_psss();
 
 	FmCoefs Cm(lsum, p().size(), q().size());
-	Eigen::ArrayXXd T = Eigen::ArrayXXd::Zero(p().size(), q().size());
 	for (int i = 0; i < 3; i++)
-	{
 		elecRepPrim1d_abcd(i, Cm);
-		T += dPQ(i).square();
-	}
-	T *= widthsReduced();
 
 	int m = Cm.maxM();
-	Eigen::ArrayXXd F = Fm(lsum, T);
+	Eigen::ArrayXXd T = (dPQ(0).square() + dPQ(1).square() + dPQ(2).square())
+		* widthsReduced();
+	Eigen::ArrayXXd F = Fm(m, T);
 	Eigen::ArrayXXd expmT = (-T).exp();
 	Eigen::ArrayXXd A = Cm[m] * F;
 	for (--m; m >= 0; --m)
