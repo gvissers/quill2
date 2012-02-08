@@ -165,6 +165,10 @@ public:
 	{
 		return P(i) - x;
 	}
+	const Eigen::ArrayXXd dPW(int i) const
+	{
+		return (dPQ(i) * invWidthsSum()).rowwise() * widthsCD();
+	}
 	const RowArray Q(int i) const
 	{
 		return RowArray::MapAligned(q().P(i).data(), q().size());
@@ -173,9 +177,14 @@ public:
 	{
 		return Q(i) - x;
 	}
-	Eigen::ArrayXXd dPQ(int i) const
+	const Eigen::ArrayXXd dQW(int i) const
 	{
-		return Q(i).replicate(p().size(), 1).colwise() - P(i);
+		return (dPQ(i) * invWidthsSum()).colwise() * (-widthsAB());
+	}
+	const Eigen::ArrayXXd& dPQ(int i) const
+	{
+		if (!_dPQ) setDPQ();
+		return _dPQ[i];
 	}
 	
 	Eigen::ArrayXXd KKW() const
@@ -212,6 +221,7 @@ public:
 private:
 	PositionSymmetry _pos_sym;
 	Eigen::ArrayXXd _inv_widths_sum;
+	mutable Eigen::ArrayXXd* _dPQ;
 	
 	void elecRepPrim1d_aacc_psss(int i, FmCoefs& Cm) const;
 	void elecRepPrim1d_abcd_psss(int i, FmCoefs& Cm) const;
@@ -233,6 +243,15 @@ private:
 	double electronRepulsion_abcd_ssss() const;
 	double electronRepulsion_aacc_psss() const;
 	double electronRepulsion_abcd_psss() const;
+
+	void setDPQ() const
+	{
+		_dPQ = new Eigen::ArrayXXd[3];
+		_dPQ[0] = Q(0).replicate(p().size(), 1).colwise() - P(0);
+		_dPQ[1] = Q(1).replicate(p().size(), 1).colwise() - P(1);
+		_dPQ[2] = Q(2).replicate(p().size(), 1).colwise() - P(2);
+	}
+	void freeDPQ() const { delete[] _dPQ; _dPQ = 0; }
 };
 
 #endif // CGTOQUAD_HH
