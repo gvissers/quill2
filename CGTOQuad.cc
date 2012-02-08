@@ -723,10 +723,7 @@ void CGTOQuad::elecRepPrim1d_abcd(int i, FmCoefs& Cm) const
 		std::swap(xC, xD);
 	}
 
-	Eigen::ArrayXXd asum = widthsSum();
-	Eigen::ArrayXXd inv_zeta = 0.5 * widthsAB().inverse().replicate(1, q().size());
-	Eigen::ArrayXXd inv_eta = 0.5 * widthsCD().inverse().replicate(p().size(), 1);
-	Eigen::ArrayXXd inv_ez = inv_eta + inv_zeta;
+	Eigen::ArrayXXd inv_sum = widthsSum().inverse();
 	double dAB = xB - xA;
 	double dCD = xD - xC;
 	Eigen::ArrayXXd dPQi = dPQ(i);
@@ -737,8 +734,10 @@ void CGTOQuad::elecRepPrim1d_abcd(int i, FmCoefs& Cm) const
 	if (l2 > 0)
 	{
 		RowArray dCQi = dxQ(i, xC);
-		Eigen::ArrayXXd dQW = dPQi.colwise() * (-widthsAB()) / asum;
-		Eigen::ArrayXXd rho2 = inv_eta.square() / inv_ez;
+		RowArray inv_eta = 0.5 * widthsCD().inverse();
+		Eigen::ArrayXXd dQW = (inv_sum * dPQi).colwise() * (-widthsAB());
+		Eigen::ArrayXXd rho2 = (inv_sum.colwise() * widthsAB())
+			.rowwise() * inv_eta;
 
 		// C_0,0,1,0
 		coefs(0, 1, 0).rowwise() = dCQi;
@@ -747,11 +746,11 @@ void CGTOQuad::elecRepPrim1d_abcd(int i, FmCoefs& Cm) const
 		for (int iC = 1; iC < l2; ++iC)
 		{
 			coefs(0, iC+1, 0) = coefs(0, iC, 0).rowwise()*dCQi
-				+ iC*inv_eta*coefs(0, iC-1, 0);
+				+ coefs(0, iC-1, 0).rowwise()*(iC*inv_eta);
 			for (int m = 1; m < iC; ++m)
 			{
 				coefs(0, iC+1, m) = coefs(0, iC, m).rowwise()*dCQi
-					+ iC*inv_eta*coefs(0, iC-1, m)
+					+ coefs(0, iC-1, m).rowwise()*(iC*inv_eta)
 					+ dQW*coefs(0, iC, m-1)
 					- iC*rho2*coefs(0, iC-1, m-1);
 			}
@@ -765,10 +764,13 @@ void CGTOQuad::elecRepPrim1d_abcd(int i, FmCoefs& Cm) const
 	if (l1 > 0)
 	{
 		ColArray dAPi = dxP(i, xA);
-		Eigen::ArrayXXd dPW = dPQi.rowwise() * widthsCD() / asum;
-		Eigen::ArrayXXd rho1 = inv_zeta.square() / inv_ez;
-		Eigen::ArrayXXd inv_sum = 0.5 * asum.inverse();
-
+		ColArray inv_zeta = 0.5 * widthsAB().inverse();
+		Eigen::ArrayXXd dPW = (inv_sum * dPQi).rowwise() * widthsCD();
+		Eigen::ArrayXXd rho1 = (inv_sum.colwise() * inv_zeta)
+			.rowwise() * widthsCD();
+			
+		inv_sum *= 0.5;
+		
 		// C_1,0,c,0
 		for (int iC = 0; iC <= l2; ++iC)
 		{
@@ -786,11 +788,11 @@ void CGTOQuad::elecRepPrim1d_abcd(int i, FmCoefs& Cm) const
 		for (int iA = 1; iA < l1; ++iA)
 		{
 			coefs(iA+1, 0, 0) = coefs(iA, 0, 0).colwise()*dAPi
-				+ iA*inv_zeta*coefs(iA-1, 0, 0);
+				+ coefs(iA-1, 0, 0).colwise()*(iA*inv_zeta);
 			for (int m = 1; m < iA; ++m)
 			{
 				coefs(iA+1, 0, m) = coefs(iA, 0, m).colwise()*dAPi
-					+ iA*inv_zeta*coefs(iA-1, 0, m)
+					+ coefs(iA-1, 0, m).colwise()*(iA*inv_zeta)
 					+ dPW*coefs(iA, 0, m-1)
 					- iA*rho1*coefs(iA-1, 0, m-1);
 			}
@@ -802,11 +804,11 @@ void CGTOQuad::elecRepPrim1d_abcd(int i, FmCoefs& Cm) const
 			for (int iC = 1; iC <= l2; ++iC)
 			{
 				coefs(iA+1, iC, 0) = coefs(iA, iC, 0).colwise()*dAPi
-					+ iA*inv_zeta*coefs(iA-1, iC, 0);
+					+ coefs(iA-1, iC, 0).colwise()*(iA*inv_zeta);
 				for (int m = 1; m < iA+iC; ++m)
 				{
 					coefs(iA+1, iC, m) = coefs(iA, iC, m).colwise()*dAPi
-						+ iA*inv_zeta*coefs(iA-1, iC, m)
+						+ coefs(iA-1, iC, m).colwise()*(iA*inv_zeta)
 						+ dPW*coefs(iA, iC, m-1)
 						- iA*rho1*coefs(iA-1, iC, m-1)
 						+ iC*inv_sum*coefs(iA, iC-1, m-1);
