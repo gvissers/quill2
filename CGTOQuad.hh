@@ -159,18 +159,18 @@ public:
 	{
 		return Eigen::ArrayXd::MapAligned(p().P(i).data(), p().size());
 	}
-	Eigen::ArrayXXd dxP(int i, double x) const
+	Eigen::ArrayXd dxP(int i, double x) const
 	{
-		return (P(i) - x).replicate(1, q().size());
+		return P(i) - x;
 	}
 	Eigen::Array<double, 1, Eigen::Dynamic> Q(int i) const
 	{
 		return Eigen::Array<double, 1, Eigen::Dynamic>::MapAligned(
 			q().P(i).data(), q().size());
 	}
-	Eigen::ArrayXXd dxQ(int i, double x) const
+	Eigen::Array<double, 1, Eigen::Dynamic> dxQ(int i, double x) const
 	{
-		return (Q(i) - x).replicate(p().size(), 1);
+		return Q(i) - x;
 	}
 	Eigen::ArrayXXd dPQ(int i) const
 	{

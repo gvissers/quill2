@@ -72,6 +72,23 @@ public:
 		return _C.block(0, m*_q_size, _p_size, _q_size);
 	}
 
+	void multiplyCol(const Eigen::ArrayXd& C0, const Eigen::ArrayXXd& C1)
+	{
+		(*this)[_m+1] = (*this)[_m] * C1;
+		for (int m = _m; m > 0; --m)
+			(*this)[m] = (*this)[m].colwise()*C0 + (*this)[m-1]*C1;
+		(*this)[0].colwise() *= C0;
+		++_m;
+	}
+	void multiplyRow(const Eigen::Array<double, 1, Eigen::Dynamic>& C0,
+		const Eigen::ArrayXXd& C1)
+	{
+		(*this)[_m+1] = (*this)[_m] * C1;
+		for (int m = _m; m > 0; --m)
+			(*this)[m] = (*this)[m].rowwise()*C0 + (*this)[m-1]*C1;
+		(*this)[0].rowwise() *= C0;
+		++_m;
+	}
 	void multiply(const Eigen::ArrayXXd& C0, const Eigen::ArrayXXd& C1)
 	{
 		(*this)[_m+1] = (*this)[_m] * C1;
@@ -87,6 +104,52 @@ public:
 			(*this)[m] = (*this)[m-1]*C1;
 		(*this)[0].setZero();
 		++_m;
+	}
+	void multiplyCol(const Eigen::ArrayXd& C0, const Eigen::ArrayXXd& C1,
+		const Eigen::ArrayXXd& C2)
+	{
+		if (_m == 0)
+		{
+			(*this)[_m+1] = (*this)[0]*C1;
+			(*this)[_m+2] = (*this)[0]*C2;
+			(*this)[0].colwise() *= C0;
+		}
+		else
+		{
+			(*this)[_m+1] = (*this)[_m]*C1 + (*this)[_m-1]*C2;
+			(*this)[_m+2] = (*this)[_m]*C2;
+			for (int m = _m; m > 1; --m)
+			{
+				(*this)[m] = (*this)[m].colwise()*C0 + (*this)[m-1]*C1
+					+ (*this)[m-2]*C2;
+			}
+			(*this)[1] = (*this)[1].colwise()*C0 + (*this)[0]*C1;
+			(*this)[0].colwise() *= C0;
+		}
+		_m += 2;
+	}
+	void multiplyRow(const Eigen::Array<double, 1, Eigen::Dynamic>& C0,
+		const Eigen::ArrayXXd& C1, const Eigen::ArrayXXd& C2)
+	{
+		if (_m == 0)
+		{
+			(*this)[_m+1] = (*this)[0]*C1;
+			(*this)[_m+2] = (*this)[0]*C2;
+			(*this)[0].rowwise() *= C0;
+		}
+		else
+		{
+			(*this)[_m+1] = (*this)[_m]*C1 + (*this)[_m-1]*C2;
+			(*this)[_m+2] = (*this)[_m]*C2;
+			for (int m = _m; m > 1; --m)
+			{
+				(*this)[m] = (*this)[m].rowwise()*C0 + (*this)[m-1]*C1
+					+ (*this)[m-2]*C2;
+			}
+			(*this)[1] = (*this)[1].rowwise()*C0 + (*this)[0]*C1;
+			(*this)[0].rowwise() *= C0;
+		}
+		_m += 2;
 	}
 	void multiply(const Eigen::ArrayXXd& C0, const Eigen::ArrayXXd& C1,
 		const Eigen::ArrayXXd& C2)
@@ -214,12 +277,14 @@ void CGTOQuad::elecRepPrim1d_abcd_psss(int i, FmCoefs& Cm) const
 	if (lAB(i) == 1)
 	{
 		double x = lA(i) == 1 ? centerA(i) : centerB(i);
-		Cm.multiply(dxP(i, x), dPQ(i).rowwise() * widthsCD() / widthsSum());
+		Cm.multiplyCol(dxP(i, x),
+			dPQ(i).rowwise() * widthsCD() / widthsSum());
 	}
 	else
 	{
 		double x = lC(i) == 1 ? centerC(i) : centerD(i);
-		Cm.multiply(dxQ(i, x), dPQ(i).colwise() * (-widthsAB()) / widthsSum());
+		Cm.multiplyRow(dxQ(i, x),
+			dPQ(i).colwise() * (-widthsAB()) / widthsSum());
 	}
 }
 
@@ -231,30 +296,30 @@ void CGTOQuad::elecRepPrim1d_abcd_ppss(int i, FmCoefs& Cm) const
 		throw Li::Exception("Not a (p,p,s,s) quad");
 #endif
 
-	Eigen::ArrayXXd inv_zeta = 0.5 * widthsAB().inverse().replicate(1, q().size());
-	Eigen::ArrayXXd inv_eta = 0.5 * widthsCD().inverse().replicate(p().size(), 1);
-	auto inv_ez = inv_eta + inv_zeta;
+	Eigen::ArrayXd inv_zeta = 0.5 * widthsAB().inverse();
+	Eigen::Array<double, 1, Eigen::Dynamic> inv_eta = 0.5 * widthsCD().inverse();
+	auto inv_ez = inv_zeta.replicate(1, q().size()).rowwise() + inv_eta;
 
 	if (lAB(i) > 0)
 	{
 		double xA = centerA(i), xB = centerB(i), dAB = xB - xA;
-		Eigen::ArrayXXd dAPi = dxP(i, xA);
+		Eigen::ArrayXd dAPi = dxP(i, xA);
 		Eigen::ArrayXXd dPW = dPQ(i).rowwise() * widthsCD() / widthsSum();
-		auto rho1 = inv_zeta.square() / inv_ez;
+		auto rho1 = inv_ez.inverse().colwise() * inv_zeta.square();
 
-		Cm.multiply(dAPi.square() + inv_zeta - dAB*dAPi,
-			(2*dAPi - dAB)*dPW - rho1,
+		Cm.multiplyCol(dAPi.square() + inv_zeta - dAB*dAPi,
+			dPW.colwise()*(2*dAPi - dAB) - rho1,
 			dPW.square());
 	}
 	else
 	{
 		double xC = centerC(i), xD = centerD(i), dCD = xD - xC;
-		Eigen::ArrayXXd dCQi = dxQ(i, xC);
+		Eigen::Array<double, 1, Eigen::Dynamic> dCQi = dxQ(i, xC);
 		Eigen::ArrayXXd dQW = dPQ(i).colwise() * (-widthsAB()) / widthsSum();
-		auto rho2 = inv_eta.square() / inv_ez;
+		auto rho2 = inv_ez.inverse().rowwise() * inv_eta.square();
 
-		Cm.multiply(dCQi.square() + inv_eta - dCD*dCQi,
-			(2*dCQi - dCD)*dQW - rho2,
+		Cm.multiplyRow(dCQi.square() + inv_eta - dCD*dCQi,
+			dQW.rowwise()*(2*dCQi - dCD) - rho2,
 			dQW.square());
 	}
 }
@@ -267,30 +332,30 @@ void CGTOQuad::elecRepPrim1d_abcd_dsss(int i, FmCoefs& Cm) const
 		throw Li::Exception("Not a (d,s,s,s) quad");
 #endif
 
-	Eigen::ArrayXXd inv_zeta = 0.5 * widthsAB().inverse().replicate(1, q().size());
-	Eigen::ArrayXXd inv_eta = 0.5 * widthsCD().inverse().replicate(p().size(), 1);
-	auto inv_ez = inv_eta + inv_zeta;
+	Eigen::ArrayXd inv_zeta = 0.5 * widthsAB().inverse();
+	Eigen::Array<double, 1, Eigen::Dynamic> inv_eta = 0.5 * widthsCD().inverse();
+	auto inv_ez = inv_zeta.replicate(1, q().size()).rowwise() + inv_eta;
 
 	if (lAB(i) > 0)
 	{
 		double x = lA(i) > 0 ? centerA(i) : centerB(i);
-		Eigen::ArrayXXd dAPi = dxP(i, x);
+		Eigen::ArrayXd dAPi = dxP(i, x);
 		Eigen::ArrayXXd dPW = dPQ(i).rowwise() * widthsCD() / widthsSum();
-		auto rho1 = inv_zeta.square() / inv_ez;
+		auto rho1 = inv_zeta.square().replicate(1, q().size()) / inv_ez;
 
-		Cm.multiply(dAPi.square() + inv_zeta,
-			2*dAPi*dPW - rho1,
+		Cm.multiplyCol(dAPi.square() + inv_zeta,
+			dPW.colwise()*(2*dAPi) - rho1,
 			dPW.square());
 	}
 	else
 	{
 		double x = lC(i) > 0 ? centerC(i) : centerD(i);
-		Eigen::ArrayXXd dCQi = dxQ(i, x);
+		Eigen::Array<double, 1, Eigen::Dynamic> dCQi = dxQ(i, x);
 		Eigen::ArrayXXd dQW = dPQ(i).colwise() * (-widthsAB()) / widthsSum();
-		auto rho2 = inv_eta.square() / inv_ez;
+		auto rho2 = inv_ez.inverse().rowwise() * inv_eta.square();
 
-		Cm.multiply(dCQi.square() + inv_eta,
-			2*dCQi*dQW - rho2,
+		Cm.multiplyRow(dCQi.square() + inv_eta,
+			dQW.rowwise()*(2*dCQi) - rho2,
 			dQW.square());
 	}
 }
@@ -307,14 +372,14 @@ void CGTOQuad::elecRepPrim1d_abcd_psps(int i, FmCoefs& Cm) const
 	double xC = lC(i) == 1 ? centerC(i) : centerD(i);
 
 	Eigen::ArrayXXd asum = widthsSum();
-	Eigen::ArrayXXd dAPi = dxP(i, xA);
-	Eigen::ArrayXXd dCQi = dxQ(i, xC);
+	Eigen::ArrayXd dAPi = dxP(i, xA);
+	Eigen::Array<double, 1, Eigen::Dynamic> dCQi = dxQ(i, xC);
 	Eigen::ArrayXXd dPQi = dPQ(i);
 	Eigen::ArrayXXd dPW = dPQi.rowwise() * widthsCD() / asum;
 	Eigen::ArrayXXd dQW = dPQi.colwise() * (-widthsAB()) / asum;
 
-	Cm.multiply(dAPi*dCQi,
-		dAPi*dQW + dPW*dCQi + 0.5*asum.inverse(),
+	Cm.multiply(dAPi.matrix()*dCQi.matrix(),
+		dQW.colwise()*dAPi + dPW.rowwise()*dCQi + 0.5*asum.inverse(),
 		dPW*dQW);
 }
 
@@ -667,26 +732,26 @@ void CGTOQuad::elecRepPrim1d_abcd(int i, FmCoefs& Cm) const
 	coefs(0, 0, 0).setOnes();
 	if (l2 > 0)
 	{
-		Eigen::ArrayXXd dCQi = dxQ(i, xC);
+		Eigen::Array<double, 1, Eigen::Dynamic> dCQi = dxQ(i, xC);
 		Eigen::ArrayXXd dQW = dPQi.colwise() * (-widthsAB()) / asum;
 		Eigen::ArrayXXd rho2 = inv_eta.square() / inv_ez;
 
 		// C_0,0,1,0
-		coefs(0, 1, 0) = dCQi;
+		coefs(0, 1, 0).rowwise() = dCQi;
 		coefs(0, 1, 1) = dQW;
 		// C_0,0,c,0
 		for (int iC = 1; iC < l2; ++iC)
 		{
-			coefs(0, iC+1, 0) = dCQi*coefs(0, iC, 0)
+			coefs(0, iC+1, 0) = coefs(0, iC, 0).rowwise()*dCQi
 				+ iC*inv_eta*coefs(0, iC-1, 0);
 			for (int m = 1; m < iC; ++m)
 			{
-				coefs(0, iC+1, m) = dCQi*coefs(0, iC, m)
+				coefs(0, iC+1, m) = coefs(0, iC, m).rowwise()*dCQi
 					+ iC*inv_eta*coefs(0, iC-1, m)
 					+ dQW*coefs(0, iC, m-1)
 					- iC*rho2*coefs(0, iC-1, m-1);
 			}
-			coefs(0, iC+1, iC) = dCQi*coefs(0, iC, iC)
+			coefs(0, iC+1, iC) = coefs(0, iC, iC).rowwise()*dCQi
 				+ dQW*coefs(0, iC, iC-1)
 				- iC*rho2*coefs(0, iC-1, iC-1);
 			coefs(0, iC+1, iC+1) = dQW*coefs(0, iC, iC);
@@ -695,7 +760,7 @@ void CGTOQuad::elecRepPrim1d_abcd(int i, FmCoefs& Cm) const
 
 	if (l1 > 0)
 	{
-		Eigen::ArrayXXd dAPi = dxP(i, xA);
+		Eigen::ArrayXd dAPi = dxP(i, xA);
 		Eigen::ArrayXXd dPW = dPQi.rowwise() * widthsCD() / asum;
 		Eigen::ArrayXXd rho1 = inv_zeta.square() / inv_ez;
 		Eigen::ArrayXXd inv_sum = 0.5 * asum.inverse();
@@ -703,10 +768,10 @@ void CGTOQuad::elecRepPrim1d_abcd(int i, FmCoefs& Cm) const
 		// C_1,0,c,0
 		for (int iC = 0; iC <= l2; ++iC)
 		{
-			coefs(1, iC, 0) = dAPi*coefs(0, iC, 0);
+			coefs(1, iC, 0) = coefs(0, iC, 0).colwise()*dAPi;
 			for (int m = 1; m <= iC; ++m)
 			{
-				coefs(1, iC, m) = dAPi*coefs(0, iC, m)
+				coefs(1, iC, m) = coefs(0, iC, m).colwise()*dAPi
 					+ dPW*coefs(0, iC, m-1)
 					+ iC*inv_sum*coefs(0, iC-1, m-1);
 			}
@@ -716,33 +781,33 @@ void CGTOQuad::elecRepPrim1d_abcd(int i, FmCoefs& Cm) const
 		// C_a,0,c,0
 		for (int iA = 1; iA < l1; ++iA)
 		{
-			coefs(iA+1, 0, 0) = dAPi*coefs(iA, 0, 0)
+			coefs(iA+1, 0, 0) = coefs(iA, 0, 0).colwise()*dAPi
 				+ iA*inv_zeta*coefs(iA-1, 0, 0);
 			for (int m = 1; m < iA; ++m)
 			{
-				coefs(iA+1, 0, m) = dAPi*coefs(iA, 0, m)
+				coefs(iA+1, 0, m) = coefs(iA, 0, m).colwise()*dAPi
 					+ iA*inv_zeta*coefs(iA-1, 0, m)
 					+ dPW*coefs(iA, 0, m-1)
 					- iA*rho1*coefs(iA-1, 0, m-1);
 			}
-			coefs(iA+1, 0, iA) = dAPi*coefs(iA, 0, iA)
+			coefs(iA+1, 0, iA) = coefs(iA, 0, iA).colwise()*dAPi
 				+ dPW*coefs(iA, 0, iA-1)
 				- iA*rho1*coefs(iA-1, 0, iA-1);
 			coefs(iA+1, 0, iA+1) = dPW*coefs(iA, 0, iA);
 
 			for (int iC = 1; iC <= l2; ++iC)
 			{
-				coefs(iA+1, iC, 0) = dAPi*coefs(iA, iC, 0)
+				coefs(iA+1, iC, 0) = coefs(iA, iC, 0).colwise()*dAPi
 					+ iA*inv_zeta*coefs(iA-1, iC, 0);
 				for (int m = 1; m < iA+iC; ++m)
 				{
-					coefs(iA+1, iC, m) = dAPi*coefs(iA, iC, m)
+					coefs(iA+1, iC, m) = coefs(iA, iC, m).colwise()*dAPi
 						+ iA*inv_zeta*coefs(iA-1, iC, m)
 						+ dPW*coefs(iA, iC, m-1)
 						- iA*rho1*coefs(iA-1, iC, m-1)
 						+ iC*inv_sum*coefs(iA, iC-1, m-1);
 				}
-				coefs(iA+1, iC, iA+iC) = dAPi*coefs(iA, iC, iA+iC)
+				coefs(iA+1, iC, iA+iC) = coefs(iA, iC, iA+iC).colwise()*dAPi
 					+ dPW*coefs(iA, iC, iA+iC-1)
 					- iA*rho1*coefs(iA-1, iC, iA+iC-1)
 					+ iC*inv_sum*coefs(iA, iC-1, iA+iC-1);
@@ -804,30 +869,30 @@ double CGTOQuad::electronRepulsion_abcd_ssss() const
 
 double CGTOQuad::electronRepulsion_abcd_psss() const
 {
-	Eigen::ArrayXXd C0, C1;
-	Eigen::ArrayXXd T = Eigen::ArrayXXd::Zero(p().size(), q().size());
+	Eigen::ArrayXXd T = (dPQ(0).square() + dPQ(1).square() + dPQ(2).square())
+		* widthsReduced();
+	Eigen::ArrayXXd F1 = Fm(1, T);
+	Eigen::ArrayXXd F0 = (-T).exp() + 2*T*F1;
 	for (int i = 0; i < 3; i++)
 	{
 		if (lAB(i) == 1)
 		{
 			double x = lA(i) == 1 ? centerA(i) : centerB(i);
-			C0 = dxP(i, x);
-			C1 = dPQ(i).rowwise() * widthsCD() / widthsSum();
+			F0.colwise() *= dxP(i, x);
+			F1 *= dPQ(i).rowwise() * widthsCD() / widthsSum();
+			break;
 		}
-		else if (lCD(i) == 1)
+		if (lCD(i) == 1)
 		{
 			double x = lC(i) == 1 ? centerC(i) : centerD(i);
-			C0 = dxQ(i, x);
-			C1 = dPQ(i).colwise() * (-widthsAB()) / widthsSum();
+			F0.rowwise() *= dxQ(i, x);
+			F1 *= dPQ(i).colwise() * (-widthsAB()) / widthsSum();
+			break;
 		}
-		T += dPQ(i).square();
 	}
-	T *= widthsReduced();
 
-	Eigen::ArrayXXd F = Fm(1, T);
-	Eigen::ArrayXXd A = C1 * F + C0 * ((-T).exp() + 2*T*F);
 	return weightsAB().transpose()
-		* (KK() * A / widthsSum().sqrt()).matrix()
+		* (KK() * (F1+F0) / widthsSum().sqrt()).matrix()
 		* weightsCD();
 }
 
