@@ -232,7 +232,7 @@ void CGTOPair::nucAttrPrim1D(int i, const Eigen::ArrayXXd& theta,
 
 double CGTOPair::overlap() const
 {
-	Eigen::ArrayXXd Sp = gaussReduced() / (widthsSum() * widthsSum().sqrt());
+	Eigen::ArrayXXd Sp = gaussReduced() / widthsSum().sqrt();
 
 	for (int i = 0; i < 3; i++)
 		overlapPrim1D(i, Sp);
@@ -256,7 +256,7 @@ double CGTOPair::kineticEnergy() const
 
 void CGTOPair::oneElectron(double &S, double &T) const
 {
-	Eigen::ArrayXXd Sp = gaussReduced() / (widthsSum() * widthsSum().sqrt());
+	Eigen::ArrayXXd Sp = gaussReduced() / widthsSum().sqrt();
 	Eigen::ArrayXXd Tp = widthsReduced()
 		* (3 - 2*r().squaredNorm()*widthsReduced()) * Sp;
 
@@ -328,6 +328,6 @@ double CGTOPair::nuclearAttraction(const Eigen::MatrixXd& nuc_pos,
 	}
 
 	return 2 * M_PI * f().weights().transpose()
-		* (gaussReduced() * A / widthsSum()).matrix()
+		* (gaussReduced() * A).matrix()
 		* g().weights();
 }

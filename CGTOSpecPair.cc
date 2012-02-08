@@ -4,39 +4,39 @@
 static Eigen::ArrayXXd overlap_ps(double x, const Eigen::ArrayXXd& beta,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& gred)
 {
-	return x * beta * gred / (asum.square() * asum.sqrt());
+	return x * beta * gred / (asum * asum.sqrt());
 }
 
 static Eigen::ArrayXXd overlap_pp(double x, const Eigen::ArrayXXd& asum,
 	const Eigen::ArrayXXd& ared, const Eigen::ArrayXXd& gred)
 {
-	return (0.5 - x*x*ared) * gred / (asum.square() * asum.sqrt());
+	return (0.5 - x*x*ared) * gred / (asum * asum.sqrt());
 }
 
 static Eigen::ArrayXXd overlap_pp(double x, double y, const Eigen::ArrayXXd& asum,
 	const Eigen::ArrayXXd& ared, const Eigen::ArrayXXd& gred)
 {
-	return -x * y * ared * gred / (asum.square() * asum.sqrt());
+	return -x * y * ared * gred / (asum * asum.sqrt());
 }
 
 static Eigen::ArrayXXd overlap_ds(double x, const Eigen::ArrayXXd& beta,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& gred)
 {
 	return (0.5*asum + x*x*beta.square()) * gred
-		/ (asum.cube() * asum.sqrt());
+		/ (asum.square() * asum.sqrt());
 }
 
 static Eigen::ArrayXXd overlap_ds(double x, double y, const Eigen::ArrayXXd& beta,
 	const Eigen::ArrayXXd& asum, const Eigen::ArrayXXd& gred)
 {
-	return x * y * beta.square() * gred / (asum.cube() * asum.sqrt());
+	return x * y * beta.square() * gred / (asum.square() * asum.sqrt());
 }
 
 template <>
 double CGTOSpecPair<0, 0, 0, 0, 0, 0>::overlap() const
 {
 	return Constants::pi_sqrt_pi * f().weights().transpose()
-		* (gaussReduced() / (widthsSum() * widthsSum().sqrt())).matrix()
+		* (gaussReduced() / widthsSum().sqrt()).matrix()
 		* g().weights();
 }
 
@@ -268,7 +268,7 @@ static Eigen::ArrayXXd kinetic_ps(double x, double rsq,
 	const Eigen::ArrayXXd& ared, const Eigen::ArrayXXd& gred)
 {
 	return x * beta * ared * (5 - 2*rsq*ared) * gred
-		/ (asum.square() * asum.sqrt());
+		/ (asum * asum.sqrt());
 }
 
 // d/dx G_0 = -2 alpha G_1
@@ -285,7 +285,7 @@ double CGTOSpecPair<0, 0, 0, 0, 0, 0>::kineticEnergy() const
 {
 	return Constants::pi_sqrt_pi * f().weights().transpose()
 		* (widthsReduced() * (3 - 2*r().squaredNorm()*widthsReduced())
-			* gaussReduced() / (widthsSum() * widthsSum().sqrt())).matrix()
+			* gaussReduced() / widthsSum().sqrt()).matrix()
 		* g().weights();
 }
 
@@ -366,7 +366,7 @@ double CGTOSpecPair<0, 0, 0, 0, 0, 0>::nuclearAttraction(
 		A += -nuc_charge[iC] * Am.block(0, iC*nr_cols, nr_rows, nr_cols);
 
 	return 2 * M_PI * f().weights().transpose()
-		* (gaussReduced() * A / widthsSum()).matrix()
+		* (gaussReduced() * A).matrix()
 		* g().weights();
 }
 
