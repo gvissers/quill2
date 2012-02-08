@@ -102,9 +102,9 @@ public:
 		return RowArray::MapAligned(q().widthsSum().data(), q().size());
 	}
 	//! Sums of primitive widths, for all combinations of primitives GTOs
-	Eigen::ArrayXXd widthsSum() const
+	const Eigen::ArrayXXd& invWidthsSum() const
 	{
-		return widthsAB().replicate(1, q().size()).rowwise() + widthsCD();
+		return _inv_widths_sum;
 	}
 	//! Products of widths sums of the two pairs, for all combinations of primitives GTOs
 	Eigen::ArrayXXd widthsProduct() const
@@ -114,7 +114,7 @@ public:
 	//! Reduced widths \f$\rho = \frac{\zeta\eta}{\zeta+\eta}\f$
 	Eigen::ArrayXXd widthsReduced() const
 	{
-		return widthsProduct() / widthsSum();
+		return widthsProduct() * invWidthsSum();
 	}
 	
 	Eigen::VectorXd weightsAB() const
@@ -210,6 +210,7 @@ public:
 
 private:
 	PositionSymmetry _pos_sym;
+	Eigen::ArrayXXd _inv_widths_sum;
 	
 	void elecRepPrim1d_aacc_psss(int i, FmCoefs& Cm) const;
 	void elecRepPrim1d_abcd_psss(int i, FmCoefs& Cm) const;
