@@ -26,6 +26,11 @@ public:
 
 	typedef Eigen::ArrayXd ColArray;
 	typedef Eigen::Array<double, 1, Eigen::Dynamic> RowArray;
+	typedef ColArray::ConstAlignedMapType ColArrayMap;
+	typedef RowArray::ConstAlignedMapType RowArrayMap;
+	typedef Eigen::VectorXd::ConstAlignedMapType VectorMap;
+	typedef Eigen::CwiseUnaryOp< Eigen::internal::scalar_add_op<double>,
+		ColArrayMap > DXPExpression;
 	
 	/*!
 	 * \brief Constructor
@@ -92,12 +97,12 @@ public:
 	}
 
 	//! Sums of primitive widths for the first pair
-	ColArray::ConstAlignedMapType widthsAB() const
+	ColArrayMap widthsAB() const
 	{
 		return ColArray::MapAligned(p().widthsSum().data(), p().size());
 	}
 	//! Sums of primitive widths for the second pair
-	RowArray::ConstAlignedMapType widthsCD() const
+	RowArrayMap widthsCD() const
 	{
 		return RowArray::MapAligned(q().widthsSum().data(), q().size());
 	}
@@ -117,11 +122,11 @@ public:
 		return widthsProduct() * invWidthsSum();
 	}
 	
-	Eigen::VectorXd weightsAB() const
+	VectorMap weightsAB() const
 	{
 		return Eigen::VectorXd::MapAligned(p().weights().data(), p().size());
 	}
-	Eigen::VectorXd weightsCD() const
+	VectorMap weightsCD() const
 	{
 		return Eigen::VectorXd::MapAligned(q().weights().data(), q().size());
 	}
@@ -157,7 +162,7 @@ public:
 		return q().r(i);
 	}
 
-	ColArray::ConstAlignedMapType P(int i) const
+	ColArrayMap P(int i) const
 	{
 		return ColArray::MapAligned(p().P(i).data(), p().size());
 	}
@@ -169,7 +174,7 @@ public:
 	{
 		return (dPQ(i) * invWidthsSum()).rowwise() * widthsCD();
 	}
-	RowArray::ConstAlignedMapType Q(int i) const
+	RowArrayMap Q(int i) const
 	{
 		return RowArray::MapAligned(q().P(i).data(), q().size());
 	}

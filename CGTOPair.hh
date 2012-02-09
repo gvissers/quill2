@@ -32,7 +32,8 @@ public:
 		_widths_sum(_widths_A + _widths_B),
 		_widths_red(_widths_A * _widths_B / _widths_sum),
 		_gauss_red((-(g.center()-f.center()).squaredNorm() * _widths_red).exp()
-			/ _widths_sum)
+			/ _widths_sum),
+		_weights(f.weights() * g.weights().transpose())
 	{
 		for (int i = 0; i < 3; ++i)
 		{
@@ -195,9 +196,9 @@ public:
 	 * \brief Return the products of the weights for each combination of
 	 *    primitives in the contraction
 	 */
-	Eigen::ArrayXXd weights() const
+	const Eigen::ArrayXXd& weights() const
 	{
-		return f().weights() * g().weights().transpose();
+		return _weights;
 	}
 
 	/*!
@@ -236,6 +237,8 @@ private:
 	Eigen::ArrayXXd _gauss_red;
 	//! Weighted average coordinates
 	Eigen::ArrayXXd _P[3];
+	//! Products of the weights, for all combinations of primitives
+	Eigen::ArrayXXd _weights;
 
 	//! Integrate the overlap matrix for this pair over dimension \a i.
 	void overlapPrim1D(int i, Eigen::ArrayXXd& Sp) const;
