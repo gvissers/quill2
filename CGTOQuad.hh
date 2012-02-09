@@ -31,6 +31,8 @@ public:
 	typedef Eigen::VectorXd::ConstAlignedMapType VectorMap;
 	typedef Eigen::CwiseUnaryOp< Eigen::internal::scalar_add_op<double>,
 		ColArrayMap > DXPExpression;
+	typedef Eigen::CwiseUnaryOp< Eigen::internal::scalar_add_op<double>,
+		RowArrayMap > DXQExpression;
 	
 	/*!
 	 * \brief Constructor
@@ -166,7 +168,7 @@ public:
 	{
 		return ColArray::MapAligned(p().P(i).data(), p().size());
 	}
-	const ColArray dxP(int i, double x) const
+	DXPExpression dxP(int i, double x) const __attribute__((always_inline))
 	{
 		return P(i) - x;
 	}
@@ -178,7 +180,7 @@ public:
 	{
 		return RowArray::MapAligned(q().P(i).data(), q().size());
 	}
-	const RowArray dxQ(int i, double x) const
+	DXQExpression dxQ(int i, double x) const __attribute__((always_inline))
 	{
 		return Q(i) - x;
 	}
@@ -229,25 +231,35 @@ private:
 	mutable Eigen::ArrayXXd* _dPQ;
 	
 	void elecRepPrim1d_aacc_psss(int i, FmCoefs& Cm) const;
+	void elecRepPrim1d_abcc_psss(int i, FmCoefs& Cm) const;
 	void elecRepPrim1d_abcd_psss(int i, FmCoefs& Cm) const;
 
+	void elecRepPrim1d_abcc_ppss(int i, FmCoefs& Cm) const;
 	void elecRepPrim1d_abcd_ppss(int i, FmCoefs& Cm) const;
+
+	void elecRepPrim1d_abcc_psps(int i, FmCoefs& Cm) const;
 	void elecRepPrim1d_abcd_psps(int i, FmCoefs& Cm) const;
+
+	void elecRepPrim1d_abcc_dsss(int i, FmCoefs& Cm) const;
 	void elecRepPrim1d_abcd_dsss(int i, FmCoefs& Cm) const;
 
 	void elecRepPrim1d_aaaa(int i, FmCoefs& Cm) const;
 	void elecRepPrim1d_aacc(int i, FmCoefs& Cm) const;
+	void elecRepPrim1d_abcc(int i, FmCoefs& Cm) const;
 	void elecRepPrim1d_abcd(int i, FmCoefs& Cm) const;
-
-	double electronRepulsion_aaaa() const;
-	double electronRepulsion_aacc() const;
-	double electronRepulsion_abcd() const;
 
 	double electronRepulsion_aaaa_ssss() const;
 	double electronRepulsion_aacc_ssss() const;
 	double electronRepulsion_abcd_ssss() const;
+	double electronRepulsion_abcc_ssss() const;
 	double electronRepulsion_aacc_psss() const;
+	double electronRepulsion_abcc_psss() const;
 	double electronRepulsion_abcd_psss() const;
+
+	double electronRepulsion_aaaa() const;
+	double electronRepulsion_aacc() const;
+	double electronRepulsion_abcc() const;
+	double electronRepulsion_abcd() const;
 
 	void setDPQ() const
 	{
