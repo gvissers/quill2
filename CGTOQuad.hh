@@ -33,6 +33,21 @@ public:
 		ColArrayMap > DXPExpression;
 	typedef Eigen::CwiseUnaryOp< Eigen::internal::scalar_add_op<double>,
 		RowArrayMap > DXQExpression;
+	typedef Eigen::CwiseBinaryOp<
+		Eigen::internal::scalar_product_op<double, double>,
+		const Eigen::CwiseBinaryOp<
+			Eigen::internal::scalar_product_op<double, double>,
+			const Eigen::ArrayXXd,
+			const Eigen::ArrayXXd >,
+		const Eigen::Replicate<
+			Eigen::CwiseUnaryOp<
+				Eigen::internal::scalar_opposite_op<double>,
+				const Eigen::Map<
+					const Eigen::Array<double, Eigen::Dynamic, 1>,
+					1,
+					Eigen::Stride<0, 0> > >,
+			1,
+			Eigen::Dynamic> > DQWExpression;
 	
 	/*!
 	 * \brief Constructor
@@ -261,13 +276,7 @@ private:
 	double electronRepulsion_abcc() const;
 	double electronRepulsion_abcd() const;
 
-	void setDPQ() const
-	{
-		_dPQ = new Eigen::ArrayXXd[3];
-		_dPQ[0] = Q(0).replicate(p().size(), 1).colwise() - P(0);
-		_dPQ[1] = Q(1).replicate(p().size(), 1).colwise() - P(1);
-		_dPQ[2] = Q(2).replicate(p().size(), 1).colwise() - P(2);
-	}
+	void setDPQ() const;
 	void freeDPQ() const { delete[] _dPQ; _dPQ = 0; }
 };
 

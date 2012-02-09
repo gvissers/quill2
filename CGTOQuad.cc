@@ -1,5 +1,3 @@
-//#define EIGEN_RUNTIME_NO_MALLOC
-
 #include "CGTOQuad.hh"
 #include "boys.hh"
 
@@ -58,12 +56,13 @@ class FmCoefs
 public:
 	FmCoefs(int mmax, int p_size, int q_size):
 		_p_size(p_size), _q_size(q_size), _C(p_size, (mmax+1)*q_size),
-		_m(0)
+		_mmin(0), _mmax(0)
 	{
 		block(0).setOnes();
 	}
 
-	int maxM() const { return _m; }
+	int maxM() const { return _mmax; }
+	int minM() const { return _mmin; }
 
 	Eigen::Block<Eigen::ArrayXXd> operator[](int m)
 	{
@@ -76,154 +75,152 @@ public:
 
 	Eigen::Block<Eigen::ArrayXXd> block(int m, int count=1)
 	{
-		return _C.block(0, m*_q_size, _p_size, count*_q_size);
+		return _C.block(0, (m-_mmin)*_q_size, _p_size, count*_q_size);
 	}
 	const Eigen::Block<const Eigen::ArrayXXd> block(int m, int count=1) const
 	{
-		return _C.block(0, m*_q_size, _p_size, count*_q_size);
+		return _C.block(0, (m-_mmin)*_q_size, _p_size, count*_q_size);
 	}
 
 	void multiplyCol(const CGTOQuad::ColArray& C0, const Eigen::ArrayXXd& C1)
 	{
-		block(_m+1) = block(_m) * C1;
-		for (int m = _m; m > 0; --m)
+		block(_mmax+1) = block(_mmax) * C1;
+		for (int m = _mmax; m > _mmin; --m)
 			block(m) = block(m).colwise()*C0 + block(m-1)*C1;
-		block(0).colwise() *= C0;
-		++_m;
+		block(_mmin).colwise() *= C0;
+		++_mmax;
 	}
 	void multiplyRow(const CGTOQuad::RowArray& C0, const Eigen::ArrayXXd& C1)
 	{
-		block(_m+1) = block(_m) * C1;
-		for (int m = _m; m > 0; --m)
+		block(_mmax+1) = block(_mmax) * C1;
+		for (int m = _mmax; m > _mmin; --m)
 			block(m) = block(m).rowwise()*C0 + block(m-1)*C1;
-		block(0).rowwise() *= C0;
-		++_m;
+		block(_mmin).rowwise() *= C0;
+		++_mmax;
 	}
 	void multiply(const Eigen::ArrayXXd& C0, const Eigen::ArrayXXd& C1)
 	{
-		block(_m+1) = block(_m) * C1;
-		for (int m = _m; m > 0; --m)
+		block(_mmax+1) = block(_mmax) * C1;
+		for (int m = _mmax; m > _mmin; --m)
 			block(m) = block(m)*C0 + block(m-1)*C1;
-		block(0) *= C0;
-		++_m;
+		block(_mmin) *= C0;
+		++_mmax;
 	}
 	void multiply_noC0(const Eigen::ArrayXXd& C1)
 	{
-		for (int m = _m; m >= 0; --m)
-			block(m+1) = block(m)*C1;
-		block(0).setZero();
-		++_m;
+		block(_mmin, _mmax-_mmin+1) *= C1.replicate(1, _mmax-_mmin+1);
+		++_mmin;
+		++_mmax;
 	}
 	void multiplyCol(const CGTOQuad::ColArray& C0, const Eigen::ArrayXXd& C1,
 		const Eigen::ArrayXXd& C2)
 	{
-		if (_m == 0)
+		if (_mmax == _mmin)
 		{
-			block(2) = block(0)*C2;
-			block(1) = block(0)*C1;
-			block(0).colwise() *= C0;
+			block(_mmin+2) = block(_mmin)*C2;
+			block(_mmin+1) = block(_mmin)*C1;
+			block(_mmin).colwise() *= C0;
 		}
 		else
 		{
-			block(_m+2) = block(_m)*C2;
-			block(_m+1) = block(_m)*C1 + block(_m-1)*C2;
-			for (int m = _m; m > 1; --m)
+			block(_mmax+2) = block(_mmax)*C2;
+			block(_mmax+1) = block(_mmax)*C1 + block(_mmax-1)*C2;
+			for (int m = _mmax; m > _mmin+1; --m)
 			{
 				block(m) = block(m).colwise()*C0 + block(m-1)*C1
 					+ block(m-2)*C2;
 			}
-			block(1) = block(1).colwise()*C0 + block(0)*C1;
-			block(0).colwise() *= C0;
+			block(_mmin+1) = block(_mmin+1).colwise()*C0 + block(_mmin)*C1;
+			block(_mmin).colwise() *= C0;
 		}
-		_m += 2;
+		_mmax += 2;
 	}
 	void multiplyRow(const CGTOQuad::RowArray& C0, const Eigen::ArrayXXd& C1,
 		const Eigen::ArrayXXd& C2)
 	{
-		if (_m == 0)
+		if (_mmax == _mmin)
 		{
-			block(2) = block(0)*C2;
-			block(1) = block(0)*C1;
-			block(0).rowwise() *= C0;
+			block(_mmin+2) = block(_mmin)*C2;
+			block(_mmin+1) = block(_mmin)*C1;
+			block(_mmin).rowwise() *= C0;
 		}
 		else
 		{
-			block(_m+2) = block(_m)*C2;
-			block(_m+1) = block(_m)*C1 + block(_m-1)*C2;
-			for (int m = _m; m > 1; --m)
+			block(_mmax+2) = block(_mmax)*C2;
+			block(_mmax+1) = block(_mmax)*C1 + block(_mmax-1)*C2;
+			for (int m = _mmax; m > _mmin+1; --m)
 			{
 				block(m) = block(m).rowwise()*C0 + block(m-1)*C1
 					+ block(m-2)*C2;
 			}
-			block(1) = block(1).rowwise()*C0 + block(0)*C1;
-			block(0).rowwise() *= C0;
+			block(_mmin+1) = block(_mmin+1).rowwise()*C0 + block(_mmin)*C1;
+			block(_mmin).rowwise() *= C0;
 		}
-		_m += 2;
+		_mmax += 2;
 	}
 	void multiply(const Eigen::ArrayXXd& C0, const Eigen::ArrayXXd& C1,
 		const Eigen::ArrayXXd& C2)
 	{
-		if (_m == 0)
+		if (_mmax == _mmin)
 		{
-			block(2) = block(0)*C2;
-			block(1) = block(0)*C1;
-			block(0) *= C0;
+			block(_mmin+2) = block(_mmin)*C2;
+			block(_mmin+1) = block(_mmin)*C1;
+			block(_mmin) *= C0;
 		}
 		else
 		{
-			block(_m+2) = block(_m)*C2;
-			block(_m+1) = block(_m)*C1 + block(_m-1)*C2;
-			for (int m = _m; m > 1; --m)
+			block(_mmax+2) = block(_mmax)*C2;
+			block(_mmax+1) = block(_mmax)*C1 + block(_mmax-1)*C2;
+			for (int m = _mmax; m > _mmin+1; --m)
 			{
 				block(m) = block(m)*C0 + block(m-1)*C1
 					+ block(m-2)*C2;
 			}
-			block(1) = block(1)*C0 + block(0)*C1;
-			block(0) *= C0;
+			block(_mmin+1) = block(_mmin+1)*C0 + block(_mmin)*C1;
+			block(_mmin) *= C0;
 		}
-		_m += 2;
+		_mmax += 2;
 	}
 	void multiply_noC0(const Eigen::ArrayXXd& C1, const Eigen::ArrayXXd& C2)
 	{
-		if (_m == 0)
+		if (_mmax == _mmin)
 		{
-			block(2) = block(0)*C2;
-			block(1) = block(0)*C1;
-			block(0).setZero();
+			block(_mmin+1) = block(_mmin)*C2;
+			block(_mmin) *= C1;
 		}
 		else
 		{
-			block(_m+2) = block(_m)*C2;
-			for (int m = _m; m > 0; --m)
-				block(m+1) = block(m)*C1 + block(m-1)*C2;
-			block(1) = block(0)*C1;
-			block(0).setZero();
+			block(_mmax+1) = block(_mmax)*C2;
+			for (int m = _mmax; m > _mmin; --m)
+				block(m) = block(m)*C1 + block(m-1)*C2;
+			block(_mmin) *= C1;
 		}
-		_m += 2;
+		++_mmin;
+		_mmax += 2;
 	}
 	void multiply(const EriCoefs& coefs, int l1, int l2)
 	{
 		int lsum = l1+l2;
-		Eigen::ArrayXXd C(_p_size, _q_size);
-		for (int m = lsum+_m; m >= 0; --m)
+		for (int m = lsum+_mmax; m >= _mmin; --m)
 		{
-			C.setZero();
 			// i >= 0
 			// i <= lsum
-			// m-i >= 0 => i <= m
-			// m-i <= _m => i >= m-_m
-			for (int i = std::max(0, m-_m); i <= std::min(lsum, m); ++i)
-				C += coefs(l1, l2, i) * block(m-i);
-			block(m) = C;
+			// m-i >= _mmin => i <= m-_mmin
+			// m-i <= _mmax => i >= m-_mmax
+			int i = std::max(0, m-_mmax);
+			block(m) = coefs(l1, l2, i) * block(m-i);
+			for (++i; i <= std::min(lsum, m-_mmin); ++i)
+				block(m) += coefs(l1, l2, i) * block(m-i);
 		}
-		_m += lsum;
+		_mmax += lsum;
 	}
 
 private:
 	int _p_size;
 	int _q_size;
 	Eigen::ArrayXXd _C;
-	int _m;
+	int _mmin;
+	int _mmax;
 };
 
 int n_abcd=0, n_abcc=0, n_aacd=0, n_aacc=0, n_aaaa=0;
@@ -259,6 +256,14 @@ switch(_pos_sym)
 	case POS_SYM_ABCC: n_abcc++; break;
 	case POS_SYM_ABCD: n_abcd++; break;
 }
+}
+
+void CGTOQuad::setDPQ() const
+{
+	_dPQ = new Eigen::ArrayXXd[3];
+	_dPQ[0] = Q(0).replicate(p().size(), 1).colwise() - P(0);
+	_dPQ[1] = Q(1).replicate(p().size(), 1).colwise() - P(1);
+	_dPQ[2] = Q(2).replicate(p().size(), 1).colwise() - P(2);
 }
 
 void CGTOQuad::elecRepPrim1d_aacc_psss(int i, FmCoefs& Cm) const
@@ -967,7 +972,6 @@ void CGTOQuad::elecRepPrim1d_abcd(int i, FmCoefs& Cm) const
 		Eigen::ArrayXXd rho2 = (invWidthsSum().colwise() * widthsAB())
 			.rowwise() * inv_eta;
 
-//Eigen::internal::set_is_malloc_allowed(false);
 		// C_0,0,1,0
 		coefs(0, 1, 0).rowwise() = dCQi;
 		coefs(0, 1, 1) = dQWi;
@@ -989,7 +993,6 @@ void CGTOQuad::elecRepPrim1d_abcd(int i, FmCoefs& Cm) const
 				- iC*rho2*coefs(0, iC-1, iC-1);
 			coefs(0, iC+1, iC+1) = dQWi*coefs(0, iC, iC);
 		}
-//Eigen::internal::set_is_malloc_allowed(true);
 	}
 
 	if (l1 > 0)
@@ -1204,7 +1207,7 @@ double CGTOQuad::electronRepulsion_aaaa() const
 
 	int m = Cm.maxM();
 	Eigen::ArrayXXd A = Cm[m] / (2*m+1);
-	for (--m; m >= 0; --m)
+	for (--m; m >= Cm.minM(); --m)
 		A += Cm[m] / (2*m+1);
 
 	return weightsAB().transpose() * (KKW() * A).matrix() * weightsCD();
@@ -1235,7 +1238,7 @@ double CGTOQuad::electronRepulsion_aacc() const
 	Eigen::ArrayXXd F = Fm(m, T);
 	Eigen::ArrayXXd expmT = (-T).exp();
 	Eigen::ArrayXXd A = Cm[m] * F;
-	for (--m; m >= 0; --m)
+	for (--m; m >= Cm.minM(); --m)
 	{
 		F = (expmT + 2*T*F) / (2*m+1);
 		A += Cm[m] * F;
@@ -1269,7 +1272,7 @@ double CGTOQuad::electronRepulsion_abcc() const
 	Eigen::ArrayXXd F = Fm(m, T);
 	Eigen::ArrayXXd expmT = (-T).exp();
 	Eigen::ArrayXXd A = Cm[m] * F;
-	for (--m; m >= 0; --m)
+	for (--m; m >= Cm.minM(); --m)
 	{
 		F = (expmT + 2*T*F) / (2*m+1);
 		A += Cm[m] * F;
@@ -1304,7 +1307,7 @@ double CGTOQuad::electronRepulsion_abcd() const
 	Eigen::ArrayXXd F = Fm(m, T);
 	Eigen::ArrayXXd expmT = (-T).exp();
 	Eigen::ArrayXXd A = Cm[m] * F;
-	for (--m; m >= 0; --m)
+	for (--m; m >= Cm.minM(); --m)
 	{
 		F = (expmT + 2*T*F) / (2*m+1);
 		A += Cm[m] * F;
