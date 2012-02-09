@@ -82,7 +82,9 @@ public:
 		return _C.block(0, (m-_mmin)*_q_size, _p_size, count*_q_size);
 	}
 
-	void multiplyCol(const CGTOQuad::ColArray& C0, const Eigen::ArrayXXd& C1)
+	template <typename Derived0, typename Derived1>
+	void multiplyCol(const Eigen::ArrayBase<Derived0>& C0,
+		const Eigen::ArrayBase<Derived1>& C1)
 	{
 		block(_mmax+1) = block(_mmax) * C1;
 		for (int m = _mmax; m > _mmin; --m)
@@ -90,7 +92,9 @@ public:
 		block(_mmin).colwise() *= C0;
 		++_mmax;
 	}
-	void multiplyRow(const CGTOQuad::RowArray& C0, const Eigen::ArrayXXd& C1)
+	template <typename Derived0, typename Derived1>
+	void multiplyRow(const Eigen::ArrayBase<Derived0>& C0,
+		const Eigen::ArrayBase<Derived1>& C1)
 	{
 		block(_mmax+1) = block(_mmax) * C1;
 		for (int m = _mmax; m > _mmin; --m)
@@ -98,7 +102,9 @@ public:
 		block(_mmin).rowwise() *= C0;
 		++_mmax;
 	}
-	void multiply(const Eigen::ArrayXXd& C0, const Eigen::ArrayXXd& C1)
+	template <typename Derived0, typename Derived1>
+	void multiply(const Eigen::ArrayBase<Derived0>& C0,
+		const Eigen::ArrayBase<Derived1>& C1)
 	{
 		block(_mmax+1) = block(_mmax) * C1;
 		for (int m = _mmax; m > _mmin; --m)
@@ -106,14 +112,17 @@ public:
 		block(_mmin) *= C0;
 		++_mmax;
 	}
-	void multiply_noC0(const Eigen::ArrayXXd& C1)
+	template <typename Derived1>
+	void multiply_noC0(const Eigen::ArrayBase<Derived1>& C1)
 	{
 		block(_mmin, _mmax-_mmin+1) *= C1.replicate(1, _mmax-_mmin+1);
 		++_mmin;
 		++_mmax;
 	}
-	void multiplyCol(const CGTOQuad::ColArray& C0, const Eigen::ArrayXXd& C1,
-		const Eigen::ArrayXXd& C2)
+	template <typename Derived0, typename Derived1, typename Derived2>
+	void multiplyCol(const Eigen::ArrayBase<Derived0>& C0,
+		const Eigen::ArrayBase<Derived1>& C1,
+		const Eigen::ArrayBase<Derived2>& C2)
 	{
 		if (_mmax == _mmin)
 		{
@@ -135,8 +144,10 @@ public:
 		}
 		_mmax += 2;
 	}
-	void multiplyRow(const CGTOQuad::RowArray& C0, const Eigen::ArrayXXd& C1,
-		const Eigen::ArrayXXd& C2)
+	template <typename Derived0, typename Derived1, typename Derived2>
+	void multiplyRow(const Eigen::ArrayBase<Derived0>& C0,
+		const Eigen::ArrayBase<Derived1>& C1,
+		const Eigen::ArrayBase<Derived2>& C2)
 	{
 		if (_mmax == _mmin)
 		{
@@ -158,8 +169,10 @@ public:
 		}
 		_mmax += 2;
 	}
-	void multiply(const Eigen::ArrayXXd& C0, const Eigen::ArrayXXd& C1,
-		const Eigen::ArrayXXd& C2)
+	template <typename Derived0, typename Derived1, typename Derived2>
+	void multiply(const Eigen::ArrayBase<Derived0>& C0,
+		const Eigen::ArrayBase<Derived1>& C1,
+		const Eigen::ArrayBase<Derived2>& C2)
 	{
 		if (_mmax == _mmin)
 		{
@@ -181,7 +194,9 @@ public:
 		}
 		_mmax += 2;
 	}
-	void multiply_noC0(const Eigen::ArrayXXd& C1, const Eigen::ArrayXXd& C2)
+	template <typename Derived1, typename Derived2>
+	void multiply_noC0(const Eigen::ArrayBase<Derived1>& C1,
+		const Eigen::ArrayBase<Derived2>& C2)
 	{
 		if (_mmax == _mmin)
 		{
@@ -481,7 +496,7 @@ void CGTOQuad::elecRepPrim1d_abcd_psps(int i, FmCoefs& Cm) const
 	Eigen::ArrayXXd dPWi = dPW(i);
 	Eigen::ArrayXXd dQWi = dQW(i);
 
-	Cm.multiply(dAPi.matrix()*dCQi.matrix(),
+	Cm.multiply((dAPi.matrix()*dCQi.matrix()).array(),
 		dQWi.colwise()*dAPi + dPWi.rowwise()*dCQi + 0.5*invWidthsSum(),
 		dPWi*dQWi);
 }
