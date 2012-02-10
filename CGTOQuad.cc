@@ -313,6 +313,24 @@ void CGTOQuad::elecRepPrim1d_abcc_psss(int i, FmCoefs& Cm) const
 	}
 }
 
+void CGTOQuad::elecRepPrim1d_aacd_psss(int i, FmCoefs& Cm) const
+{
+#ifdef DEBUG
+	if (lsum(i) != 1)
+		throw Li::Exception("Not a (p,s,s,s) quad");
+#endif
+
+	if (lAB(i) == 1)
+	{
+		Cm.multiply_noC0(dPW(i));
+	}
+	else
+	{
+		double x = lC(i) == 1 ? centerC(i) : centerD(i);
+		Cm.multiplyRow(dxQ(i, x), dQW(i));
+	}
+}
+
 void CGTOQuad::elecRepPrim1d_abcd_psss(int i, FmCoefs& Cm) const
 {
 #ifdef DEBUG
@@ -353,6 +371,30 @@ void CGTOQuad::elecRepPrim1d_abcc_ppss(int i, FmCoefs& Cm) const
 	else
 	{
 		Cm.multiplyRow(hInvWidthsCD(), -rho2(), dQW(i).square());
+	}
+}
+
+void CGTOQuad::elecRepPrim1d_aacd_ppss(int i, FmCoefs& Cm) const
+{
+#ifdef DEBUG
+	if (lsum(i) != 2
+		|| ((lA(i) != 1 || lB(i) != 1) && (lC(i) != 1 || lD(i) != 1)))
+		throw Li::Exception("Not a (p,p,s,s) quad");
+#endif
+
+	if (lAB(i) > 0)
+	{
+		Cm.multiplyCol(hInvWidthsAB(), -rho1(), dPW(i).square());
+	}
+	else
+	{
+		double xC = centerC(i), xD = centerD(i), dCD = xD - xC;
+		auto dCQi = dxQ(i, xC);
+		auto dQWi = dQW(i);
+
+		Cm.multiplyRow(dCQi.square() + hInvWidthsCD() - dCD*dCQi,
+			dQWi.rowwise()*(2*dCQi - dCD) - rho2(),
+			dQWi.square());
 	}
 }
 
@@ -410,7 +452,7 @@ void CGTOQuad::elecRepPrim1d_abcc_dsss(int i, FmCoefs& Cm) const
 	}
 }
 
-void CGTOQuad::elecRepPrim1d_abcd_dsss(int i, FmCoefs& Cm) const
+void CGTOQuad::elecRepPrim1d_aacd_dsss(int i, FmCoefs& Cm) const
 {
 #ifdef DEBUG
 	if (lsum(i) != 2
@@ -418,7 +460,29 @@ void CGTOQuad::elecRepPrim1d_abcd_dsss(int i, FmCoefs& Cm) const
 		throw Li::Exception("Not a (d,s,s,s) quad");
 #endif
 
-	RowArray inv_eta = hInvWidthsCD();
+	if (lAB(i) > 0)
+	{
+		Cm.multiplyCol(hInvWidthsAB(), -rho1(), dPW(i).square());
+	}
+	else
+	{
+		double x = lC(i) > 0 ? centerC(i) : centerD(i);
+		auto dCQi = dxQ(i, x);
+		auto dQWi = dQW(i);
+
+		Cm.multiplyRow(dCQi.square() + hInvWidthsCD(),
+			dQWi.rowwise()*(2*dCQi) - rho2(),
+			dQWi.square());
+	}
+}
+
+void CGTOQuad::elecRepPrim1d_abcd_dsss(int i, FmCoefs& Cm) const
+{
+#ifdef DEBUG
+	if (lsum(i) != 2
+		|| (lA(i) != 2 && lB(i) != 2 && lC(i) != 2 && lD(i) != 2))
+		throw Li::Exception("Not a (d,s,s,s) quad");
+#endif
 
 	if (lAB(i) > 0)
 	{
@@ -455,6 +519,21 @@ void CGTOQuad::elecRepPrim1d_abcc_psps(int i, FmCoefs& Cm) const
 
 	Cm.multiply_noC0(dQWi.colwise()*dxP(i, xA) + 0.5*invWidthsSum(),
 		dPW(i)*dQWi);
+}
+
+void CGTOQuad::elecRepPrim1d_aacd_psps(int i, FmCoefs& Cm) const
+{
+#ifdef DEBUG
+	int l1 = lA(i)+lB(i), l2 = lC(i)+lD(i);
+	if (l1 != 1 || l2 != 1)
+		throw Li::Exception("Not a (p,s,p,s) quad");
+#endif
+
+	double xC = lC(i) == 1 ? centerC(i) : centerD(i);
+	auto dPWi = dPW(i);
+
+	Cm.multiply_noC0(dPWi.rowwise()*dxQ(i, xC) + 0.5*invWidthsSum(),
+		dPWi*dQW(i));
 }
 
 void CGTOQuad::elecRepPrim1d_abcd_psps(int i, FmCoefs& Cm) const
@@ -791,7 +870,7 @@ void CGTOQuad::elecRepPrim1d_abcc(int i, FmCoefs& Cm) const
 	else if (lsum == 2)
 	{
 		if (l1 == 1)
-			elecRepPrim1d_abcd_psps(i, Cm);
+			elecRepPrim1d_abcc_psps(i, Cm);
 		else if (lA == 2 || lB == 2 || lC == 2 || lD == 2)
 			elecRepPrim1d_abcc_dsss(i, Cm);
 		else
@@ -909,6 +988,138 @@ void CGTOQuad::elecRepPrim1d_abcc(int i, FmCoefs& Cm) const
 	Cm.multiply(coefs, l1, l2);
 }
 
+void CGTOQuad::elecRepPrim1d_aacd(int i, FmCoefs& Cm) const
+{
+	int lA = this->lA(i), lB = this->lB(i),
+		lC = this->lC(i), lD = this->lD(i);
+	int l1 = lA+lB, l2 = lC+lD, lsum = l1+l2;
+
+	if (lsum == 0)
+	{
+		return;
+	}
+	else if (lsum == 1)
+	{
+		elecRepPrim1d_aacd_psss(i, Cm);
+		return;
+	}
+	else if (lsum == 2)
+	{
+		if (l1 == 1)
+			elecRepPrim1d_aacd_psps(i, Cm);
+		else if (lA == 2 || lB == 2 || lC == 2 || lD == 2)
+			elecRepPrim1d_aacd_dsss(i, Cm);
+		else
+			elecRepPrim1d_aacd_ppss(i, Cm);
+		return;
+	}
+
+	double xC = centerC(i), xD = centerD(i);
+	if (lC < lD)
+	{
+		std::swap(lC, lD);
+		std::swap(xC, xD);
+	}
+
+	double dCD = xD - xC;
+
+	EriCoefs coefs(l1, l2, p().size(), q().size());
+	// C_0,0,0,0
+	coefs(0, 0, 0).setOnes();
+	if (l2 > 0)
+	{
+		auto dCQi = dxQ(i, xC);
+		auto inv_eta = hInvWidthsCD();
+		auto dQWi = dQW(i);
+		auto rho2 = this->rho2();
+
+		// C_0,0,1,0
+		coefs(0, 1, 0).rowwise() = dCQi;
+		coefs(0, 1, 1) = dQWi;
+		
+		// C_0,0,c,0
+		for (int iC = 1; iC < l2; ++iC)
+		{
+			coefs(0, iC+1, 0) = coefs(0, iC, 0).rowwise()*dCQi
+				+ coefs(0, iC-1, 0).rowwise()*(iC*inv_eta);
+			for (int m = 1; m < iC; ++m)
+			{
+				coefs(0, iC+1, m) = coefs(0, iC, m).rowwise()*dCQi
+					+ coefs(0, iC-1, m).rowwise()*(iC*inv_eta)
+					+ dQWi*coefs(0, iC, m-1)
+					- iC*rho2*coefs(0, iC-1, m-1);
+			}
+			coefs(0, iC+1, iC) = coefs(0, iC, iC).rowwise()*dCQi
+				+ dQWi*coefs(0, iC, iC-1)
+				- iC*rho2*coefs(0, iC-1, iC-1);
+			coefs(0, iC+1, iC+1) = dQWi*coefs(0, iC, iC);
+		}
+	}
+
+	if (l1 > 0)
+	{
+		auto inv_zeta = hInvWidthsAB();
+		Eigen::ArrayXXd dPWi = dPW(i);
+		auto rho1 = this->rho1();
+		auto inv_sum = 0.5 * invWidthsSum();
+		
+		// C_1,0,c,0
+		for (int iC = 0; iC <= l2; ++iC)
+		{
+			coefs(1, iC, 0).setZero();
+			for (int m = 1; m <= iC; ++m)
+			{
+				coefs(1, iC, m) = dPWi*coefs(0, iC, m-1)
+					+ iC*inv_sum*coefs(0, iC-1, m-1);
+			}
+			coefs(1, iC, iC+1) = dPWi*coefs(0, iC, iC);
+		}
+
+		// C_a,0,c,0
+		for (int iA = 1; iA < l1; ++iA)
+		{
+			coefs(iA+1, 0, 0) = coefs(iA-1, 0, 0).colwise()*(iA*inv_zeta);
+			for (int m = 1; m < iA; ++m)
+			{
+				coefs(iA+1, 0, m) = coefs(iA-1, 0, m).colwise()*(iA*inv_zeta)
+					+ dPWi*coefs(iA, 0, m-1)
+					- iA*rho1*coefs(iA-1, 0, m-1);
+			}
+			coefs(iA+1, 0, iA) = dPWi*coefs(iA, 0, iA-1)
+				- iA*rho1*coefs(iA-1, 0, iA-1);
+			coefs(iA+1, 0, iA+1) = dPWi*coefs(iA, 0, iA);
+
+			for (int iC = 1; iC <= l2; ++iC)
+			{
+				coefs(iA+1, iC, 0) = coefs(iA-1, iC, 0).colwise()*(iA*inv_zeta);
+				for (int m = 1; m < iA+iC; ++m)
+				{
+					coefs(iA+1, iC, m) = coefs(iA-1, iC, m).colwise()*(iA*inv_zeta)
+						+ dPWi*coefs(iA, iC, m-1)
+						- iA*rho1*coefs(iA-1, iC, m-1)
+						+ iC*inv_sum*coefs(iA, iC-1, m-1);
+				}
+				coefs(iA+1, iC, iA+iC) = dPWi*coefs(iA, iC, iA+iC-1)
+					- iA*rho1*coefs(iA-1, iC, iA+iC-1)
+					+ iC*inv_sum*coefs(iA, iC-1, iA+iC-1);
+				coefs(iA+1, iC, iA+iC+1) = dPWi*coefs(iA, iC, iA+iC);
+			}
+		}
+	}
+
+	// C_a,0,c,d
+	for (int iD = 1; iD <= lD; ++iD)
+	{
+		for (int iC = l2; iC >= lC+iD; --iC)
+		{
+			for (int m = 0; m < l1+iC; ++m)
+				coefs(l1, iC, m) -= dCD*coefs(l1, iC-1, m);
+		}
+	}
+
+	Cm.multiply(coefs, l1, l2);
+}
+
 void CGTOQuad::elecRepPrim1d_abcd(int i, FmCoefs& Cm) const
 {
 	int lA = this->lA(i), lB = this->lB(i),
@@ -963,7 +1174,7 @@ void CGTOQuad::elecRepPrim1d_abcd(int i, FmCoefs& Cm) const
 		// C_0,0,1,0
 		coefs(0, 1, 0).rowwise() = dCQi;
 		coefs(0, 1, 1) = dQWi;
-		
+
 		// C_0,0,c,0
 		for (int iC = 1; iC < l2; ++iC)
 		{
@@ -990,7 +1201,7 @@ void CGTOQuad::elecRepPrim1d_abcd(int i, FmCoefs& Cm) const
 		Eigen::ArrayXXd dPWi = dPW(i);
 		auto rho1 = this->rho1();
 		auto inv_sum = 0.5 * invWidthsSum();
-		
+
 		// C_1,0,c,0
 		for (int iC = 0; iC <= l2; ++iC)
 		{
@@ -1089,6 +1300,15 @@ double CGTOQuad::electronRepulsion_abcc_ssss() const
 	return weightsAB().transpose() * (KKW() * Fm(0, T)).matrix() * weightsCD();
 }
 
+double CGTOQuad::electronRepulsion_aacd_ssss() const
+{
+	Eigen::ArrayXXd T = widthsReduced().rowwise() *
+		((Q(0) - p().centerA(0)).square()
+		+ (Q(1) - p().centerA(1)).square()
+		+ (Q(2) - p().centerA(2)).square());
+	return weightsAB().transpose() * (KKW() * Fm(0, T)).matrix() * weightsCD();
+}
+
 double CGTOQuad::electronRepulsion_abcd_ssss() const
 {
 	Eigen::ArrayXXd T = widthsReduced()
@@ -1136,6 +1356,31 @@ double CGTOQuad::electronRepulsion_abcc_psss() const
 		if (lCD(i) == 1)
 		{
 			F *= dQW(i);
+			break;
+		}
+	}
+
+	return weightsAB().transpose() * (KKW() * F).matrix() * weightsCD();
+}
+
+double CGTOQuad::electronRepulsion_aacd_psss() const
+{
+	Eigen::ArrayXXd T = widthsReduced().rowwise() *
+		((Q(0) - p().centerA(0)).square()
+		+ (Q(1) - p().centerA(1)).square()
+		+ (Q(2) - p().centerA(2)).square());
+	Eigen::ArrayXXd F = Fm(1, T);
+	for (int i = 0; i < 3; i++)
+	{
+		if (lAB(i) == 1)
+		{
+			F *= dPW(i);
+			break;
+		}
+		if (lCD(i) == 1)
+		{
+			double x = lC(i) == 1 ? centerC(i) : centerD(i);
+			F = F*dQW(i) + ((-T).exp() + 2*T*F).rowwise()*dxQ(i, x);
 			break;
 		}
 	}
@@ -1269,6 +1514,41 @@ double CGTOQuad::electronRepulsion_abcc() const
 	return weightsAB().transpose() * (KKW() * A).matrix() * weightsCD();
 }
 
+double CGTOQuad::electronRepulsion_aacd() const
+{
+	const Eigen::Vector3i& lsA = p().f().ls();
+	const Eigen::Vector3i& lsB = p().g().ls();
+	const Eigen::Vector3i& lsC = q().f().ls();
+	const Eigen::Vector3i& lsD = q().g().ls();
+	Eigen::Vector3i ls = lsA + lsB + lsC + lsD;
+
+	int lsum = ls.sum();
+
+	if (lsum == 0)
+		return electronRepulsion_aacd_ssss();
+	else if (lsum == 1)
+		return electronRepulsion_aacd_psss();
+
+	FmCoefs Cm(lsum, p().size(), q().size());
+	for (int i = 0; i < 3; i++)
+		elecRepPrim1d_aacd(i, Cm);
+
+	int m = Cm.maxM();
+	Eigen::ArrayXXd T = (dPQ(0).square() + dPQ(1).square() + dPQ(2).square())
+		* widthsReduced();
+	Eigen::ArrayXXd F = Fm(m, T);
+	Eigen::ArrayXXd expmT = (-T).exp();
+	Eigen::ArrayXXd A = Cm[m] * F;
+	for (--m; m >= Cm.minM(); --m)
+	{
+		F = (expmT + 2*T*F) / (2*m+1);
+		A += Cm[m] * F;
+	}
+
+	freeDPQ();
+	return weightsAB().transpose() * (KKW() * A).matrix() * weightsCD();
+}
+
 double CGTOQuad::electronRepulsion_abcd() const
 {
 	const Eigen::Vector3i& lsA = p().f().ls();
@@ -1314,6 +1594,8 @@ double CGTOQuad::electronRepulsion() const
 			return electronRepulsion_aacc();
 		case POS_SYM_ABCC:
 			return electronRepulsion_abcc();
+		case POS_SYM_AACD:
+			return electronRepulsion_aacd();
 		default:
 			return electronRepulsion_abcd();
 	}
