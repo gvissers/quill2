@@ -115,6 +115,51 @@ public:
 			HInvWidthsCDExpression,
 			Eigen::Dynamic,
 			1> > Rho2Expression;
+	typedef Eigen::CwiseUnaryOp<
+		Eigen::internal::scalar_multiple_op<double>,
+		const Eigen::CwiseUnaryOp<
+			Eigen::internal::scalar_multiple_op<double>,
+			const Eigen::CwiseBinaryOp<
+				Eigen::internal::scalar_product_op<double, double>,
+				const Eigen::CwiseBinaryOp<
+					Eigen::internal::scalar_product_op<double, double>,
+					const Eigen::CwiseUnaryOp<
+						Eigen::internal::scalar_sqrt_op<double>,
+						const Eigen::ArrayXXd >,
+					const Eigen::Replicate<
+						// ColArrayMap doesn't work???
+						Eigen::Map<
+							const ColArray,
+							1,
+							Eigen::Stride<0, 0> >,
+						1,
+						Eigen::Dynamic > >,
+				const Eigen::Replicate<
+					Eigen::Map<
+						const RowArray,
+						1,
+						Eigen::Stride<0, 0> >,
+					Eigen::Dynamic,
+					1 > > > > KKWExpression;
+	typedef Eigen::CwiseBinaryOp<
+		Eigen::internal::scalar_product_op<double, double>,
+		const Eigen::CwiseBinaryOp<
+			Eigen::internal::scalar_product_op<double, double>,
+			const Eigen::ArrayXXd,
+			const Eigen::Replicate<
+				Eigen::Map<
+					const ColArray,
+					1,
+					Eigen::Stride<0, 0> >,
+				1,
+				Eigen::Dynamic> >,
+		const Eigen::Replicate<
+			Eigen::Map<
+				const RowArray,
+				1,
+				Eigen::Stride<0, 0> >,
+			Eigen::Dynamic,
+			1> > WidthsReducedExpression;
 	
 	/*!
 	 * \brief Constructor
@@ -195,15 +240,11 @@ public:
 	{
 		return _inv_widths_sum;
 	}
-	//! Products of widths sums of the two pairs, for all combinations of primitives GTOs
-	Eigen::ArrayXXd widthsProduct() const
-	{
-		return widthsAB().matrix() * widthsCD().matrix();
-	}
 	//! Reduced widths \f$\rho = \frac{\zeta\eta}{\zeta+\eta}\f$
-	Eigen::ArrayXXd widthsReduced() const
+	WidthsReducedExpression widthsReduced() const
 	{
-		return widthsProduct() * invWidthsSum();
+		return (invWidthsSum().colwise() * widthsAB()).rowwise()
+			* widthsCD();
 	}
 	
 	VectorMap weightsAB() const
@@ -299,11 +340,12 @@ public:
 			* hInvWidthsCD();
 	}
 	
-	Eigen::ArrayXXd KKW() const
+	KKWExpression KKW() const
 	{
 		return (invWidthsSum().sqrt().colwise()
-			* ColArray::MapAligned(p().K().data(), p().size())).rowwise()
-			* RowArray::MapAligned(q().K().data(), q().size());
+			* ColArray::MapAligned(p().gaussReduced().data(), p().size())).rowwise()
+			* RowArray::MapAligned(q().gaussReduced().data(), q().size())
+			* Constants::sqrt_2_pi_5_4 * Constants::sqrt_2_pi_5_4;
 	}
 
 	/*!

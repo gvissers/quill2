@@ -679,7 +679,9 @@ void CGTOQuad::elecRepPrim1d_aacc(int i, FmCoefs& Cm) const
 		else if (l1 == 1)
 		{
 			Cm.multiply_noC0(0.5*invWidthsSum(),
-				-dPQi*dPQi*invWidthsSum().square()*widthsProduct());
+				(invWidthsSum().square().colwise()
+					* widthsAB()).rowwise() * widthsCD()
+					* (-dPQi*dPQi));
 		}
 		else if (l1 == 2)
 		{
