@@ -29,10 +29,26 @@ public:
 	typedef ColArray::ConstAlignedMapType ColArrayMap;
 	typedef RowArray::ConstAlignedMapType RowArrayMap;
 	typedef Eigen::VectorXd::ConstAlignedMapType VectorMap;
-	typedef Eigen::CwiseUnaryOp< Eigen::internal::scalar_add_op<double>,
+	typedef Eigen::CwiseUnaryOp<
+		Eigen::internal::scalar_add_op<double>,
 		ColArrayMap > DXPExpression;
-	typedef Eigen::CwiseUnaryOp< Eigen::internal::scalar_add_op<double>,
+	typedef Eigen::CwiseUnaryOp<
+		Eigen::internal::scalar_add_op<double>,
 		RowArrayMap > DXQExpression;
+	typedef Eigen::CwiseBinaryOp<
+		Eigen::internal::scalar_product_op<double, double>,
+		const Eigen::CwiseBinaryOp<
+			Eigen::internal::scalar_product_op<double, double>,
+			const Eigen::ArrayXXd,
+			const Eigen::ArrayXXd>,
+		const Eigen::Replicate<
+			// RowArrayMap doesn't work???
+			Eigen::Map<
+				const RowArray,
+				Eigen::Aligned,
+				Eigen::Stride<0, 0> >,	
+			Eigen::Dynamic,
+			1> > DPWExpression;
 	typedef Eigen::CwiseBinaryOp<
 		Eigen::internal::scalar_product_op<double, double>,
 		const Eigen::CwiseBinaryOp<
@@ -42,12 +58,63 @@ public:
 		const Eigen::Replicate<
 			Eigen::CwiseUnaryOp<
 				Eigen::internal::scalar_opposite_op<double>,
-				const Eigen::Map<
-					const Eigen::Array<double, Eigen::Dynamic, 1>,
-					1,
-					Eigen::Stride<0, 0> > >,
+				ColArrayMap>,
 			1,
 			Eigen::Dynamic> > DQWExpression;
+	typedef Eigen::CwiseUnaryOp<
+		Eigen::internal::scalar_multiple_op<double>,
+		const Eigen::CwiseUnaryOp<
+			Eigen::internal::scalar_inverse_op<double>,
+			ColArrayMap> > HInvWidthsABExpression;
+	typedef Eigen::CwiseUnaryOp<
+		Eigen::internal::scalar_multiple_op<double>,
+		const Eigen::CwiseUnaryOp<
+			Eigen::internal::scalar_inverse_op<double>,
+			RowArrayMap> > HInvWidthsCDExpression;
+	typedef Eigen::CwiseBinaryOp<
+		Eigen::internal::scalar_sum_op<double>,
+		const Eigen::Replicate<
+			HInvWidthsABExpression,
+			Eigen::Dynamic,
+			Eigen::Dynamic>,
+		const Eigen::Replicate<
+			HInvWidthsCDExpression,
+			Eigen::Dynamic,
+			1> > DWidthsReducedExpression;
+	typedef Eigen::CwiseBinaryOp<
+		Eigen::internal::scalar_product_op<double, double>,
+		const Eigen::CwiseBinaryOp<
+			Eigen::internal::scalar_product_op<double, double>,
+				const Eigen::ArrayXXd,
+				const Eigen::Replicate<
+					HInvWidthsABExpression,
+					1,
+					Eigen::Dynamic> >,
+		const Eigen::Replicate<
+			// RowArrayMap doesn't work ???
+			Eigen::Map<
+				const RowArray,
+				1,
+				Eigen::Stride<0, 0> >,
+			Eigen::Dynamic,
+			1> > Rho1Expression;
+	typedef Eigen::CwiseBinaryOp<
+		Eigen::internal::scalar_product_op<double, double>,
+		const Eigen::CwiseBinaryOp<
+			Eigen::internal::scalar_product_op<double, double>,
+			const Eigen::ArrayXXd,
+			const Eigen::Replicate<
+				// ColArrayMap doesn't work???
+				Eigen::Map<
+					const ColArray,
+					1,
+					Eigen::Stride<0, 0> >,
+				1,
+				Eigen::Dynamic> >,
+		const Eigen::Replicate<
+			HInvWidthsCDExpression,
+			Eigen::Dynamic,
+			1> > Rho2Expression;
 	
 	/*!
 	 * \brief Constructor
@@ -183,11 +250,11 @@ public:
 	{
 		return ColArray::MapAligned(p().P(i).data(), p().size());
 	}
-	DXPExpression dxP(int i, double x) const __attribute__((always_inline))
+	DXPExpression dxP(int i, double x) const
 	{
 		return P(i) - x;
 	}
-	const Eigen::ArrayXXd dPW(int i) const
+	DPWExpression dPW(int i) const
 	{
 		return (dPQ(i) * invWidthsSum()).rowwise() * widthsCD();
 	}
@@ -195,11 +262,11 @@ public:
 	{
 		return RowArray::MapAligned(q().P(i).data(), q().size());
 	}
-	DXQExpression dxQ(int i, double x) const __attribute__((always_inline))
+	DXQExpression dxQ(int i, double x) const
 	{
 		return Q(i) - x;
 	}
-	const Eigen::ArrayXXd dQW(int i) const
+	DQWExpression dQW(int i) const
 	{
 		return (dPQ(i) * invWidthsSum()).colwise() * (-widthsAB());
 	}
@@ -207,6 +274,29 @@ public:
 	{
 		if (!_dPQ) setDPQ();
 		return _dPQ[i];
+	}
+	HInvWidthsABExpression hInvWidthsAB() const
+	{
+		return 0.5 * widthsAB().inverse();
+	}
+	HInvWidthsCDExpression hInvWidthsCD() const
+	{
+		return 0.5 * widthsCD().inverse();
+	}
+	DWidthsReducedExpression dWidthsReduced() const
+	{
+		return hInvWidthsAB().replicate(1, q().size()).rowwise()
+			+ hInvWidthsCD();
+	}
+	Rho1Expression rho1() const
+	{
+		return (invWidthsSum().colwise() * hInvWidthsAB()).rowwise()
+			* widthsCD();
+	}
+	Rho2Expression rho2() const
+	{
+		return (invWidthsSum().colwise() * widthsAB()).rowwise()
+			* hInvWidthsCD();
 	}
 	
 	Eigen::ArrayXXd KKW() const
