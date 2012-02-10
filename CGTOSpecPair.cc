@@ -350,17 +350,17 @@ double CGTOSpecPair<0, 0, 0, 0, 0, 0>::nuclearAttraction(
 	int nr_nuc = nuc_pos.cols();
 	int nr_rows = f().size(), nr_cols = g().size();
 	Eigen::ArrayXXd Pi;
-	Eigen::ArrayXXd U = Eigen::ArrayXXd::Zero(nr_rows, nr_cols*nr_nuc);
+	Eigen::ArrayXXd T = Eigen::ArrayXXd::Zero(nr_rows, nr_cols*nr_nuc);
 
 	for (int i = 0; i < 3; i++)
 	{
 		Pi = P(i);
 		for (int iC = 0; iC < nr_nuc; ++iC)
-			U.block(0, iC*nr_cols, nr_rows, nr_cols) += (Pi - nuc_pos(i, iC)).square();
+			T.block(0, iC*nr_cols, nr_rows, nr_cols) += (Pi - nuc_pos(i, iC)).square();
 	}
-	U *= widthsSum().replicate(1, nr_nuc);
+	T *= widthsSum().replicate(1, nr_nuc);
 
-	Eigen::ArrayXXd Am = Fm(0, U);
+	Eigen::ArrayXXd Am = T.boys(0);
 	Eigen::ArrayXXd A = Eigen::ArrayXXd::Zero(nr_rows, nr_cols);
 	for (int iC = 0; iC < nr_nuc; ++iC)
 		A += -nuc_charge[iC] * Am.block(0, iC*nr_cols, nr_rows, nr_cols);

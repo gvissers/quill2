@@ -1,14 +1,18 @@
 FEATURES = 
-FEATURES += DEBUG
 
 CXX = ccache g++
-#OPT = -std=c++0x -Wall -W -ggdb
-OPT = -std=c++0x -Wall -W -O2
+#OPT = -std=c++0x -Wall -W -ggdb -DDEBUG
+OPT = -std=c++0x -Wall -W -O2 -DNDEBUG
+
+#CXX = ccache clang++
+#OPT = -std=c++0x -stdlib=libc++ -O2 -DNDEBUG
 
 VPATH = io
 
 INCLUDES = -I . -I /home/ge/Programs/lithium/include -I eigen
 CXXFLAGS = $(OPT) $(INCLUDES) \
+	-DEIGEN_ARRAYBASE_PLUGIN=\"eigen_addons.hh\" \
+	-DEIGEN_FUNCTORS_PLUGIN=\"quill_functors.hh\" \
 	$(foreach FEATURE, $(FEATURES), -D$(FEATURE))
 LDFLAGS = -L /home/ge/Programs/lithium/lib -lli_base \
 	-Wl,-rpath=/home/ge/Programs/lithium/lib

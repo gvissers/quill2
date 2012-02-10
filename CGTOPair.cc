@@ -294,7 +294,7 @@ double CGTOPair::nuclearAttraction(const Eigen::MatrixXd& nuc_pos,
 	Eigen::Vector3i lsAB = f().ls() + g().ls();
 	int lsABsum = lsAB.sum();
 
-	Eigen::ArrayXXd F = Fm(lsABsum, U);
+	Eigen::ArrayXXd F = U.boys(lsABsum);
 	Eigen::ArrayXXd expmU = (-U).exp();
 	Eigen::ArrayXXd Am = Axyz[0][lsAB.x()] * Axyz[1][lsAB.y()]
 		* Axyz[2][lsAB.z()] * F;
