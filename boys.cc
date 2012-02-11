@@ -62,7 +62,7 @@ static double Fm_Q_cf(double a, double t, double expmt)
 	throw NoConvergence();
 }
 
-double Fm_no_taylor(int m, double t, double expmt)
+double Fm(int m, double t, double expmt)
 {
 	// compute the integral
 	//      F_m(t) = \int_0^1 \exp[-t s^2] s^{2m} ds
@@ -91,9 +91,4 @@ double Fm_no_taylor(int m, double t, double expmt)
 	{
 		return Fm_Q_cf(a, t, expmt);
 	}
-}
-
-double Fm(int m, double t)
-{
-	return Fm_no_taylor(m, t, std::exp(-t));
 }
