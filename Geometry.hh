@@ -159,13 +159,15 @@ private:
 	 * \param idx The atom index to check
 	 * \exception InvalidIndex thrown when the index is out of bounds
 	 */
+#ifdef DEBUG
 	void checkIndex(int idx) const
 	{
-#ifdef DEBUG
 		if (idx < 0 || idx >= size())
 			throw InvalidIndex(idx);
-#endif
 	}
+#else
+	void checkIndex(int) const {}
+#endif
 };
 
 namespace {
