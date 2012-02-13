@@ -121,8 +121,10 @@ public:
 	 * Compute the electron repulsion matrix, given the electron density
 	 * matrix \a P.
 	 * \param P The electron density matrix
+	 * \param G Place to store the ERI matrix
 	 */
-	Eigen::MatrixXd electronRepulsion(const Eigen::MatrixXd& P) const;
+	void electronRepulsion(const Eigen::MatrixXd& P,
+		Eigen::MatrixXd& G) const;
 
 	/*!
 	 * \brief Print this basis
