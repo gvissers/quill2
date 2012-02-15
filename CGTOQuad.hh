@@ -39,7 +39,7 @@ public:
 		Eigen::internal::scalar_product_op<double, double>,
 		const Eigen::CwiseBinaryOp<
 			Eigen::internal::scalar_product_op<double, double>,
-			const Eigen::ArrayXXd,
+			const Eigen::Block<Eigen::ArrayXXd>,
 			const Eigen::ArrayXXd>,
 		const Eigen::Replicate<
 			// RowArrayMap doesn't work???
@@ -53,7 +53,7 @@ public:
 		Eigen::internal::scalar_product_op<double, double>,
 		const Eigen::CwiseBinaryOp<
 			Eigen::internal::scalar_product_op<double, double>,
-			const Eigen::ArrayXXd,
+			const Eigen::Block<Eigen::ArrayXXd>,
 			const Eigen::ArrayXXd >,
 		const Eigen::Replicate<
 			Eigen::CwiseUnaryOp<
@@ -312,10 +312,10 @@ public:
 	{
 		return (dPQ(i) * invWidthsSum()).colwise() * (-widthsAB());
 	}
-	const Eigen::ArrayXXd& dPQ(int i) const
+	const Eigen::Block<Eigen::ArrayXXd> dPQ(int i) const
 	{
 		if (!_dPQ) setDPQ();
-		return _dPQ[i];
+		return _dPQ->block(0, i*q().size(), p().size(), q().size());
 	}
 	HInvWidthsABExpression hInvWidthsAB() const
 	{
@@ -396,7 +396,7 @@ private:
 	double electronRepulsion_abcd() const;
 
 	void setDPQ() const;
-	void freeDPQ() const { delete[] _dPQ; _dPQ = 0; }
+	void freeDPQ() const { delete _dPQ; _dPQ = 0; }
 };
 
 #endif // CGTOQUAD_HH

@@ -258,10 +258,13 @@ switch(_pos_sym)
 
 void CGTOQuad::setDPQ() const
 {
-	_dPQ = new Eigen::ArrayXXd[3];
-	_dPQ[0] = Q(0).replicate(p().size(), 1).colwise() - P(0);
-	_dPQ[1] = Q(1).replicate(p().size(), 1).colwise() - P(1);
-	_dPQ[2] = Q(2).replicate(p().size(), 1).colwise() - P(2);
+	_dPQ = new Eigen::ArrayXXd(p().size(), 3*q().size());
+	_dPQ->block(0, 0, p().size(), q().size())
+		= Q(0).replicate(p().size(), 1).colwise() - P(0);
+	_dPQ->block(0, q().size(), p().size(), q().size())
+		= Q(1).replicate(p().size(), 1).colwise() - P(1);
+	_dPQ->block(0, 2*q().size(), p().size(), q().size())
+		= Q(2).replicate(p().size(), 1).colwise() - P(2);
 }
 
 void CGTOQuad::elecRepPrim1d_aacc_psss(int i, FmCoefs& Cm) const
