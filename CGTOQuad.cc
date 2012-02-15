@@ -1317,15 +1317,16 @@ double CGTOQuad::electronRepulsion_abcc() const
 		* widthsReduced();
 	Eigen::ArrayXXd expmT = (-T).exp();
 	Eigen::ArrayXXd F = T.boys(m, expmT);
-	Eigen::ArrayXXd A = Cm[m] * F;
+	Cm[m] *= F;
 	for (--m; m >= Cm.minM(); --m)
 	{
 		F = (expmT + 2*T*F) / (2*m+1);
-		A += Cm[m] * F;
+		Cm[m] = Cm[m] * F + Cm[m+1];
 	}
 
 	freeDPQ();
-	return weightsAB().transpose() * (KKW() * A).matrix() * weightsCD();
+	return weightsAB().transpose() * (KKW() * Cm[Cm.minM()]).matrix()
+		* weightsCD();
 }
 
 double CGTOQuad::electronRepulsion_aacd() const
@@ -1340,15 +1341,16 @@ double CGTOQuad::electronRepulsion_aacd() const
 		* widthsReduced();
 	Eigen::ArrayXXd expmT = (-T).exp();
 	Eigen::ArrayXXd F = T.boys(m, expmT);
-	Eigen::ArrayXXd A = Cm[m] * F;
+	Cm[m] *= F;
 	for (--m; m >= Cm.minM(); --m)
 	{
 		F = (expmT + 2*T*F) / (2*m+1);
-		A += Cm[m] * F;
+		Cm[m] = Cm[m] * F + Cm[m+1];
 	}
 
 	freeDPQ();
-	return weightsAB().transpose() * (KKW() * A).matrix() * weightsCD();
+	return weightsAB().transpose() * (KKW() * Cm[Cm.minM()]).matrix()
+		* weightsCD();
 }
 
 double CGTOQuad::electronRepulsion_abcd() const
@@ -1363,15 +1365,16 @@ double CGTOQuad::electronRepulsion_abcd() const
 		* (dPQ(0).square() + dPQ(1).square() + dPQ(2).square());
 	Eigen::ArrayXXd expmT = (-T).exp();
 	Eigen::ArrayXXd F = T.boys(m, expmT);
-	Eigen::ArrayXXd A = Cm[m] * F;
+	Cm[m] *= F;
 	for (--m; m >= Cm.minM(); --m)
 	{
 		F = (expmT + 2*T*F) / (2*m+1);
-		A += Cm[m] * F;
+		Cm[m] = Cm[m] * F + Cm[m+1];
 	}
 
 	freeDPQ();
-	return weightsAB().transpose() * (KKW() * A).matrix() * weightsCD();
+	return weightsAB().transpose() * (KKW() * Cm[Cm.minM()]).matrix()
+		* weightsCD();
 }
 
 double CGTOQuad::electronRepulsion() const
