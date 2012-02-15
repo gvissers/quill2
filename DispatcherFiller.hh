@@ -8,6 +8,7 @@
 
 #include "Dispatcher.hh"
 #include "CGTOSpecPair.hh"
+#include "CGTOSpecQuad.hh"
 
 /*!
  * \brief Set pair creation function
@@ -253,6 +254,87 @@ struct PairMapFiller<0, lmax2>
 	static void fill()
 	{
 		PairMapFillerLx1<0, 0, lmax2>::fill();
+	}
+};
+
+/*!
+ * \brief Fill the quad functions in the dispatcher
+ *
+ * Fill the quad functions in the dispatcher. This template is used to loop
+ * over all supported total angular momenta of the second pair, for fixed total
+ * angular momentum of the first pair.
+ */
+template <int l1, int l2>
+struct QuadMapFillerL2
+{
+	//! Add pair functions, looping over \a l2
+	static void fill()
+	{
+		Dispatcher::singleton().setQuadCreator(l1, l2,
+			createSpecQuad<l1, l2>);
+		QuadMapFillerL2<l1, l2-1>::fill();
+	}
+};
+//! Base case for recursion: total angular momentum 0
+template <int l1>
+struct QuadMapFillerL2<l1, 0>
+{
+	static void fill()
+	{
+		Dispatcher& dispatcher = Dispatcher::singleton();
+		dispatcher.setQuadCreator(l1, 0, createSpecQuad<l1, 0>);
+	}
+};
+template <int l2>
+struct QuadMapFillerL2<0, l2>
+{
+	static void fill()
+	{
+		Dispatcher::singleton().setQuadCreator(0, l2,
+			createSpecQuad<0, l2>);
+		Dispatcher::singleton().setQuadCreator(size_t(-1), l2,
+			CGTOQuad::create);
+		QuadMapFillerL2<0, l2-1>::fill();
+	}
+};
+template <>
+struct QuadMapFillerL2<0, 0>
+{
+	static void fill()
+	{
+		Dispatcher& dispatcher = Dispatcher::singleton();
+		dispatcher.setQuadCreator(0, 0, createSpecQuad<0, 0>);
+		dispatcher.setQuadCreator(0, size_t(-1), CGTOQuad::create);
+		dispatcher.setQuadCreator(size_t(-1), 0, CGTOQuad::create);
+		dispatcher.setQuadCreator(size_t(-1), size_t(-1), CGTOQuad::create);
+	}
+};
+
+/*!
+ * \brief Fill the quad functions in the dispatcher
+ *
+ * Fill the quad functions in the dispatcher. This template is used to loop
+ * over all supported total angular momenta of the first pair.
+ */
+template <int l1, int l2>
+struct QuadMapFiller
+{
+	//! Add pair functions, looping over \a l1
+	static void fill()
+	{
+		QuadMapFillerL2<l1, l2>::fill();
+		Dispatcher::singleton().setQuadCreator(l1, size_t(-1),
+			CGTOQuad::create);
+		QuadMapFiller<l1-1, l2>::fill();
+	}
+};
+//! Base case for recursion: total angular momentum 0
+template <int l2>
+struct QuadMapFiller<0, l2>
+{
+	static void fill()
+	{
+		QuadMapFillerL2<0, l2>::fill();
 	}
 };
 

@@ -26,9 +26,12 @@
 template <int lxA, int lyA, int lzA, int lxB, int lyB, int lzB>
 struct CGTOSpecPair: public CGTOPair
 {
+	//! Unique class ID, used in looking up integral calculation functions
+	static const size_t cid;
+	
 	//! Constructor
 	CGTOSpecPair(const CGTOSpec<lxA, lyA, lzA>& f,
-		const CGTOSpec<lxB, lyB, lzB>& g): CGTOPair(f, g) {}
+		const CGTOSpec<lxB, lyB, lzB>& g): CGTOPair(cid, f, g) {}
 
 	//! Return the first orbital in this pair
 	const CGTOSpec<lxA, lyA, lzA>& f() const
@@ -108,6 +111,11 @@ struct CGTOSpecPair: public CGTOPair
 		}
 	}
 };
+
+#include "Dispatcher.hh"
+template <int lxA, int lyA, int lzA, int lxB, int lyB, int lzB>
+const size_t CGTOSpecPair<lxA, lyA, lzA, lxB, lyB, lzB>::cid
+	= lxA + lyA + lzA + lxB + lyB + lzB;
 
 template <>
 double CGTOSpecPair<0, 0, 0, 0, 0, 0>::overlap() const;

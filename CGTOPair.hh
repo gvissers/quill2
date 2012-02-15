@@ -22,6 +22,7 @@
 class CGTOPair: public AbstractBFPair
 {
 public:
+	//! Unique class ID, used in looking up integral calculation functions
 	static const size_t cid;
 
 	//! Constructor
@@ -223,6 +224,32 @@ public:
 			throw Li::Exception("Invalid basis function type");
 		}
 	}
+
+protected:
+	/*!
+	 * \brief Constructor
+	 *
+	 * Create a new pair of contracted gaussian type orbitals \a f and \a g.
+	 * This constructor is called by specialized child classes, that pass
+	 * their own class ID \a cid.
+	 */
+	CGTOPair(size_t cid, const CGTO& f, const CGTO& g):
+		AbstractBFPair(cid, f, g),
+		_widths_A(f.widths().replicate(1, g.size())),
+		_widths_B(g.widths().transpose().replicate(f.size(), 1)),
+		_widths_sum(_widths_A + _widths_B),
+		_widths_red(_widths_A * _widths_B / _widths_sum),
+		_gauss_red((-(g.center()-f.center()).squaredNorm() * _widths_red).exp()
+			/ _widths_sum),
+		_weights(f.weights() * g.weights().transpose())
+	{
+		for (int i = 0; i < 3; ++i)
+		{
+			_P[i] = (_widths_A*f.center(i) + _widths_B*g.center(i))
+				/ _widths_sum;
+		}
+	}
+
 
 private:
 	//! Primitives widths in first orbital, for all primitives in second orbital.

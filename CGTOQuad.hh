@@ -165,10 +165,11 @@ public:
 	 * \brief Constructor
 	 * 
 	 * Create a new CGTOQuad from pairs \a p and \a q.
-	 * \param p The first orbital pair in the quartet.
-	 * \param q The second orbital pair in the quartet.
+	 * \param p       The first orbital pair in the quartet.
+	 * \param q       The second orbital pair in the quartet.
+	 * \param pos_sym The symmetry of the four nuclear centers
 	 */
-	CGTOQuad(const CGTOPair& p, const CGTOPair& q);
+	CGTOQuad(const CGTOPair& p, const CGTOPair& q, PositionSymmetry pos_sym);
 	
 	//! Return the first orbital pair in the quartet
 	const CGTOPair& p() const
@@ -183,11 +184,11 @@ public:
 	
 	/*!
 	 * Compute the electron repulsion integral
-	 * \f$\langle ab|\frac{1}{r_{12}}|cd\rangle\f$, where orbitals \f$a\f$
+	 * \f$\langle ac|\frac{1}{r_{12}}|bd\rangle\f$, where orbitals \f$a\f$
 	 * and \f$b\f$ are stored in the first orbital pair of this quartet, and 
 	 * \f$c\f$ and \f$d\f$ are stored in the second pair.
 	 */
-	double electronRepulsion() const;
+	virtual double electronRepulsion() const;
 
 	//! Return the angular momentum in the \a i direction for the first orbital
 	int lA(int i) const
@@ -351,26 +352,14 @@ public:
 	/*!
 	 * \brief Create a new CGTOQuad
 	 *
-	 * Create a new quartets of CGTOs. This pseudo-constructor provides a
+	 * Create a new quartet of CGTOs. This pseudo-constructor provides a
 	 * common interface that allows the Dispatcher to add quartet creation
 	 * functions for arbitrary quartets of basis function types.
 	 * \param p The first orbital pair in the quartet. Should be a CGTOPair.
 	 * \param q The second orbital pair in the quartet. Should be a CGTOPair.
 	 */
 	static AbstractBFQuad *create(const AbstractBFPair& p,
-		const AbstractBFPair& q)
-	{
-		try
-		{
-			const CGTOPair& pp = dynamic_cast< const CGTOPair& >(p);
-			const CGTOPair& qq = dynamic_cast< const CGTOPair& >(q);
-			return new CGTOQuad(pp, qq);
-		}
-		catch (const std::bad_cast&)
-		{
-			throw Li::Exception("Invalid basis function pair type");
-		}
-	}
+		const AbstractBFPair& q);
 
 private:
 	PositionSymmetry _pos_sym;
@@ -399,17 +388,6 @@ private:
 	void elecRepPrim1d_abcc(int i, FmCoefs& Cm) const;
 	void elecRepPrim1d_aacd(int i, FmCoefs& Cm) const;
 	void elecRepPrim1d_abcd(int i, FmCoefs& Cm) const;
-
-	double electronRepulsion_aaaa_ssss() const;
-	double electronRepulsion_aacc_ssss() const;
-	double electronRepulsion_abcc_ssss() const;
-	double electronRepulsion_aacd_ssss() const;
-	double electronRepulsion_abcd_ssss() const;
-
-	double electronRepulsion_aacc_psss() const;
-	double electronRepulsion_abcc_psss() const;
-	double electronRepulsion_aacd_psss() const;
-	double electronRepulsion_abcd_psss() const;
 
 	double electronRepulsion_aaaa() const;
 	double electronRepulsion_aacc() const;

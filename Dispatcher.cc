@@ -1,7 +1,6 @@
 #include "Dispatcher.hh"
 #include "DispatcherFiller.hh"
 #include "AbstractBF.hh"
-#include "CGTOQuad.hh"
 #include "limits.hh"
 #include "exceptions.hh"
 
@@ -15,9 +14,8 @@ Dispatcher::Dispatcher(): Li::Singleton<Dispatcher, true>(),
 #endif
 	size_t id = classID<CGTO>();
 	setPairCreator(id, id, CGTOPair::create);
-	
-	id = classID<CGTOPair>();
-	setQuadCreator(id, id, CGTOQuad::create);
+
+	QuadMapFiller<Limits::lmax_specialized, Limits::lmax_specialized>::fill();
 }
 
 std::unique_ptr<AbstractBFPair> Dispatcher::pair(const AbstractBF& f,

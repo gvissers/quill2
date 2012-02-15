@@ -240,29 +240,12 @@ private:
 
 int n_abcd=0, n_abcc=0, n_aacd=0, n_aacc=0, n_aaaa=0;
 
-CGTOQuad::CGTOQuad(const CGTOPair& p, const CGTOPair& q):
-	AbstractBFQuad(p, q),
+CGTOQuad::CGTOQuad(const CGTOPair& p, const CGTOPair& q, PositionSymmetry pos_sym):
+	AbstractBFQuad(p, q), _pos_sym(pos_sym),
 	_inv_widths_sum((widthsAB().replicate(1, q.size()).rowwise()
 		+ widthsCD()).inverse()),
 	_dPQ(0)
 {
-	if (p.samePositionId())
-	{
-		if (q.samePositionId())
-			_pos_sym = p.positionIdA() == q.positionIdA()
-				? POS_SYM_AAAA : POS_SYM_AACC;
-		else
-			_pos_sym = POS_SYM_AACD;
-	}
-	else if (q.samePositionId())
-	{
-		_pos_sym = POS_SYM_ABCC;
-	}
-	else
-	{
-		_pos_sym = POS_SYM_ABCD;
-	}
-
 switch(_pos_sym)
 {
 	case POS_SYM_AAAA: n_aaaa++; break;
@@ -762,7 +745,7 @@ void CGTOQuad::elecRepPrim1d_aacc(int i, FmCoefs& Cm) const
 					* widthsAB()).rowwise() * widthsCD()
 					* (-dPQi*dPQi));
 		}
-		else if (l1 == 2)
+		else
 		{
 			Cm.multiplyCol(hInvWidthsAB(), -rho1(),
 				((dPQi * invWidthsSum()).rowwise() * widthsCD()).square());
@@ -998,12 +981,12 @@ void CGTOQuad::elecRepPrim1d_aacd(int i, FmCoefs& Cm) const
 	{
 		return;
 	}
-	else if (lsum == 1)
+	if (lsum == 1)
 	{
 		elecRepPrim1d_aacd_psss(i, Cm);
 		return;
 	}
-	else if (lsum == 2)
+	if (lsum == 2)
 	{
 		if (l1 == 1)
 			elecRepPrim1d_aacd_psps(i, Cm);
@@ -1160,7 +1143,7 @@ void CGTOQuad::elecRepPrim1d_abcd(int i, FmCoefs& Cm) const
 
 	double dAB = xB - xA;
 	double dCD = xD - xC;
-
+	
 	EriCoefs coefs(l1, l2, p().size(), q().size());
 	// C_0,0,0,0
 	coefs(0, 0, 0).setOnes();
@@ -1178,8 +1161,8 @@ void CGTOQuad::elecRepPrim1d_abcd(int i, FmCoefs& Cm) const
 		// C_0,0,c,0
 		for (int iC = 1; iC < l2; ++iC)
 		{
-			coefs(0, iC+1, 0) = coefs(0, iC, 0).rowwise()*dCQi
-				+ coefs(0, iC-1, 0).rowwise()*(iC*inv_eta);
+			coefs(0, iC+1, 0).rowwise() = coefs(0, iC, 0).row(0)*dCQi
+				+ coefs(0, iC-1, 0).row(0)*(iC*inv_eta);
 			for (int m = 1; m < iC; ++m)
 			{
 				coefs(0, iC+1, m) = coefs(0, iC, m).rowwise()*dCQi
@@ -1279,145 +1262,6 @@ void CGTOQuad::elecRepPrim1d_abcd(int i, FmCoefs& Cm) const
 	Cm.multiply(coefs, l1, l2);
 }
 
-double CGTOQuad::electronRepulsion_aaaa_ssss() const
-{
-	return weightsAB().transpose() * KKW().matrix() * weightsCD();
-}
-
-double CGTOQuad::electronRepulsion_aacc_ssss() const
-{
-	auto T = widthsReduced()
-		* (p().centerA() - q().centerA()).squaredNorm();
-	return weightsAB().transpose() * (KKW() * T.boys(0)).matrix() * weightsCD();
-}
-
-double CGTOQuad::electronRepulsion_abcc_ssss() const
-{
-	auto T = widthsReduced().colwise() *
-		((P(0) - q().centerA(0)).square()
-		+ (P(1) - q().centerA(1)).square()
-		+ (P(2) - q().centerA(2)).square());
-	return weightsAB().transpose() * (KKW() * T.boys(0)).matrix() * weightsCD();
-}
-
-double CGTOQuad::electronRepulsion_aacd_ssss() const
-{
-	auto T = widthsReduced().rowwise() *
-		((Q(0) - p().centerA(0)).square()
-		+ (Q(1) - p().centerA(1)).square()
-		+ (Q(2) - p().centerA(2)).square());
-	return weightsAB().transpose() * (KKW() * T.boys(0)).matrix() * weightsCD();
-}
-
-double CGTOQuad::electronRepulsion_abcd_ssss() const
-{
-	auto T = widthsReduced()
-		* (dPQ(0).square() + dPQ(1).square() + dPQ(2).square());
-	return weightsAB().transpose() * (KKW() * T.boys(0)).matrix() * weightsCD();
-}
-
-double CGTOQuad::electronRepulsion_aacc_psss() const
-{
-	auto T = widthsReduced()
-		* (p().centerA() - q().centerA()).squaredNorm();
-	Eigen::ArrayXXd C = KKW() * T.boys(1) * invWidthsSum();
-	for (int i = 0; i < 3; i++)
-	{
-		if (lAB(i) == 1)
-		{
-			C.rowwise() *= widthsCD() * (q().centerA(i)-p().centerA(i));
-			break;
-		}
-		if (lCD(i) == 1)
-		{
-			C.colwise() *= widthsAB() * (p().centerA(i)-q().centerA(i));
-			break;
-		}
-	}
-
-	return weightsAB().transpose() * C.matrix() * weightsCD();
-}
-
-double CGTOQuad::electronRepulsion_abcc_psss() const
-{
-	Eigen::ArrayXXd T = widthsReduced().colwise() *
-		((P(0) - q().centerA(0)).square()
-		+ (P(1) - q().centerA(1)).square()
-		+ (P(2) - q().centerA(2)).square());
-	Eigen::ArrayXXd expmT = (-T).exp();
-	Eigen::ArrayXXd F = T.boys(1, expmT);
-	for (int i = 0; i < 3; i++)
-	{
-		if (lAB(i) == 1)
-		{
-			double x = lA(i) == 1 ? centerA(i) : centerB(i);
-			F = F*dPW(i) + (expmT + 2*T*F).colwise()*dxP(i, x);
-			break;
-		}
-		if (lCD(i) == 1)
-		{
-			F *= dQW(i);
-			break;
-		}
-	}
-
-	return weightsAB().transpose() * (KKW() * F).matrix() * weightsCD();
-}
-
-double CGTOQuad::electronRepulsion_aacd_psss() const
-{
-	Eigen::ArrayXXd T = widthsReduced().rowwise() *
-		((Q(0) - p().centerA(0)).square()
-		+ (Q(1) - p().centerA(1)).square()
-		+ (Q(2) - p().centerA(2)).square());
-	Eigen::ArrayXXd expmT = (-T).exp();
-	Eigen::ArrayXXd F = T.boys(1, expmT);
-	for (int i = 0; i < 3; i++)
-	{
-		if (lAB(i) == 1)
-		{
-			F *= dPW(i);
-			break;
-		}
-		if (lCD(i) == 1)
-		{
-			double x = lC(i) == 1 ? centerC(i) : centerD(i);
-			F = F*dQW(i) + (expmT + 2*T*F).rowwise()*dxQ(i, x);
-			break;
-		}
-	}
-
-	return weightsAB().transpose() * (KKW() * F).matrix() * weightsCD();
-}
-
-double CGTOQuad::electronRepulsion_abcd_psss() const
-{
-	Eigen::ArrayXXd T = (dPQ(0).square() + dPQ(1).square() + dPQ(2).square())
-		* widthsReduced();
-	Eigen::ArrayXXd expmT = (-T).exp();
-	Eigen::ArrayXXd F1 = T.boys(1, expmT);
-	Eigen::ArrayXXd F0 = expmT + 2*T*F1;
-	for (int i = 0; i < 3; i++)
-	{
-		if (lAB(i) == 1)
-		{
-			double x = lA(i) == 1 ? centerA(i) : centerB(i);
-			F0.colwise() *= dxP(i, x);
-			F1 *= dPW(i);
-			break;
-		}
-		if (lCD(i) == 1)
-		{
-			double x = lC(i) == 1 ? centerC(i) : centerD(i);
-			F0.rowwise() *= dxQ(i, x);
-			F1 *= dQW(i);
-			break;
-		}
-	}
-
-	return weightsAB().transpose() * (KKW() * (F1+F0)).matrix() * weightsCD();
-}
-
 double CGTOQuad::electronRepulsion_aaaa() const
 {
 	const Eigen::Vector3i& lsA = p().f().ls();
@@ -1426,9 +1270,6 @@ double CGTOQuad::electronRepulsion_aaaa() const
 	const Eigen::Vector3i& lsD = q().g().ls();
 	Eigen::Vector3i ls = lsA + lsB + lsC + lsD;
 	int lsum = ls.sum();
-
-	if (lsum == 0)
-		return electronRepulsion_aaaa_ssss();
 
 	for (int i = 0; i < 3; i++)
 	{
@@ -1458,11 +1299,6 @@ double CGTOQuad::electronRepulsion_aacc() const
 
 	int lsum = ls.sum();
 
-	if (lsum == 0)
-		return electronRepulsion_aacc_ssss();
-	else if (lsum == 1)
-		return electronRepulsion_aacc_psss();
-
 	FmCoefs Cm(lsum, p().size(), q().size());
 	for (int i = 0; i < 3; i++)
 		elecRepPrim1d_aacc(i, Cm);
@@ -1491,11 +1327,6 @@ double CGTOQuad::electronRepulsion_abcc() const
 	Eigen::Vector3i ls = lsA + lsB + lsC + lsD;
 
 	int lsum = ls.sum();
-
-	if (lsum == 0)
-		return electronRepulsion_abcc_ssss();
-	else if (lsum == 1)
-		return electronRepulsion_abcc_psss();
 
 	FmCoefs Cm(lsum, p().size(), q().size());
 	for (int i = 0; i < 3; i++)
@@ -1527,11 +1358,6 @@ double CGTOQuad::electronRepulsion_aacd() const
 
 	int lsum = ls.sum();
 
-	if (lsum == 0)
-		return electronRepulsion_aacd_ssss();
-	else if (lsum == 1)
-		return electronRepulsion_aacd_psss();
-
 	FmCoefs Cm(lsum, p().size(), q().size());
 	for (int i = 0; i < 3; i++)
 		elecRepPrim1d_aacd(i, Cm);
@@ -1561,11 +1387,6 @@ double CGTOQuad::electronRepulsion_abcd() const
 	Eigen::Vector3i ls = lsA + lsB + lsC + lsD;
 
 	int lsum = ls.sum();
-
-	if (lsum == 0)
-		return electronRepulsion_abcd_ssss();
-	else if (lsum == 1)
-		return electronRepulsion_abcd_psss();
 
 	FmCoefs Cm(lsum, p().size(), q().size());
 	for (int i = 0; i < 3; i++)
@@ -1601,5 +1422,39 @@ double CGTOQuad::electronRepulsion() const
 			return electronRepulsion_aacd();
 		default:
 			return electronRepulsion_abcd();
+	}
+}
+
+AbstractBFQuad* CGTOQuad::create(const AbstractBFPair& p,
+	const AbstractBFPair& q)
+{
+	try
+	{
+		const CGTOPair& pp = dynamic_cast< const CGTOPair& >(p);
+		const CGTOPair& qq = dynamic_cast< const CGTOPair& >(q);
+
+		PositionSymmetry pos_sym;
+		if (pp.samePositionId())
+		{
+			if (qq.samePositionId())
+				pos_sym = pp.positionIdA() == qq.positionIdA()
+					? POS_SYM_AAAA : POS_SYM_AACC;
+			else
+				pos_sym = POS_SYM_AACD;
+		}
+		else if (qq.samePositionId())
+		{
+			pos_sym = POS_SYM_ABCC;
+		}
+		else
+		{
+			pos_sym = POS_SYM_ABCD;
+		}
+
+		return new CGTOQuad(pp, qq, pos_sym);
+	}
+	catch (const std::bad_cast&)
+	{
+		throw Li::Exception("Invalid basis function pair type");
 	}
 }

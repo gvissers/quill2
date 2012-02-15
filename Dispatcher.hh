@@ -95,6 +95,10 @@ private:
 	friend struct SpecSpecAdder;
 	template <int lx1, int ly1, int lz1>
 	friend struct SpecGenericAdder;
+	template <int l1, int l2>
+	friend struct QuadMapFiller;
+	template <int l1, int l2>
+	friend struct QuadMapFillerL2;
 
 	/*!
 	 * \brief Set the pair creation function for orbitals with type ids
