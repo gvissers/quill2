@@ -1264,20 +1264,14 @@ void CGTOQuad::elecRepPrim1d_abcd(int i, FmCoefs& Cm) const
 
 double CGTOQuad::electronRepulsion_aaaa() const
 {
-	const Eigen::Vector3i& lsA = p().f().ls();
-	const Eigen::Vector3i& lsB = p().g().ls();
-	const Eigen::Vector3i& lsC = q().f().ls();
-	const Eigen::Vector3i& lsD = q().g().ls();
-	Eigen::Vector3i ls = lsA + lsB + lsC + lsD;
-	int lsum = ls.sum();
-
 	for (int i = 0; i < 3; i++)
 	{
-		if (ls[i] % 2 == 1)
+		if (lsum(i) % 2 == 1)
 			return 0;
 	}
 
-	FmCoefs Cm(lsum, p().size(), q().size());
+	int ltot = lsum(0) + lsum(1) + lsum(2);
+	FmCoefs Cm(ltot, p().size(), q().size());
 	for (int i = 0; i < 3; i++)
 		elecRepPrim1d_aaaa(i, Cm);
 
@@ -1291,15 +1285,8 @@ double CGTOQuad::electronRepulsion_aaaa() const
 
 double CGTOQuad::electronRepulsion_aacc() const
 {
-	const Eigen::Vector3i& lsA = p().f().ls();
-	const Eigen::Vector3i& lsB = p().g().ls();
-	const Eigen::Vector3i& lsC = q().f().ls();
-	const Eigen::Vector3i& lsD = q().g().ls();
-	Eigen::Vector3i ls = lsA + lsB + lsC + lsD;
-
-	int lsum = ls.sum();
-
-	FmCoefs Cm(lsum, p().size(), q().size());
+	int ltot = lsum(0) + lsum(1) + lsum(2);
+	FmCoefs Cm(ltot, p().size(), q().size());
 	for (int i = 0; i < 3; i++)
 		elecRepPrim1d_aacc(i, Cm);
 
@@ -1320,15 +1307,8 @@ double CGTOQuad::electronRepulsion_aacc() const
 
 double CGTOQuad::electronRepulsion_abcc() const
 {
-	const Eigen::Vector3i& lsA = p().f().ls();
-	const Eigen::Vector3i& lsB = p().g().ls();
-	const Eigen::Vector3i& lsC = q().f().ls();
-	const Eigen::Vector3i& lsD = q().g().ls();
-	Eigen::Vector3i ls = lsA + lsB + lsC + lsD;
-
-	int lsum = ls.sum();
-
-	FmCoefs Cm(lsum, p().size(), q().size());
+	int ltot = lsum(0) + lsum(1) + lsum(2);
+	FmCoefs Cm(ltot, p().size(), q().size());
 	for (int i = 0; i < 3; i++)
 		elecRepPrim1d_abcc(i, Cm);
 
@@ -1350,15 +1330,8 @@ double CGTOQuad::electronRepulsion_abcc() const
 
 double CGTOQuad::electronRepulsion_aacd() const
 {
-	const Eigen::Vector3i& lsA = p().f().ls();
-	const Eigen::Vector3i& lsB = p().g().ls();
-	const Eigen::Vector3i& lsC = q().f().ls();
-	const Eigen::Vector3i& lsD = q().g().ls();
-	Eigen::Vector3i ls = lsA + lsB + lsC + lsD;
-
-	int lsum = ls.sum();
-
-	FmCoefs Cm(lsum, p().size(), q().size());
+	int ltot = lsum(0) + lsum(1) + lsum(2);
+	FmCoefs Cm(ltot, p().size(), q().size());
 	for (int i = 0; i < 3; i++)
 		elecRepPrim1d_aacd(i, Cm);
 
@@ -1380,21 +1353,14 @@ double CGTOQuad::electronRepulsion_aacd() const
 
 double CGTOQuad::electronRepulsion_abcd() const
 {
-	const Eigen::Vector3i& lsA = p().f().ls();
-	const Eigen::Vector3i& lsB = p().g().ls();
-	const Eigen::Vector3i& lsC = q().f().ls();
-	const Eigen::Vector3i& lsD = q().g().ls();
-	Eigen::Vector3i ls = lsA + lsB + lsC + lsD;
-
-	int lsum = ls.sum();
-
-	FmCoefs Cm(lsum, p().size(), q().size());
+	int ltot = lsum(0) + lsum(1) + lsum(2);
+	FmCoefs Cm(ltot, p().size(), q().size());
 	for (int i = 0; i < 3; i++)
 		elecRepPrim1d_abcd(i, Cm);
 
 	int m = Cm.maxM();
-	Eigen::ArrayXXd T = (dPQ(0).square() + dPQ(1).square() + dPQ(2).square())
-		* widthsReduced();
+	Eigen::ArrayXXd T = widthsReduced()
+		* (dPQ(0).square() + dPQ(1).square() + dPQ(2).square());
 	Eigen::ArrayXXd expmT = (-T).exp();
 	Eigen::ArrayXXd F = T.boys(m, expmT);
 	Eigen::ArrayXXd A = Cm[m] * F;
