@@ -3,7 +3,7 @@
 CGTOShellQuad::CGTOShellQuad(const CGTOShellPair& pAB, const CGTOShellPair& pCD):
 	_pAB(pAB), _pCD(pCD),
 	_inv_widths_sum((widthsAB().replicate(1, pCD.size()).rowwise()
-		+ widthsCD()).inverse()), _dPQ()
+		+ widthsCD()).inverse()), _dPQ(_pAB.size(), 3*_pCD.size())
 {
 	if (_pAB.samePositionId())
 	{
@@ -25,16 +25,12 @@ CGTOShellQuad::CGTOShellQuad(const CGTOShellPair& pAB, const CGTOShellPair& pCD)
 	{
 		_pos_sym = POS_SYM_ABCD;
 	}
-}
 
-void CGTOShellQuad::setDPQ() const
-{
-	_dPQ.reset(new Eigen::ArrayXXd(_pAB.size(), 3*_pCD.size()));
-	_dPQ->block(0, 0, _pAB.size(), _pCD.size())
+	_dPQ.block(0, 0, _pAB.size(), _pCD.size())
 		= Q(0).replicate(_pAB.size(), 1).colwise() - P(0);
-	_dPQ->block(0, _pCD.size(), _pAB.size(), _pCD.size())
+	_dPQ.block(0, _pCD.size(), _pAB.size(), _pCD.size())
 		= Q(1).replicate(_pAB.size(), 1).colwise() - P(1);
-	_dPQ->block(0, 2*_pCD.size(), _pAB.size(), _pCD.size())
+	_dPQ.block(0, 2*_pCD.size(), _pAB.size(), _pCD.size())
 		= Q(2).replicate(_pAB.size(), 1).colwise() - P(2);
 }
 

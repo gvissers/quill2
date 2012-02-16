@@ -51,7 +51,7 @@ public:
 				Eigen::Stride<0, 0> >,
 			Eigen::Dynamic,
 			1> > WidthsReducedExpression;
-	typedef const Eigen::Block<Eigen::ArrayXXd> DPQExpression;
+	typedef const Eigen::Block<const Eigen::ArrayXXd> DPQExpression;
 	typedef Eigen::CwiseUnaryOp<
 		Eigen::internal::scalar_add_op<double>,
 		ColArrayMap > DXPExpression;
@@ -62,7 +62,7 @@ public:
 		Eigen::internal::scalar_product_op<double, double>,
 		const Eigen::CwiseBinaryOp<
 			Eigen::internal::scalar_product_op<double, double>,
-			const Eigen::Block<Eigen::ArrayXXd>,
+			DPQExpression,
 			const Eigen::ArrayXXd>,
 		const Eigen::Replicate<
 			// RowArrayMap doesn't work???
@@ -76,7 +76,7 @@ public:
 		Eigen::internal::scalar_product_op<double, double>,
 		const Eigen::CwiseBinaryOp<
 			Eigen::internal::scalar_product_op<double, double>,
-			const Eigen::Block<Eigen::ArrayXXd>,
+			DPQExpression,
 			const Eigen::ArrayXXd >,
 		const Eigen::Replicate<
 			Eigen::CwiseUnaryOp<
@@ -233,8 +233,7 @@ public:
 	 */
 	DPQExpression dPQ(int i) const
 	{
-		if (!_dPQ) setDPQ();
-		return _dPQ->block(0, i*_pCD.size(), _pAB.size(), _pCD.size());
+		return _dPQ.block(0, i*_pCD.size(), _pAB.size(), _pCD.size());
 	}
 	Rho1Expression rho1() const
 	{
@@ -263,11 +262,9 @@ private:
 	//! Inverse of the sums of widths, for all primitive combinations
 	Eigen::ArrayXXd _inv_widths_sum;
 	//! Distance between weighted centers of the two pairs
-	mutable std::unique_ptr<Eigen::ArrayXXd> _dPQ;
+	Eigen::ArrayXXd _dPQ;
 	//! The symmetry in positions of the four orbitals
 	PositionSymmetry _pos_sym;
-
-	void setDPQ() const;
 };
 
 #endif // CGTOSHELLQUAD_HH
