@@ -13,6 +13,7 @@ class CGTOShellPair
 {
 public:
 	CGTOShellPair(const CGTOShell& shA, const CGTOShell& shB):
+		_shA(shA), _shB(shB),
 		_widthsA(shA.widths().replicate(1, shB.size())),
 		_widthsB(shB.widths().transpose().replicate(shA.size(), 1)),
 		_widths_sum(_widthsA + _widthsB),
@@ -60,8 +61,28 @@ public:
 	{
 		return _P[i];
 	}
-	
+
+	//! Return the position index of the first shell
+	int positionIdA() const
+	{
+		return _shA.positionId();
+	}
+	//! Return the position index of the first shell
+	int positionIdB() const
+	{
+		return _shB.positionId();
+	}
+	//! Return \c true if both shells are located on the same center
+	bool samePositionId() const
+	{
+		return positionIdA() == positionIdB();
+	}
+
 private:
+	//! First shell in this pair
+	const CGTOShell& _shA;
+	//! Second shell in this pair
+	const CGTOShell& _shB;
 	//! Primitive widths of the first orbital
 	Eigen::ArrayXXd _widthsA;
 	//! Primitive widths of the second orbital

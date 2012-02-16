@@ -238,8 +238,6 @@ private:
 	int _mmax;
 };
 
-int n_abcd=0, n_abcc=0, n_aacd=0, n_aacc=0, n_aaaa=0;
-
 static const CGTOPair& firstPair(const CGTOPair& pp, const CGTOPair& qq)
 {
 	return pp.ishellPair() < qq.ishellPair() ? qq : pp;
@@ -250,22 +248,10 @@ static const CGTOPair& secondPair(const CGTOPair& pp, const CGTOPair& qq)
 	return pp.ishellPair() < qq.ishellPair() ? pp : qq;
 }
 
-CGTOQuad::CGTOQuad(const CGTOPair& pp, const CGTOPair& qq,
-	PositionSymmetry pos_sym):
+CGTOQuad::CGTOQuad(const CGTOPair& pp, const CGTOPair& qq):
 	AbstractBFQuad(firstPair(pp, qq), secondPair(pp, qq)),
 	_ishell_quad(CGTOShellList::pairIndex(p().ishellPair(), q().ishellPair())),
-	_shell_quad(CGTOShellList::singleton().quad(_ishell_quad)),
-	_pos_sym(pos_sym)
-{
-switch(_pos_sym)
-{
-	case POS_SYM_AAAA: n_aaaa++; break;
-	case POS_SYM_AACC: n_aacc++; break;
-	case POS_SYM_AACD: n_aacd++; break;
-	case POS_SYM_ABCC: n_abcc++; break;
-	case POS_SYM_ABCD: n_abcd++; break;
-}
-}
+	_shell_quad(CGTOShellList::singleton().quad(_ishell_quad)) {}
 
 void CGTOQuad::elecRepPrim1d_aacc_psss(int i, FmCoefs& Cm) const
 {
@@ -1379,15 +1365,15 @@ double CGTOQuad::electronRepulsion_abcd() const
 
 double CGTOQuad::electronRepulsion() const
 {
-	switch (_pos_sym)
+	switch (_shell_quad.positionSymmetry())
 	{
-		case POS_SYM_AAAA:
+		case CGTOShellQuad::POS_SYM_AAAA:
 			return electronRepulsion_aaaa();
-		case POS_SYM_AACC:
+		case CGTOShellQuad::POS_SYM_AACC:
 			return electronRepulsion_aacc();
-		case POS_SYM_ABCC:
+		case CGTOShellQuad::POS_SYM_ABCC:
 			return electronRepulsion_abcc();
-		case POS_SYM_AACD:
+		case CGTOShellQuad::POS_SYM_AACD:
 			return electronRepulsion_aacd();
 		default:
 			return electronRepulsion_abcd();
@@ -1401,26 +1387,7 @@ AbstractBFQuad* CGTOQuad::create(const AbstractBFPair& p,
 	{
 		const CGTOPair& pp = dynamic_cast< const CGTOPair& >(p);
 		const CGTOPair& qq = dynamic_cast< const CGTOPair& >(q);
-
-		PositionSymmetry pos_sym;
-		if (pp.samePositionId())
-		{
-			if (qq.samePositionId())
-				pos_sym = pp.positionIdA() == qq.positionIdA()
-					? POS_SYM_AAAA : POS_SYM_AACC;
-			else
-				pos_sym = POS_SYM_AACD;
-		}
-		else if (qq.samePositionId())
-		{
-			pos_sym = POS_SYM_ABCC;
-		}
-		else
-		{
-			pos_sym = POS_SYM_ABCD;
-		}
-
-		return new CGTOQuad(pp, qq, pos_sym);
+		return new CGTOQuad(pp, qq);
 	}
 	catch (const std::bad_cast&)
 	{

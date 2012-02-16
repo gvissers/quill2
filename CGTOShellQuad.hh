@@ -13,6 +13,21 @@
 class CGTOShellQuad
 {
 public:
+	//! Enumeration for the symmetry in center positions of the four orbitals
+	enum PositionSymmetry
+	{
+		//! All orbitals on different centers
+		POS_SYM_ABCD,
+		//! First pair is on the same center
+		POS_SYM_AACD,
+		//! Second pair is on the same center
+		POS_SYM_ABCC,
+		//! First pair is on one center, second pair on another
+		POS_SYM_AACC,
+		//! All orbitals are on the same center
+		POS_SYM_AAAA
+	};
+
 	typedef Eigen::ArrayXd ColArray;
 	typedef Eigen::Array<double, 1, Eigen::Dynamic> RowArray;
 	typedef ColArray::ConstAlignedMapType ColArrayMap;
@@ -138,13 +153,12 @@ public:
 					Eigen::Dynamic,
 					1 > > > > KKWExpression;
 
-	CGTOShellQuad(const CGTOShellPair& pAB, const CGTOShellPair& pCD):
-		_pAB(pAB), _pCD(pCD),
-		_inv_widths_sum((widthsAB().replicate(1, pCD.size()).rowwise()
-			+ widthsCD()).inverse()) {}
+	CGTOShellQuad(const CGTOShellPair& pAB, const CGTOShellPair& pCD);
 
 	//! Return the total number of primitive combinations in this qu
 	int size() const { return _inv_widths_sum.size(); }
+	//! Return the symmetry in positions of the four centers
+	PositionSymmetry positionSymmetry() const { return _pos_sym; }
 
 	//! Sums of primitive widths for the first pair
 	ColArrayMap widthsAB() const
@@ -250,6 +264,8 @@ private:
 	Eigen::ArrayXXd _inv_widths_sum;
 	//! Distance between weighted centers of the two pairs
 	mutable std::unique_ptr<Eigen::ArrayXXd> _dPQ;
+	//! The symmetry in positions of the four orbitals
+	PositionSymmetry _pos_sym;
 
 	void setDPQ() const;
 };

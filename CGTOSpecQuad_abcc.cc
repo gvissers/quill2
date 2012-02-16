@@ -2,7 +2,7 @@
 #include "boys.hh"
 
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_ABCC, 0, 0>::electronRepulsion() const
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_ABCC, 0, 0>::electronRepulsion() const
 {
 	auto T = widthsReduced().colwise() *
 		((P(0) - q().centerA(0)).square()
@@ -12,7 +12,7 @@ double CGTOSpecQuad<CGTOQuad::POS_SYM_ABCC, 0, 0>::electronRepulsion() const
 }
 
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_ABCC, 1, 0>::electronRepulsion() const
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_ABCC, 1, 0>::electronRepulsion() const
 {
 	Eigen::ArrayXXd T = widthsReduced().colwise() *
 		((P(0) - q().centerA(0)).square()
@@ -35,7 +35,7 @@ double CGTOSpecQuad<CGTOQuad::POS_SYM_ABCC, 1, 0>::electronRepulsion() const
 }
 
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_ABCC, 0, 1>::electronRepulsion() const
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_ABCC, 0, 1>::electronRepulsion() const
 {
 	int i;
 	for (i = 0; i < 3; i++)
@@ -53,7 +53,7 @@ double CGTOSpecQuad<CGTOQuad::POS_SYM_ABCC, 0, 1>::electronRepulsion() const
 }
 
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_ABCC, 2, 0>::electronRepulsion() const
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_ABCC, 2, 0>::electronRepulsion() const
 {
 	Eigen::ArrayXXd T = widthsReduced().colwise() *
 		((P(0) - q().centerA(0)).square()
@@ -110,7 +110,7 @@ double CGTOSpecQuad<CGTOQuad::POS_SYM_ABCC, 2, 0>::electronRepulsion() const
 }
 
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_ABCC, 1, 1>::electronRepulsion() const
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_ABCC, 1, 1>::electronRepulsion() const
 {
 	Eigen::ArrayXXd T = widthsReduced().colwise() *
 		((P(0) - q().centerA(0)).square()
@@ -151,7 +151,7 @@ double CGTOSpecQuad<CGTOQuad::POS_SYM_ABCC, 1, 1>::electronRepulsion() const
 }
 
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_ABCC, 0, 2>::electronRepulsion() const
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_ABCC, 0, 2>::electronRepulsion() const
 {
 	Eigen::ArrayXXd T = widthsReduced().colwise() *
 		((P(0) - q().centerA(0)).square()

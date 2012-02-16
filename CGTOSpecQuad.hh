@@ -19,12 +19,11 @@
  * \tparam l1      The total angular momentum of the first pair in the quartet
  * \tparam l2      The total angular momentum of the second pair in the quartet
  */
-template <enum CGTOQuad::PositionSymmetry pos_sym, int l1, int l2>
+template <enum CGTOShellQuad::PositionSymmetry pos_sym, int l1, int l2>
 struct CGTOSpecQuad: public CGTOQuad
 {
 	//! Constructor
-	CGTOSpecQuad(const CGTOPair& p, const CGTOPair& q):
-		CGTOQuad(p, q, pos_sym) {}
+	CGTOSpecQuad(const CGTOPair& p, const CGTOPair& q): CGTOQuad(p, q) {}
 
 	/*!
 	 * Compute the electron repulsion integral
@@ -39,73 +38,73 @@ struct CGTOSpecQuad: public CGTOQuad
 };
 
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_AAAA, 0, 0>::electronRepulsion() const;
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AAAA, 0, 0>::electronRepulsion() const;
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_AAAA, 1, 0>::electronRepulsion() const;
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AAAA, 1, 0>::electronRepulsion() const;
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_AAAA, 0, 1>::electronRepulsion() const;
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AAAA, 0, 1>::electronRepulsion() const;
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_AAAA, 2, 0>::electronRepulsion() const;
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AAAA, 2, 0>::electronRepulsion() const;
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_AAAA, 1, 1>::electronRepulsion() const;
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AAAA, 1, 1>::electronRepulsion() const;
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_AAAA, 0, 2>::electronRepulsion() const;
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AAAA, 0, 2>::electronRepulsion() const;
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_AAAA, 2, 1>::electronRepulsion() const;
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AAAA, 2, 1>::electronRepulsion() const;
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_AAAA, 1, 2>::electronRepulsion() const;
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AAAA, 1, 2>::electronRepulsion() const;
 
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_AACC, 0, 0>::electronRepulsion() const;
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AACC, 0, 0>::electronRepulsion() const;
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_AACC, 1, 0>::electronRepulsion() const;
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AACC, 1, 0>::electronRepulsion() const;
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_AACC, 0, 1>::electronRepulsion() const;
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AACC, 0, 1>::electronRepulsion() const;
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_AACC, 2, 0>::electronRepulsion() const;
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AACC, 2, 0>::electronRepulsion() const;
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_AACC, 1, 1>::electronRepulsion() const;
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AACC, 1, 1>::electronRepulsion() const;
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_AACC, 0, 2>::electronRepulsion() const;
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AACC, 0, 2>::electronRepulsion() const;
 
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_ABCC, 0, 0>::electronRepulsion() const;
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_ABCC, 0, 0>::electronRepulsion() const;
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_ABCC, 1, 0>::electronRepulsion() const;
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_ABCC, 1, 0>::electronRepulsion() const;
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_ABCC, 0, 1>::electronRepulsion() const;
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_ABCC, 0, 1>::electronRepulsion() const;
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_ABCC, 2, 0>::electronRepulsion() const;
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_ABCC, 2, 0>::electronRepulsion() const;
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_ABCC, 1, 1>::electronRepulsion() const;
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_ABCC, 1, 1>::electronRepulsion() const;
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_ABCC, 0, 2>::electronRepulsion() const;
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_ABCC, 0, 2>::electronRepulsion() const;
 
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_AACD, 0, 0>::electronRepulsion() const;
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AACD, 0, 0>::electronRepulsion() const;
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_AACD, 1, 0>::electronRepulsion() const;
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AACD, 1, 0>::electronRepulsion() const;
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_AACD, 0, 1>::electronRepulsion() const;
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AACD, 0, 1>::electronRepulsion() const;
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_AACD, 2, 0>::electronRepulsion() const;
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AACD, 2, 0>::electronRepulsion() const;
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_AACD, 1, 1>::electronRepulsion() const;
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AACD, 1, 1>::electronRepulsion() const;
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_AACD, 0, 2>::electronRepulsion() const;
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AACD, 0, 2>::electronRepulsion() const;
 
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_ABCD, 0, 0>::electronRepulsion() const;
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_ABCD, 0, 0>::electronRepulsion() const;
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_ABCD, 1, 0>::electronRepulsion() const;
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_ABCD, 1, 0>::electronRepulsion() const;
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_ABCD, 0, 1>::electronRepulsion() const;
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_ABCD, 0, 1>::electronRepulsion() const;
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_ABCD, 2, 0>::electronRepulsion() const;
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_ABCD, 2, 0>::electronRepulsion() const;
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_ABCD, 1, 1>::electronRepulsion() const;
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_ABCD, 1, 1>::electronRepulsion() const;
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_ABCD, 0, 2>::electronRepulsion() const;
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_ABCD, 0, 2>::electronRepulsion() const;
 
 /*!
  * \brief Create a new CGTOSpecQuad
@@ -125,22 +124,20 @@ AbstractBFQuad* createSpecQuad(const AbstractBFPair& p, const AbstractBFPair& q)
 	{
 		const CGTOPair& pp = dynamic_cast< const CGTOPair& >(p);
 		const CGTOPair& qq = dynamic_cast< const CGTOPair& >(q);
-
-		if (pp.samePositionId())
+		int idx = CGTOShellList::pairIndex(pp.ishellPair(), qq.ishellPair());
+		switch (CGTOShellList::singleton().quad(idx).positionSymmetry())
 		{
-			if (qq.samePositionId())
-			{
-				if (pp.positionIdA() == qq.positionIdA())
-					return new CGTOSpecQuad<CGTOQuad::POS_SYM_AAAA, l1, l2>(pp, qq);
-				return new CGTOSpecQuad<CGTOQuad::POS_SYM_AACC, l1, l2>(pp, qq);
-			}
-			return new CGTOSpecQuad<CGTOQuad::POS_SYM_AACD, l1, l2>(pp, qq);
+			case CGTOShellQuad::POS_SYM_AAAA:
+				return new CGTOSpecQuad<CGTOShellQuad::POS_SYM_AAAA, l1, l2>(pp, qq);
+			case CGTOShellQuad::POS_SYM_AACC:
+				return new CGTOSpecQuad<CGTOShellQuad::POS_SYM_AACC, l1, l2>(pp, qq);
+			case CGTOShellQuad::POS_SYM_AACD:
+				return new CGTOSpecQuad<CGTOShellQuad::POS_SYM_AACD, l1, l2>(pp, qq);
+			case CGTOShellQuad::POS_SYM_ABCC:
+				return new CGTOSpecQuad<CGTOShellQuad::POS_SYM_ABCC, l1, l2>(pp, qq);
+			default:
+				return new CGTOSpecQuad<CGTOShellQuad::POS_SYM_ABCD, l1, l2>(pp, qq);
 		}
-		else if (qq.samePositionId())
-		{
-			return new CGTOSpecQuad<CGTOQuad::POS_SYM_ABCC, l1, l2>(pp, qq);
-		}
-		return new CGTOSpecQuad<CGTOQuad::POS_SYM_ABCD, l1, l2>(pp, qq);
 	}
 	catch (const std::bad_cast&)
 	{

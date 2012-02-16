@@ -1,25 +1,25 @@
 #include "CGTOSpecQuad.hh"
 
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_AAAA, 0, 0>::electronRepulsion() const
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AAAA, 0, 0>::electronRepulsion() const
 {
 	return weightsAB().transpose() * KKW().matrix() * weightsCD();
 }
 
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_AAAA, 1, 0>::electronRepulsion() const
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AAAA, 1, 0>::electronRepulsion() const
 {
 	return 0;
 }
 
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_AAAA, 0, 1>::electronRepulsion() const
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AAAA, 0, 1>::electronRepulsion() const
 {
 	return 0;
 }
 
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_AAAA, 2, 0>::electronRepulsion() const
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AAAA, 2, 0>::electronRepulsion() const
 {
 	for (int i = 0; i < 3; i++)
 	{
@@ -36,7 +36,7 @@ double CGTOSpecQuad<CGTOQuad::POS_SYM_AAAA, 2, 0>::electronRepulsion() const
 }
 
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_AAAA, 1, 1>::electronRepulsion() const
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AAAA, 1, 1>::electronRepulsion() const
 {
 	for (int i = 0; i < 3; i++)
 	{
@@ -53,7 +53,7 @@ double CGTOSpecQuad<CGTOQuad::POS_SYM_AAAA, 1, 1>::electronRepulsion() const
 }
 
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_AAAA, 0, 2>::electronRepulsion() const
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AAAA, 0, 2>::electronRepulsion() const
 {
 	for (int i = 0; i < 3; i++)
 	{
@@ -70,13 +70,13 @@ double CGTOSpecQuad<CGTOQuad::POS_SYM_AAAA, 0, 2>::electronRepulsion() const
 }
 
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_AAAA, 2, 1>::electronRepulsion() const
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AAAA, 2, 1>::electronRepulsion() const
 {
 	return 0;
 }
 
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_AAAA, 1, 2>::electronRepulsion() const
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AAAA, 1, 2>::electronRepulsion() const
 {
 	return 0;
 }

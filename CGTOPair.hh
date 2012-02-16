@@ -131,18 +131,6 @@ public:
 	{
 		return _shell_pair.gaussReduced();
 	}
-	int positionIdA() const
-	{
-		return f().positionId();
-	}
-	int positionIdB() const
-	{
-		return g().positionId();
-	}
-	bool samePositionId() const
-	{
-		return positionIdA() == positionIdB();
-	}
 	//! Return the first orbital center
 	const Eigen::Vector3d& centerA() const
 	{

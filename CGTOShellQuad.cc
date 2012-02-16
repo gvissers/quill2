@@ -1,5 +1,32 @@
 #include "CGTOShellQuad.hh"
 
+CGTOShellQuad::CGTOShellQuad(const CGTOShellPair& pAB, const CGTOShellPair& pCD):
+	_pAB(pAB), _pCD(pCD),
+	_inv_widths_sum((widthsAB().replicate(1, pCD.size()).rowwise()
+		+ widthsCD()).inverse()), _dPQ()
+{
+	if (_pAB.samePositionId())
+	{
+		if (_pCD.samePositionId())
+		{
+			_pos_sym = _pAB.positionIdA() == _pCD.positionIdA()
+				? POS_SYM_AAAA : POS_SYM_AACC;
+		}
+		else
+		{
+			_pos_sym = POS_SYM_AACD;
+		}
+	}
+	else if (_pCD.samePositionId())
+	{
+		_pos_sym = POS_SYM_ABCC;
+	}
+	else
+	{
+		_pos_sym = POS_SYM_ABCD;
+	}
+}
+
 void CGTOShellQuad::setDPQ() const
 {
 	_dPQ.reset(new Eigen::ArrayXXd(_pAB.size(), 3*_pCD.size()));

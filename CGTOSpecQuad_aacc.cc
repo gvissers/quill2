@@ -2,7 +2,7 @@
 #include "boys.hh"
 
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_AACC, 0, 0>::electronRepulsion() const
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AACC, 0, 0>::electronRepulsion() const
 {
 	auto T = widthsReduced()
 		* (p().centerA() - q().centerA()).squaredNorm();
@@ -10,7 +10,7 @@ double CGTOSpecQuad<CGTOQuad::POS_SYM_AACC, 0, 0>::electronRepulsion() const
 }
 
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_AACC, 1, 0>::electronRepulsion() const
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AACC, 1, 0>::electronRepulsion() const
 {
 	int i;
 	for (i = 0; i < 3; i++)
@@ -24,7 +24,7 @@ double CGTOSpecQuad<CGTOQuad::POS_SYM_AACC, 1, 0>::electronRepulsion() const
 }
 
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_AACC, 0, 1>::electronRepulsion() const
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AACC, 0, 1>::electronRepulsion() const
 {
 	int i;
 	for (i = 0; i < 3; i++)
@@ -38,7 +38,7 @@ double CGTOSpecQuad<CGTOQuad::POS_SYM_AACC, 0, 1>::electronRepulsion() const
 }
 
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_AACC, 2, 0>::electronRepulsion() const
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AACC, 2, 0>::electronRepulsion() const
 {
 	Eigen::ArrayXXd T = (p().centerA() - q().centerA()).squaredNorm()
 		* widthsReduced();
@@ -72,7 +72,7 @@ double CGTOSpecQuad<CGTOQuad::POS_SYM_AACC, 2, 0>::electronRepulsion() const
 }
 
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_AACC, 1, 1>::electronRepulsion() const
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AACC, 1, 1>::electronRepulsion() const
 {
 	Eigen::ArrayXXd T = (p().centerA() - q().centerA()).squaredNorm()
 		* widthsReduced();
@@ -105,7 +105,7 @@ double CGTOSpecQuad<CGTOQuad::POS_SYM_AACC, 1, 1>::electronRepulsion() const
 }
 
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_AACC, 0, 2>::electronRepulsion() const
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AACC, 0, 2>::electronRepulsion() const
 {
 	Eigen::ArrayXXd T = (p().centerA() - q().centerA()).squaredNorm()
 		* widthsReduced();

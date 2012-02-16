@@ -9,21 +9,6 @@ class FmCoefs;
 class CGTOQuad: public AbstractBFQuad
 {
 public:
-	//! Enumeration for the symmetry in center positions of the four orbitals
-	enum PositionSymmetry
-	{
-		//! All orbitals on different centers
-		POS_SYM_ABCD,
-		//! First pair is on the same center
-		POS_SYM_AACD,
-		//! Second pair is on the same center
-		POS_SYM_ABCC,
-		//! First pair is on one center, second pair on another
-		POS_SYM_AACC,
-		//! All orbitals are on the same center
-		POS_SYM_AAAA
-	};
-
 	typedef CGTOShellQuad::ColArray ColArray;
 	typedef CGTOShellQuad::RowArray RowArray;
 	typedef CGTOShellQuad::ColArrayMap ColArrayMap;
@@ -47,9 +32,8 @@ public:
 	 * Create a new CGTOQuad from pairs \a p and \a q.
 	 * \param p       The first orbital pair in the quartet.
 	 * \param q       The second orbital pair in the quartet.
-	 * \param pos_sym The symmetry of the four nuclear centers
 	 */
-	CGTOQuad(const CGTOPair& p, const CGTOPair& q, PositionSymmetry pos_sym);
+	CGTOQuad(const CGTOPair& pp, const CGTOPair& qq);
 	
 	//! Return the first orbital pair in the quartet
 	const CGTOPair& p() const
@@ -232,7 +216,6 @@ public:
 private:
 	int _ishell_quad;
 	const CGTOShellQuad& _shell_quad;
-	PositionSymmetry _pos_sym;
 	
 	void elecRepPrim1d_aacc_psss(int i, FmCoefs& Cm) const;
 	void elecRepPrim1d_abcc_psss(int i, FmCoefs& Cm) const;

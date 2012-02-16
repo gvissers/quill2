@@ -2,7 +2,7 @@
 #include "boys.hh"
 
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_ABCD, 0, 0>::electronRepulsion() const
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_ABCD, 0, 0>::electronRepulsion() const
 {
 	auto T = widthsReduced()
 		* ((Q(0).replicate(p().size(), 1).colwise() - P(0)).square()
@@ -12,7 +12,7 @@ double CGTOSpecQuad<CGTOQuad::POS_SYM_ABCD, 0, 0>::electronRepulsion() const
 }
 
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_ABCD, 1, 0>::electronRepulsion() const
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_ABCD, 1, 0>::electronRepulsion() const
 {
 	Eigen::ArrayXXd T = widthsReduced()
 		* (dPQ(0).square() + dPQ(1).square() + dPQ(2).square());
@@ -35,7 +35,7 @@ double CGTOSpecQuad<CGTOQuad::POS_SYM_ABCD, 1, 0>::electronRepulsion() const
 }
 
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_ABCD, 0, 1>::electronRepulsion() const
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_ABCD, 0, 1>::electronRepulsion() const
 {
 	Eigen::ArrayXXd T = widthsReduced()
 		* (dPQ(0).square() + dPQ(1).square() + dPQ(2).square());
@@ -58,7 +58,7 @@ double CGTOSpecQuad<CGTOQuad::POS_SYM_ABCD, 0, 1>::electronRepulsion() const
 }
 
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_ABCD, 2, 0>::electronRepulsion() const
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_ABCD, 2, 0>::electronRepulsion() const
 {
 	Eigen::ArrayXXd T = widthsReduced()
 		* (dPQ(0).square() + dPQ(1).square() + dPQ(2).square());
@@ -113,7 +113,7 @@ double CGTOSpecQuad<CGTOQuad::POS_SYM_ABCD, 2, 0>::electronRepulsion() const
 }
 
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_ABCD, 1, 1>::electronRepulsion() const
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_ABCD, 1, 1>::electronRepulsion() const
 {
 	Eigen::ArrayXXd T = widthsReduced()
 		* (dPQ(0).square() + dPQ(1).square() + dPQ(2).square());
@@ -159,7 +159,7 @@ double CGTOSpecQuad<CGTOQuad::POS_SYM_ABCD, 1, 1>::electronRepulsion() const
 }
 
 template <>
-double CGTOSpecQuad<CGTOQuad::POS_SYM_ABCD, 0, 2>::electronRepulsion() const
+double CGTOSpecQuad<CGTOShellQuad::POS_SYM_ABCD, 0, 2>::electronRepulsion() const
 {
 	Eigen::ArrayXXd T = widthsReduced()
 		* (dPQ(0).square() + dPQ(1).square() + dPQ(2).square());
