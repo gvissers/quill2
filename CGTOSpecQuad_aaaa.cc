@@ -68,3 +68,15 @@ double CGTOSpecQuad<CGTOQuad::POS_SYM_AAAA, 0, 2>::electronRepulsion() const
 	auto A = ((-1.0/3)*rho2()).rowwise() + hInvWidthsCD();
 	return weightsAB().transpose() * (KKW() * A).matrix() * weightsCD();
 }
+
+template <>
+double CGTOSpecQuad<CGTOQuad::POS_SYM_AAAA, 2, 1>::electronRepulsion() const
+{
+	return 0;
+}
+
+template <>
+double CGTOSpecQuad<CGTOQuad::POS_SYM_AAAA, 1, 2>::electronRepulsion() const
+{
+	return 0;
+}

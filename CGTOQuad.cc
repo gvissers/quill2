@@ -8,19 +8,19 @@ public:
 		_imax(l1+1), _jmax(l2+1), _p_size(p_size), _q_size(q_size),
 		_C(p_size, (_imax*_jmax*(_imax+_jmax)*q_size)/2) {}
 
-	int llIndex(int i, int j) const
+	int index(int i, int j, int m) const
 	{
-		return (i*_jmax*(i+_jmax) + j*(2*i+j+1)) / 2;
+		return (i*_jmax*(i+_jmax) + j*(2*i+j+1)) / 2 + m;
 	}
 	
 	Eigen::Block<Eigen::ArrayXXd> operator()(int i, int j, int m)
 	{
-		return (*this)(llIndex(i,j) + m);
+		return (*this)(index(i,j,m));
 	}
 	const Eigen::Block<const Eigen::ArrayXXd> operator()(int i, int j,
 		int m) const
 	{
-		return (*this)(llIndex(i,j) + m);
+		return (*this)(index(i,j,m));
 	}
 	Eigen::Block<Eigen::ArrayXXd> operator()(int idx)
 	{
@@ -33,13 +33,13 @@ public:
 
 	Eigen::Block<Eigen::ArrayXXd> operator()(int i, int j, int m, int count)
 	{
-		return _C.block(0, (llIndex(i,j) + m)*_q_size, _p_size,
+		return _C.block(0, (index(i,j,m))*_q_size, _p_size,
 			count*_q_size);
 	}
 	const Eigen::Block<const Eigen::ArrayXXd> operator()(int i, int j,
 		int m, int count) const
 	{
-		return _C.block(0, (llIndex(i,j) + m)*_q_size, _p_size,
+		return _C.block(0, (index(i,j,m))*_q_size, _p_size,
 			count*_q_size);
 	}
 
@@ -240,11 +240,22 @@ private:
 
 int n_abcd=0, n_abcc=0, n_aacd=0, n_aacc=0, n_aaaa=0;
 
-CGTOQuad::CGTOQuad(const CGTOPair& p, const CGTOPair& q, PositionSymmetry pos_sym):
-	AbstractBFQuad(p, q), _pos_sym(pos_sym),
-	_inv_widths_sum((widthsAB().replicate(1, q.size()).rowwise()
-		+ widthsCD()).inverse()),
-	_dPQ(0)
+static const CGTOPair& firstPair(const CGTOPair& pp, const CGTOPair& qq)
+{
+	return pp.ishellPair() < qq.ishellPair() ? qq : pp;
+}
+
+static const CGTOPair& secondPair(const CGTOPair& pp, const CGTOPair& qq)
+{
+	return pp.ishellPair() < qq.ishellPair() ? pp : qq;
+}
+
+CGTOQuad::CGTOQuad(const CGTOPair& pp, const CGTOPair& qq,
+	PositionSymmetry pos_sym):
+	AbstractBFQuad(firstPair(pp, qq), secondPair(pp, qq)),
+	_ishell_quad(CGTOShellList::pairIndex(p().ishellPair(), q().ishellPair())),
+	_shell_quad(CGTOShellList::singleton().quad(_ishell_quad)),
+	_pos_sym(pos_sym)
 {
 switch(_pos_sym)
 {
@@ -254,17 +265,6 @@ switch(_pos_sym)
 	case POS_SYM_ABCC: n_abcc++; break;
 	case POS_SYM_ABCD: n_abcd++; break;
 }
-}
-
-void CGTOQuad::setDPQ() const
-{
-	_dPQ = new Eigen::ArrayXXd(p().size(), 3*q().size());
-	_dPQ->block(0, 0, p().size(), q().size())
-		= Q(0).replicate(p().size(), 1).colwise() - P(0);
-	_dPQ->block(0, q().size(), p().size(), q().size())
-		= Q(1).replicate(p().size(), 1).colwise() - P(1);
-	_dPQ->block(0, 2*q().size(), p().size(), q().size())
-		= Q(2).replicate(p().size(), 1).colwise() - P(2);
 }
 
 void CGTOQuad::elecRepPrim1d_aacc_psss(int i, FmCoefs& Cm) const
@@ -1327,7 +1327,6 @@ double CGTOQuad::electronRepulsion_abcc() const
 		Cm[m] = Cm[m] * F + Cm[m+1];
 	}
 
-	freeDPQ();
 	return weightsAB().transpose() * (KKW() * Cm[Cm.minM()]).matrix()
 		* weightsCD();
 }
@@ -1351,7 +1350,6 @@ double CGTOQuad::electronRepulsion_aacd() const
 		Cm[m] = Cm[m] * F + Cm[m+1];
 	}
 
-	freeDPQ();
 	return weightsAB().transpose() * (KKW() * Cm[Cm.minM()]).matrix()
 		* weightsCD();
 }
@@ -1375,7 +1373,6 @@ double CGTOQuad::electronRepulsion_abcd() const
 		Cm[m] = Cm[m] * F + Cm[m+1];
 	}
 
-	freeDPQ();
 	return weightsAB().transpose() * (KKW() * Cm[Cm.minM()]).matrix()
 		* weightsCD();
 }

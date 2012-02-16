@@ -8,6 +8,7 @@
 
 #include <Eigen/Dense>
 #include "AbstractBF.hh"
+#include "CGTOShellList.hh"
 #include "exceptions.hh"
 
 /*!
@@ -33,15 +34,15 @@ public:
 	 * angular momentum quantum numbers \a ls on position \a center.
 	 * \param ls      Angular momentum of the orbital
 	 * \param weights The weights of the primitives in the contraction
-	 * \param widths  The widths of the primitives int the contraction
-	 * \param ipos    Position identifier
-	 * \param center  The position of the contracted orbital
+ 	 * \param ishell  Index of this orbital's shell in the CGTOShellList
 	 */
 	CGTO(const Eigen::Vector3i& ls, const Eigen::VectorXd& weights,
-		const Eigen::ArrayXd& widths, int ipos,
-		const Eigen::Vector3d& center):
-		AbstractBF(cid), _ls(ls), _weights(weights), _widths(widths),
-		_ipos(ipos), _center(center) { normalizeWeights(); }
+		int ishell):
+		AbstractBF(cid), _ls(ls), _weights(weights), _ishell(ishell),
+		_shell(CGTOShellList::singleton().shell(ishell))
+	{
+		normalizeWeights();	
+	}
 
 	//! Return the number of primitives in this contraction
 	int size() const { return _weights.size(); }
@@ -57,6 +58,10 @@ public:
 	int l(int i) const { return _ls[i]; }
 	//! Return the total angular momentum
 	int lsum() const { return _ls.sum(); }
+	//! Return the index of this orbital's shell in the CGTOShellList
+	int ishell() const { return _ishell; }
+	//! Return the shell of this orbital
+	const CGTOShell& shell() const { return _shell; }
 	//! Return the weight of the \a i'th primitive
 	double weight(int i) const
 	{
@@ -64,21 +69,17 @@ public:
 		return _weights(i);
 	}
 	//! Return the width of the \a i'th primitive
-	double width(int i) const
-	{
-		checkIndex(i);
-		return _widths(i);
-	}
+	double width(int i) const { return shell().width(i); }
 	//! Return the weights of all primitives in this orbital
 	const Eigen::VectorXd& weights() const { return _weights; }
 	//! Return the widths of all primitives in this orbital
-	const Eigen::ArrayXd& widths() const { return _widths; }
+	const Eigen::ArrayXd& widths() const { return shell().widths(); }
 	//! Return the position ID of this orbital's center
-	int positionId() const { return _ipos; }
+	int positionId() const { return shell().positionId(); }
 	//! Return the center position of this orbital
-	const Eigen::Vector3d& center() const { return _center; }
+	const Eigen::Vector3d& center() const { return shell().center(); }
 	//! Return the \a i coordinate of the center of this orbital
-	double center(int i) const { return _center[i]; }
+	double center(int i) const { return _shell.center(i); }
 
 	/*!
 	 * \brief Print this CGTO
@@ -110,36 +111,34 @@ protected:
 	 * \param cid     Class ID of the child class
 	 * \param ls      Angular momentum of the orbital
 	 * \param weights The weights of the primitives in the contraction
-	 * \param widths  The widths of the primitives int the contraction
-	 * \param ipos    Position identifier
-	 * \param center  The position of the contracted orbital
+ 	 * \param ishell  Index of this orbital's shell in the CGTOShellList
 	 */
 	CGTO(size_t cid, const Eigen::Vector3i& ls,
-		const Eigen::VectorXd& weights, const Eigen::ArrayXd& widths,
-		int ipos, const Eigen::Vector3d& center):
-		AbstractBF(cid), _ls(ls), _weights(weights), _widths(widths),
-		_ipos(ipos), _center(center) { normalizeWeights(); }
+		const Eigen::VectorXd& weights, int ishell):
+		AbstractBF(cid), _ls(ls), _weights(weights), _ishell(ishell),
+		_shell(CGTOShellList::singleton().shell(ishell))
+	{
+		normalizeWeights();
+	}
 
 private:
 	//! The angular momentum quantum numbers
 	Eigen::Vector3i _ls;
 	//! The weights of the primitives in this contraction
 	Eigen::VectorXd _weights;
-	//! The widths of the primitive Gaussians
-	Eigen::ArrayXd _widths;
-	//! Position identifier of the center
-	int _ipos;
-	//! The center position of this function
-	Eigen::Vector3d _center;
-	
+	//! Index of this orbital's shell in the CGTOShellList
+	int _ishell;
+	//! The shell parameters: widths, weights, and position
+	const CGTOShell& _shell;
+
 	/*!
 	 * \brief Normalize the weights
-	 * 
+	 *
 	 * Scale the weights of the primitives in this contraction, to
-	 * normalize this CGTO.
+	 *  normalize this CGTO.
 	 */
 	void normalizeWeights();
-
+	
 	/*!
 	 * \brief Check if a primitive index is valid
 	 *

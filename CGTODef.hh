@@ -8,6 +8,7 @@
 
 #include "Eigen/Dense"
 #include "AbstractBFDef.hh"
+#include "CGTOShellList.hh"
 #include "CGTODefExpander.hh"
 
 /*!
@@ -61,8 +62,9 @@ class CGTODef: public AbstractBFDef
 		void expand(int ipos, const Eigen::Vector3d& pos,
 			Basis *basis) const
 		{
-			CGTODefExpander<l, 0, 0>::exec(_weights, _widths,
-				ipos, pos, basis);
+			int ishell = CGTOShellList::singleton().addShell(
+				_widths, ipos, pos);
+			CGTODefExpander<l, 0, 0>::exec(_weights, ishell, basis);
 		}
 
 		/*!
@@ -97,10 +99,11 @@ template <>
 void CGTODef<0>::expand(int ipos, const Eigen::Vector3d& pos,
 	Basis* basis) const
 {
+	int ishell = CGTOShellList::singleton().addShell(_widths, ipos, pos);
 #if LMAX_SPECIALIZED >= 0
-	basis->add(new CGTOSpec<0, 0, 0>(_weights, _widths, ipos, pos));
+	basis->add(new CGTOSpec<0, 0, 0>(_weights, ishell));
 #else
-	basis->add(new CGTO(Eigen::Vector3i(0, 0, 0), _weights, _widths, ipos, pos));
+	basis->add(new CGTO(Eigen::Vector3i(0, 0, 0), _weights, ishell));
 #endif
 }
 
@@ -108,14 +111,15 @@ template <>
 void CGTODef<1>::expand(int ipos, const Eigen::Vector3d& pos,
 	Basis* basis) const
 {
+	int ishell = CGTOShellList::singleton().addShell(_widths, ipos, pos);
 #if LMAX_SPECIALIZED >= 1
-	basis->add(new CGTOSpec<1, 0, 0>(_weights, _widths, ipos, pos));
-	basis->add(new CGTOSpec<0, 1, 0>(_weights, _widths, ipos, pos));
-	basis->add(new CGTOSpec<0, 0, 1>(_weights, _widths, ipos, pos));
+	basis->add(new CGTOSpec<1, 0, 0>(_weights, ishell));
+	basis->add(new CGTOSpec<0, 1, 0>(_weights, ishell));
+	basis->add(new CGTOSpec<0, 0, 1>(_weights, ishell));
 #else
-	basis->add(new CGTO(Eigen::Vector3i(1, 0, 0), _weights, _widths, ipos, pos));
-	basis->add(new CGTO(Eigen::Vector3i(0, 1, 0), _weights, _widths, ipos, pos));
-	basis->add(new CGTO(Eigen::Vector3i(0, 0, 1), _weights, _widths, ipos, pos));
+	basis->add(new CGTO(Eigen::Vector3i(1, 0, 0), _weights, ishell));
+	basis->add(new CGTO(Eigen::Vector3i(0, 1, 0), _weights, ishell));
+	basis->add(new CGTO(Eigen::Vector3i(0, 0, 1), _weights, ishell));
 #endif
 }
 

@@ -28,20 +28,9 @@ public:
 	//! Constructor
 	CGTOPair(const CGTO& f, const CGTO& g):
 		AbstractBFPair(cid, f, g),
-		_widths_A(f.widths().replicate(1, g.size())),
-		_widths_B(g.widths().transpose().replicate(f.size(), 1)),
-		_widths_sum(_widths_A + _widths_B),
-		_widths_red(_widths_A * _widths_B / _widths_sum),
-		_gauss_red((-(g.center()-f.center()).squaredNorm() * _widths_red).exp()
-			/ _widths_sum),
-		_weights(f.weights() * g.weights().transpose())
-	{
-		for (int i = 0; i < 3; ++i)
-		{
-			_P[i] = (_widths_A*f.center(i) + _widths_B*g.center(i))
-				/ _widths_sum;
-		}
-	}
+		_ishell_pair(CGTOShellList::pairIndex(f.ishell(), g.ishell())),
+		_shell_pair(CGTOShellList::singleton().pair(_ishell_pair)),
+		_weights(f.weights() * g.weights().transpose()) {}
 
 	//! Return the first orbital in the pair
 	const CGTO& f() const
@@ -53,6 +42,9 @@ public:
 	{
 		return static_cast< const CGTO& >(AbstractBFPair::g());
 	}
+
+	//! Return the index of this pair in the CGTOShellList
+	int ishellPair() const { return _ishell_pair; }
 
 	//! Compute the overlap between the two orbitals in this pair
 	virtual double overlap() const;
@@ -109,7 +101,7 @@ public:
 	const Eigen::ArrayXXd& widthsA() const
 	{
 		//return f().widths().replicate(1, g().size());
-		return _widths_A;
+		return _shell_pair.widthsA();
 	}
 	/*!
 	 * \brief Return the widths of the primitives in the second
@@ -118,18 +110,18 @@ public:
 	const Eigen::ArrayXXd& widthsB() const
 	{
 		//return g().widths().transpose().replicate(f().size(), 1);
-		return _widths_B;
+		return _shell_pair.widthsB();
 	}
-	//! The sums of primitive widths, equivalent to alpha() + beta()
+	//! The sums of primitive widths, equivalent to widthsA() + widthsB()
 	const Eigen::ArrayXXd& widthsSum() const
 	{
 		//return widthsA() + widthsB();
-		return _widths_sum;
+		return _shell_pair.widthsSum();
 	}
 	//! The "reduced" primitive widths \f$\xi = \alpha\beta / (\alpha+\beta)\f$
 	const Eigen::ArrayXXd& widthsReduced() const
 	{
-		return _widths_red;
+		return _shell_pair.widthsReduced();
 	}
 	/*!
 	 * \brief \f\frac{$\exp(-\xi r^2)}{\alpha+\beta}\f$ with \f$r\f$ the
@@ -137,7 +129,7 @@ public:
 	 */
 	const Eigen::ArrayXXd& gaussReduced() const
 	{
-		return _gauss_red;
+		return _shell_pair.gaussReduced();
 	}
 	int positionIdA() const
 	{
@@ -187,7 +179,7 @@ public:
 	 */
 	const Eigen::ArrayXXd& P(int i) const
 	{
-		return _P[i];
+		return _shell_pair.P(i);
 	}
 	Eigen::ArrayXXd K() const
 	{
@@ -235,35 +227,16 @@ protected:
 	 */
 	CGTOPair(size_t cid, const CGTO& f, const CGTO& g):
 		AbstractBFPair(cid, f, g),
-		_widths_A(f.widths().replicate(1, g.size())),
-		_widths_B(g.widths().transpose().replicate(f.size(), 1)),
-		_widths_sum(_widths_A + _widths_B),
-		_widths_red(_widths_A * _widths_B / _widths_sum),
-		_gauss_red((-(g.center()-f.center()).squaredNorm() * _widths_red).exp()
-			/ _widths_sum),
-		_weights(f.weights() * g.weights().transpose())
-	{
-		for (int i = 0; i < 3; ++i)
-		{
-			_P[i] = (_widths_A*f.center(i) + _widths_B*g.center(i))
-				/ _widths_sum;
-		}
-	}
+		_ishell_pair(CGTOShellList::pairIndex(f.ishell(), g.ishell())),
+		_shell_pair(CGTOShellList::singleton().pair(_ishell_pair)),
+		_weights(f.weights() * g.weights().transpose()) {}
 
 
 private:
-	//! Primitives widths in first orbital, for all primitives in second orbital.
-	Eigen::ArrayXXd _widths_A;
-	//! Primitives widths in second orbital, for all primitives in first orbital.
-	Eigen::ArrayXXd _widths_B;
-	//! Sum of primitive widths, for all combinations of primitives
-	Eigen::ArrayXXd _widths_sum;
-	//! Reduced primitive widths, for all combinations of primitives
-	Eigen::ArrayXXd _widths_red;
-	//! \f$\frac{\exp(-\xi r^2)}{\alpha+\beta}\f$
-	Eigen::ArrayXXd _gauss_red;
-	//! Weighted average coordinates
-	Eigen::ArrayXXd _P[3];
+	//! The combined index of this pair's shells in the CGTOShellList
+	int _ishell_pair;
+	//! The shells for this pair of orbitals
+	CGTOShellPair _shell_pair;
 	//! Products of the weights, for all combinations of primitives
 	Eigen::ArrayXXd _weights;
 

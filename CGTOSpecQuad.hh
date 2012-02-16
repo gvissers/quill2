@@ -50,6 +50,10 @@ template <>
 double CGTOSpecQuad<CGTOQuad::POS_SYM_AAAA, 1, 1>::electronRepulsion() const;
 template <>
 double CGTOSpecQuad<CGTOQuad::POS_SYM_AAAA, 0, 2>::electronRepulsion() const;
+template <>
+double CGTOSpecQuad<CGTOQuad::POS_SYM_AAAA, 2, 1>::electronRepulsion() const;
+template <>
+double CGTOSpecQuad<CGTOQuad::POS_SYM_AAAA, 1, 2>::electronRepulsion() const;
 
 template <>
 double CGTOSpecQuad<CGTOQuad::POS_SYM_AACC, 0, 0>::electronRepulsion() const;

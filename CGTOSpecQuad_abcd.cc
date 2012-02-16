@@ -121,46 +121,39 @@ double CGTOSpecQuad<CGTOQuad::POS_SYM_ABCD, 1, 1>::electronRepulsion() const
 	Eigen::ArrayXXd F = T.boys(2, expmT);
 	Eigen::ArrayXXd Fc = (1.0/3) * (expmT + 2*T*F);
 
-	int i;
+	int i, j;
 	for (i = 0; i < 3; ++i)
 		if (lsum(i) > 0) break;
 
-	if (lsum(i) == 1)
+	if (lsum(i) == 2)
 	{
-		// (p_i,s|p_j,s)
-		int j = i+1;
-		if (lsum(j) != 1) ++j;
-		if (lAB(i) != 1)
-			std::swap(i, j);
-
-		double xA = lA(i) > 0 ? centerA(i) : centerB(i);
-		double xC = lC(j) > 0 ? centerC(j) : centerD(j);
-		auto dPWi = dPW(i);
-		auto dQWj = dQW(j);
-		auto dAPi = dxP(i, xA);
-		auto dCQj = dxQ(j, xC);
-
-		F *= dPWi * dQWj;
-		F += Fc * (dQWj.colwise()*dAPi + dPWi.rowwise()*dCQj);
-		Fc = expmT + 2*T*Fc;
-		F += (Fc.colwise() * dAPi).rowwise() * dCQj;
+		// (p_i,s|p_i,s)
+		j = i;
 	}
 	else
 	{
-		// (p_i,s|p_i,s)
-		double xA = lA(i) > 0 ? centerA(i) : centerB(i);
-		double xC = lC(i) > 0 ? centerC(i) : centerD(i);
-		auto dPWi = dPW(i);
-		auto dQWi = dQW(i);
-		auto dAPi = dxP(i, xA);
-		auto dCQi = dxQ(i, xC);
-
-		F *= dPWi * dQWi;
-		F += Fc * (dQWi.colwise()*dAPi + dPWi.rowwise()*dCQi
-			+ 0.5*invWidthsSum());
-		Fc = expmT + 2*T*Fc;
-		F += (Fc.colwise() * dAPi).rowwise() * dCQi;
+		// (p_i,s|p_j,s)
+		j = i+1;
+		if (lsum(j) != 1) ++j;
+		if (lAB(i) != 1)
+			std::swap(i, j);
 	}
+	
+	double xA = lA(i) > 0 ? centerA(i) : centerB(i);
+	double xC = lC(j) > 0 ? centerC(j) : centerD(j);
+	auto dPWi = dPW(i);
+	auto dQWj = dQW(j);
+	auto dAPi = dxP(i, xA);
+	auto dCQj = dxQ(j, xC);
+
+	F *= dPWi * dQWj;
+	if (i == j)
+		F += Fc * (dQWj.colwise()*dAPi + dPWi.rowwise()*dCQj
+			+ 0.5*invWidthsSum());
+	else
+		F += Fc * (dQWj.colwise()*dAPi + dPWi.rowwise()*dCQj);
+	Fc = expmT + 2*T*Fc;
+	F += (Fc.colwise() * dAPi).rowwise() * dCQj;
 
 	return weightsAB().transpose() * (KKW() * F).matrix() * weightsCD();
 }

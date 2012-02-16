@@ -24,142 +24,22 @@ public:
 		POS_SYM_AAAA
 	};
 
-	typedef Eigen::ArrayXd ColArray;
-	typedef Eigen::Array<double, 1, Eigen::Dynamic> RowArray;
-	typedef ColArray::ConstAlignedMapType ColArrayMap;
-	typedef RowArray::ConstAlignedMapType RowArrayMap;
+	typedef CGTOShellQuad::ColArray ColArray;
+	typedef CGTOShellQuad::RowArray RowArray;
+	typedef CGTOShellQuad::ColArrayMap ColArrayMap;
+	typedef CGTOShellQuad::RowArrayMap RowArrayMap;
+	typedef CGTOShellQuad::WidthsReducedExpression WidthsReducedExpression;
+	typedef CGTOShellQuad::DPQExpression DPQExpression;
+	typedef CGTOShellQuad::DXPExpression DXPExpression;
+	typedef CGTOShellQuad::DXQExpression DXQExpression;
 	typedef Eigen::VectorXd::ConstAlignedMapType VectorMap;
-	typedef Eigen::CwiseUnaryOp<
-		Eigen::internal::scalar_add_op<double>,
-		ColArrayMap > DXPExpression;
-	typedef Eigen::CwiseUnaryOp<
-		Eigen::internal::scalar_add_op<double>,
-		RowArrayMap > DXQExpression;
-	typedef Eigen::CwiseBinaryOp<
-		Eigen::internal::scalar_product_op<double, double>,
-		const Eigen::CwiseBinaryOp<
-			Eigen::internal::scalar_product_op<double, double>,
-			const Eigen::Block<Eigen::ArrayXXd>,
-			const Eigen::ArrayXXd>,
-		const Eigen::Replicate<
-			// RowArrayMap doesn't work???
-			Eigen::Map<
-				const RowArray,
-				Eigen::Aligned,
-				Eigen::Stride<0, 0> >,	
-			Eigen::Dynamic,
-			1> > DPWExpression;
-	typedef Eigen::CwiseBinaryOp<
-		Eigen::internal::scalar_product_op<double, double>,
-		const Eigen::CwiseBinaryOp<
-			Eigen::internal::scalar_product_op<double, double>,
-			const Eigen::Block<Eigen::ArrayXXd>,
-			const Eigen::ArrayXXd >,
-		const Eigen::Replicate<
-			Eigen::CwiseUnaryOp<
-				Eigen::internal::scalar_opposite_op<double>,
-				ColArrayMap>,
-			1,
-			Eigen::Dynamic> > DQWExpression;
-	typedef Eigen::CwiseUnaryOp<
-		Eigen::internal::scalar_multiple_op<double>,
-		const Eigen::CwiseUnaryOp<
-			Eigen::internal::scalar_inverse_op<double>,
-			ColArrayMap> > HInvWidthsABExpression;
-	typedef Eigen::CwiseUnaryOp<
-		Eigen::internal::scalar_multiple_op<double>,
-		const Eigen::CwiseUnaryOp<
-			Eigen::internal::scalar_inverse_op<double>,
-			RowArrayMap> > HInvWidthsCDExpression;
-	typedef Eigen::CwiseBinaryOp<
-		Eigen::internal::scalar_sum_op<double>,
-		const Eigen::Replicate<
-			HInvWidthsABExpression,
-			Eigen::Dynamic,
-			Eigen::Dynamic>,
-		const Eigen::Replicate<
-			HInvWidthsCDExpression,
-			Eigen::Dynamic,
-			1> > DWidthsReducedExpression;
-	typedef Eigen::CwiseBinaryOp<
-		Eigen::internal::scalar_product_op<double, double>,
-		const Eigen::CwiseBinaryOp<
-			Eigen::internal::scalar_product_op<double, double>,
-				const Eigen::ArrayXXd,
-				const Eigen::Replicate<
-					HInvWidthsABExpression,
-					1,
-					Eigen::Dynamic> >,
-		const Eigen::Replicate<
-			// RowArrayMap doesn't work ???
-			Eigen::Map<
-				const RowArray,
-				1,
-				Eigen::Stride<0, 0> >,
-			Eigen::Dynamic,
-			1> > Rho1Expression;
-	typedef Eigen::CwiseBinaryOp<
-		Eigen::internal::scalar_product_op<double, double>,
-		const Eigen::CwiseBinaryOp<
-			Eigen::internal::scalar_product_op<double, double>,
-			const Eigen::ArrayXXd,
-			const Eigen::Replicate<
-				// ColArrayMap doesn't work???
-				Eigen::Map<
-					const ColArray,
-					1,
-					Eigen::Stride<0, 0> >,
-				1,
-				Eigen::Dynamic> >,
-		const Eigen::Replicate<
-			HInvWidthsCDExpression,
-			Eigen::Dynamic,
-			1> > Rho2Expression;
-	typedef Eigen::CwiseUnaryOp<
-		Eigen::internal::scalar_multiple_op<double>,
-		const Eigen::CwiseUnaryOp<
-			Eigen::internal::scalar_multiple_op<double>,
-			const Eigen::CwiseBinaryOp<
-				Eigen::internal::scalar_product_op<double, double>,
-				const Eigen::CwiseBinaryOp<
-					Eigen::internal::scalar_product_op<double, double>,
-					const Eigen::CwiseUnaryOp<
-						Eigen::internal::scalar_sqrt_op<double>,
-						const Eigen::ArrayXXd >,
-					const Eigen::Replicate<
-						// ColArrayMap doesn't work???
-						Eigen::Map<
-							const ColArray,
-							1,
-							Eigen::Stride<0, 0> >,
-						1,
-						Eigen::Dynamic > >,
-				const Eigen::Replicate<
-					Eigen::Map<
-						const RowArray,
-						1,
-						Eigen::Stride<0, 0> >,
-					Eigen::Dynamic,
-					1 > > > > KKWExpression;
-	typedef Eigen::CwiseBinaryOp<
-		Eigen::internal::scalar_product_op<double, double>,
-		const Eigen::CwiseBinaryOp<
-			Eigen::internal::scalar_product_op<double, double>,
-			const Eigen::ArrayXXd,
-			const Eigen::Replicate<
-				Eigen::Map<
-					const ColArray,
-					1,
-					Eigen::Stride<0, 0> >,
-				1,
-				Eigen::Dynamic> >,
-		const Eigen::Replicate<
-			Eigen::Map<
-				const RowArray,
-				1,
-				Eigen::Stride<0, 0> >,
-			Eigen::Dynamic,
-			1> > WidthsReducedExpression;
+	typedef CGTOShellQuad::DPWExpression DPWExpression;
+	typedef CGTOShellQuad::DQWExpression DQWExpression;
+	typedef CGTOShellQuad::Rho1Expression Rho1Expression;
+	typedef CGTOShellQuad::Rho2Expression Rho2Expression;
+	typedef ColArrayMap HInvWidthsABExpression;
+	typedef RowArrayMap HInvWidthsCDExpression;
+	typedef CGTOShellQuad::KKWExpression KKWExpression;
 	
 	/*!
 	 * \brief Constructor
@@ -229,23 +109,22 @@ public:
 	//! Sums of primitive widths for the first pair
 	ColArrayMap widthsAB() const
 	{
-		return ColArray::MapAligned(p().widthsSum().data(), p().size());
+		return _shell_quad.widthsAB();
 	}
 	//! Sums of primitive widths for the second pair
 	RowArrayMap widthsCD() const
 	{
-		return RowArray::MapAligned(q().widthsSum().data(), q().size());
+		return _shell_quad.widthsCD();
 	}
 	//! Sums of primitive widths, for all combinations of primitives GTOs
 	const Eigen::ArrayXXd& invWidthsSum() const
 	{
-		return _inv_widths_sum;
+		return _shell_quad.invWidthsSum();
 	}
 	//! Reduced widths \f$\rho = \frac{\zeta\eta}{\zeta+\eta}\f$
 	WidthsReducedExpression widthsReduced() const
 	{
-		return (invWidthsSum().colwise() * widthsAB()).rowwise()
-			* widthsCD();
+		return _shell_quad.widthsReduced();
 	}
 	
 	VectorMap weightsAB() const
@@ -290,63 +169,52 @@ public:
 
 	ColArrayMap P(int i) const
 	{
-		return ColArray::MapAligned(p().P(i).data(), p().size());
+		return _shell_quad.P(i);
 	}
 	DXPExpression dxP(int i, double x) const
 	{
-		return P(i) - x;
+		return _shell_quad.dxP(i, x);
 	}
 	DPWExpression dPW(int i) const
 	{
-		return (dPQ(i) * invWidthsSum()).rowwise() * widthsCD();
+		return _shell_quad.dPW(i);
 	}
 	RowArrayMap Q(int i) const
 	{
-		return RowArray::MapAligned(q().P(i).data(), q().size());
+		return _shell_quad.Q(i);
 	}
 	DXQExpression dxQ(int i, double x) const
 	{
-		return Q(i) - x;
+		return _shell_quad.dxQ(i, x);
 	}
 	DQWExpression dQW(int i) const
 	{
-		return (dPQ(i) * invWidthsSum()).colwise() * (-widthsAB());
+		return _shell_quad.dQW(i);
 	}
-	const Eigen::Block<Eigen::ArrayXXd> dPQ(int i) const
+	DPQExpression dPQ(int i) const
 	{
-		if (!_dPQ) setDPQ();
-		return _dPQ->block(0, i*q().size(), p().size(), q().size());
+		return _shell_quad.dPQ(i);
 	}
 	HInvWidthsABExpression hInvWidthsAB() const
 	{
-		return 0.5 * widthsAB().inverse();
+		return _shell_quad.hInvWidthsAB();
 	}
 	HInvWidthsCDExpression hInvWidthsCD() const
 	{
-		return 0.5 * widthsCD().inverse();
-	}
-	DWidthsReducedExpression dWidthsReduced() const
-	{
-		return hInvWidthsAB().replicate(1, q().size()).rowwise()
-			+ hInvWidthsCD();
+		return _shell_quad.hInvWidthsCD();
 	}
 	Rho1Expression rho1() const
 	{
-		return (invWidthsSum().colwise() * hInvWidthsAB()).rowwise()
-			* widthsCD();
+		return _shell_quad.rho1();
 	}
 	Rho2Expression rho2() const
 	{
-		return (invWidthsSum().colwise() * widthsAB()).rowwise()
-			* hInvWidthsCD();
+		return _shell_quad.rho2();
 	}
 	
 	KKWExpression KKW() const
 	{
-		return (invWidthsSum().sqrt().colwise()
-			* ColArray::MapAligned(p().gaussReduced().data(), p().size())).rowwise()
-			* RowArray::MapAligned(q().gaussReduced().data(), q().size())
-			* Constants::sqrt_2_pi_5_4 * Constants::sqrt_2_pi_5_4;
+		return _shell_quad.KKW();
 	}
 
 	/*!
@@ -362,9 +230,9 @@ public:
 		const AbstractBFPair& q);
 
 private:
+	int _ishell_quad;
+	const CGTOShellQuad& _shell_quad;
 	PositionSymmetry _pos_sym;
-	Eigen::ArrayXXd _inv_widths_sum;
-	mutable Eigen::ArrayXXd* _dPQ;
 	
 	void elecRepPrim1d_aacc_psss(int i, FmCoefs& Cm) const;
 	void elecRepPrim1d_abcc_psss(int i, FmCoefs& Cm) const;
@@ -394,9 +262,6 @@ private:
 	double electronRepulsion_abcc() const;
 	double electronRepulsion_aacd() const;
 	double electronRepulsion_abcd() const;
-
-	void setDPQ() const;
-	void freeDPQ() const { delete _dPQ; _dPQ = 0; }
 };
 
 #endif // CGTOQUAD_HH

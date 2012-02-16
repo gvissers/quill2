@@ -1,5 +1,6 @@
 #include <fstream>
 #include "PeriodicTable.hh"
+#include "CGTOShellList.hh"
 #include "Geometry.hh"
 #include "io/manipulators.hh"
 #include "BasisSet.hh"
@@ -16,6 +17,7 @@ int main()
 	try
 	{
 		PeriodicTable table("data/elements.dat");
+		CGTOShellList shells;
 		IndentingOStream os(std::cout);
 
 		std::string job("C 0 0 0\nH 1 1 1\nH -1 -1 1\nH -1 1 -1\nH 1 -1 -1");
@@ -42,6 +44,15 @@ int main()
 		set.expand(geom, &basis);
 		os << basis << "\n";
 
+// CGTOShellQuad q = CGTOShellList::singleton().quad(0);
+// std::cout << q.invWidthsSum() << "\n\n";
+// std::cout << q.widthsAB() << "\n\n";
+// std::cout << q.widthsCD() << "\n\n";
+// return 0;
+		std::cout << CGTOShellList::singleton().nrShells() << " shells\n";
+		std::cout << CGTOShellList::singleton().nrPairs() << " shell pairs\n";
+		std::cout << CGTOShellList::singleton().nrQuads() << " shell quads\n";
+		std::cout << basis.size() << " basis functions\n";
 		std::cout << Dispatcher::singleton().nrPairs() << " bf pairs\n";
 		std::cout << Dispatcher::singleton().nrQuads() << " bf quartets\n";
 		os << basis.overlap() << "\n\n" << basis.kineticEnergy() << "\n\n"
