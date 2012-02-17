@@ -254,6 +254,10 @@ public:
 			* Constants::sqrt_2_pi_5_4 * Constants::sqrt_2_pi_5_4;
 	}
 
+	const Eigen::ArrayXXd& T() const { return _T; }
+	const Eigen::ArrayXXd& expmT() const { return _expmT; }
+	Eigen::ArrayXXd Fm(int m) const;
+	
 private:
 	//! The first pair of shells in this quartet
 	const CGTOShellPair& _pAB;
@@ -265,6 +269,11 @@ private:
 	Eigen::ArrayXXd _dPQ;
 	//! The symmetry in positions of the four orbitals
 	PositionSymmetry _pos_sym;
+
+	Eigen::ArrayXXd _T;
+	Eigen::ArrayXXd _expmT;
+	mutable int _m;
+	mutable Eigen::ArrayXXd _Fm;
 };
 
 #endif // CGTOSHELLQUAD_HH

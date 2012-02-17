@@ -4,11 +4,7 @@
 template <>
 double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AACD, 0, 0>::electronRepulsion() const
 {
-	auto T = widthsReduced().rowwise() *
-		((Q(0) - p().centerA(0)).square()
-		+ (Q(1) - p().centerA(1)).square()
-		+ (Q(2) - p().centerA(2)).square());
-	return weightsAB().transpose() * (KKW() * T.boys(0)).matrix() * weightsCD();
+	return weightsAB().transpose() * (KKW() * Fm(0)).matrix() * weightsCD();
 }
 
 template <>
@@ -21,24 +17,15 @@ double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AACD, 1, 0>::electronRepulsion() cons
 			break;
 	}
 
-	auto T = widthsReduced().rowwise() *
-		((Q(0) - p().centerA(0)).square()
-		+ (Q(1) - p().centerA(1)).square()
-		+ (Q(2) - p().centerA(2)).square());
-	return weightsAB().transpose() * (KKW() * T.boys(1) * dPW(i)).matrix()
+	return weightsAB().transpose() * (KKW() * Fm(1) * dPW(i)).matrix()
 		* weightsCD();
 }
 
 template <>
 double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AACD, 0, 1>::electronRepulsion() const
 {
-	//return CGTOQuad::electronRepulsion();
-	Eigen::ArrayXXd T = widthsReduced().rowwise() *
-		((Q(0) - p().centerA(0)).square()
-		+ (Q(1) - p().centerA(1)).square()
-		+ (Q(2) - p().centerA(2)).square());
-	Eigen::ArrayXXd expmT = (-T).exp();
-	Eigen::ArrayXXd F = T.boys(1, expmT);
+	Eigen::ArrayXXd F1 = Fm(1);
+	auto F0 = expmT() + 2*T()*F1;
 
 	int i;
 	for (i = 0; i < 3; i++)
@@ -48,19 +35,14 @@ double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AACD, 0, 1>::electronRepulsion() cons
 	}
 
 	double x = lC(i) > 0 ? centerC(i) : centerD(i);
-	F = F*dQW(i) + (expmT + 2*T*F).rowwise()*dxQ(i, x);
-	return weightsAB().transpose() * (KKW() * F).matrix() * weightsCD();
+	F1 = F1*dQW(i) + F0.rowwise()*dxQ(i, x);
+	return weightsAB().transpose() * (KKW() * F1).matrix() * weightsCD();
 }
 
 template <>
 double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AACD, 2, 0>::electronRepulsion() const
 {
-	Eigen::ArrayXXd T = widthsReduced().rowwise() *
-		((Q(0) - p().centerA(0)).square()
-		+ (Q(1) - p().centerA(1)).square()
-		+ (Q(2) - p().centerA(2)).square());
-	Eigen::ArrayXXd expmT = (-T).exp();
-	Eigen::ArrayXXd F = T.boys(2, expmT);
+	Eigen::ArrayXXd F2 = Fm(2);
 
 	int i;
 	for (i = 0; i < 3; ++i)
@@ -73,32 +55,30 @@ double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AACD, 2, 0>::electronRepulsion() cons
 		int j = i+1;
 		if (lAB(j) != 1) ++j;
 
-		F *= dPWi * dPW(j);
+		F2 *= dPWi * dPW(j);
 	}
 	else
 	{
 		// (s,s|p,p) and (ss,d_i^2s)
-		Eigen::ArrayXXd Fc = (1.0/3) * (expmT + 2*T*F);
+		const Eigen::ArrayXXd& T = this->T();
+		const Eigen::ArrayXXd& expmT = this->expmT();
+		auto F1 = (1.0/3) * (expmT + 2*T*F2);
+		auto F0 = expmT + 2*T*F1;
 
-		F *= dPWi.square();
-		F -= Fc * rho1();
-		Fc = expmT + 2*T*Fc;
-		F += Fc.colwise() * hInvWidthsAB();
+		F2 = F2*dPWi.square() - F1 * rho1()
+			+ F0.colwise() * hInvWidthsAB();
 	}
 
-	return weightsAB().transpose() * (KKW() * F).matrix() * weightsCD();
+	return weightsAB().transpose() * (KKW() * F2).matrix() * weightsCD();
 }
 
 template <>
 double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AACD, 1, 1>::electronRepulsion() const
 {
-	Eigen::ArrayXXd T = widthsReduced().rowwise() *
-		((Q(0) - p().centerA(0)).square()
-		+ (Q(1) - p().centerA(1)).square()
-		+ (Q(2) - p().centerA(2)).square());
-	Eigen::ArrayXXd expmT = (-T).exp();
-	Eigen::ArrayXXd F = T.boys(2, expmT);
-	Eigen::ArrayXXd Fc = (1.0/3) * (expmT + 2*T*F);
+	const Eigen::ArrayXXd& T = this->T();
+	const Eigen::ArrayXXd& expmT = this->expmT();
+	Eigen::ArrayXXd F2 = Fm(2);
+	auto F1 = (1.0/3) * (expmT + 2*T*F2);
 
 	int i;
 	for (i = 0; i < 3; ++i)
@@ -114,8 +94,7 @@ double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AACD, 1, 1>::electronRepulsion() cons
 		double xC = lC(i) > 0 ? centerC(i) : centerD(i);
 		auto dPWj = dPW(j);
 
-		F *= dQW(i) * dPWj;
-		F += (Fc * dPWj).rowwise() * dxQ(i, xC);
+		F2 = F2 * dQW(i) * dPWj + (F1 * dPWj).rowwise() * dxQ(i, xC);
 	}
 	else
 	{
@@ -123,23 +102,21 @@ double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AACD, 1, 1>::electronRepulsion() cons
 		double xC = lC(i) > 0 ? centerC(i) : centerD(i);
 		auto dPWi = dPW(i);
 
-		F *= dQW(i) * dPWi;
-		F += Fc * (dPWi.rowwise()*dxQ(i, xC) + 0.5*invWidthsSum());
+		F2 = F2 * dQW(i) * dPWi
+			+ F1 * (dPWi.rowwise()*dxQ(i, xC) + 0.5*invWidthsSum());
 	}
 
-	return weightsAB().transpose() * (KKW() * F).matrix() * weightsCD();
+	return weightsAB().transpose() * (KKW() * F2).matrix() * weightsCD();
 }
 
 template <>
 double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AACD, 0, 2>::electronRepulsion() const
 {
-	Eigen::ArrayXXd T = widthsReduced().rowwise() *
-		((Q(0) - p().centerA(0)).square()
-		+ (Q(1) - p().centerA(1)).square()
-		+ (Q(2) - p().centerA(2)).square());
-	Eigen::ArrayXXd expmT = (-T).exp();
-	Eigen::ArrayXXd F = T.boys(2, expmT);
-	Eigen::ArrayXXd Fc = (1.0/3) * (expmT + 2*T*F);
+	const Eigen::ArrayXXd& T = this->T();
+	const Eigen::ArrayXXd& expmT = this->expmT();
+	Eigen::ArrayXXd F2 = Fm(2);
+	Eigen::ArrayXXd F1 = (1.0/3) * (expmT + 2*T*F2);
+	auto F0 = expmT + 2*T*F1;
 
 	int i;
 	for (i = 0; i < 3; ++i)
@@ -157,10 +134,9 @@ double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AACD, 0, 2>::electronRepulsion() cons
 		auto dCQj = dxQ(j, lC(j) > 0 ? centerC(j) : centerD(j));
 		auto dQWj = dQW(j);
 
-		F *= dQWi * dQWj;
-		F += Fc * (dQWi.rowwise() * dCQj + dQWj.rowwise() * dCQi);
-		Fc = expmT + 2*T*Fc;
-		F += Fc.rowwise() * (dCQi * dCQj);
+		F2 *= dQWi * dQWj;
+		F2 += F1 * (dQWi.rowwise() * dCQj + dQWj.rowwise() * dCQi);
+		F2 += F0.rowwise() * (dCQi * dCQj);
 	}
 	else if (lC(i) == 1)
 	{
@@ -168,22 +144,20 @@ double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AACD, 0, 2>::electronRepulsion() cons
 		double dCD = xD - xC;
 		auto dCQi = dxQ(i, xC);
 
-		F *= dQWi.square();
-		F += Fc * (dQWi.rowwise() * (2*dCQi - dCD) - rho2());
-		Fc = expmT + 2*T*Fc;
-		F += Fc.rowwise() * (dCQi.square() + hInvWidthsCD() - dCD*dCQi);
+		F2 *= dQWi.square();
+		F2 += F1 * (dQWi.rowwise() * (2*dCQi - dCD) - rho2());
+		F2 += F0.rowwise() * (dCQi.square() + hInvWidthsCD() - dCD*dCQi);
 	}
 	else
 	{
 		// (d_i^2,s|s,s)
 		auto dCQi = dxQ(i, lC(i) > 0 ? xC : xD);
 
-		F *= dQWi.square();
-		F += Fc * (dQWi.rowwise() * (2*dCQi) - rho2());
-		Fc = expmT + 2*T*Fc;
-		F += Fc.rowwise() * (dCQi.square() + hInvWidthsCD());
+		F2 *= dQWi.square();
+		F2 += F1 * (dQWi.rowwise() * (2*dCQi) - rho2());
+		F2 += F0.rowwise() * (dCQi.square() + hInvWidthsCD());
 	}
 
-	return weightsAB().transpose() * (KKW() * F).matrix() * weightsCD();
+	return weightsAB().transpose() * (KKW() * F2).matrix() * weightsCD();
 }
 
