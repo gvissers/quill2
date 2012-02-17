@@ -4,7 +4,7 @@
 template <>
 double CGTOSpecQuad<CGTOShellQuad::POS_SYM_ABCD, 0, 0>::electronRepulsion() const
 {
-	return weightsAB().transpose() * (KKW() * Fm(0)).matrix() * weightsCD();
+	return mulWeights(KKW() * Fm(0));
 }
 
 template <>
@@ -23,7 +23,7 @@ double CGTOSpecQuad<CGTOShellQuad::POS_SYM_ABCD, 1, 0>::electronRepulsion() cons
 	double x = lA(i) == 1 ? centerA(i) : centerB(i);
 	F1 = F1*dPW(i) + F0.colwise() * dxP(i, x);
 
-	return weightsAB().transpose() * (KKW() * F1).matrix() * weightsCD();
+	return mulWeights(KKW() * F1);
 }
 
 template <>
@@ -42,7 +42,7 @@ double CGTOSpecQuad<CGTOShellQuad::POS_SYM_ABCD, 0, 1>::electronRepulsion() cons
 	double x = lC(i) == 1 ? centerC(i) : centerD(i);
 	F1 = F1*dQW(i) + F0.rowwise() * dxQ(i, x);
 
-	return weightsAB().transpose() * (KKW() * F1).matrix() * weightsCD();
+	return mulWeights(KKW() * F1);
 }
 
 template <>
@@ -94,7 +94,7 @@ double CGTOSpecQuad<CGTOShellQuad::POS_SYM_ABCD, 2, 0>::electronRepulsion() cons
 		F2 += F0.colwise() * (dAPi.square() + hInvWidthsAB());
 	}
 
-	return weightsAB().transpose() * (KKW() * F2).matrix() * weightsCD();
+	return mulWeights(KKW() * F2);
 }
 
 template <>
@@ -139,7 +139,7 @@ double CGTOSpecQuad<CGTOShellQuad::POS_SYM_ABCD, 1, 1>::electronRepulsion() cons
 		F2 += F1 * (dQWj.colwise()*dAPi + dPWi.rowwise()*dCQj);
 	F2 += (F0.colwise() * dAPi).rowwise() * dCQj;
 
-	return weightsAB().transpose() * (KKW() * F2).matrix() * weightsCD();
+	return mulWeights(KKW() * F2);
 }
 
 template <>
@@ -191,5 +191,5 @@ double CGTOSpecQuad<CGTOShellQuad::POS_SYM_ABCD, 0, 2>::electronRepulsion() cons
 		F2 += F0.rowwise() * (dCQi.square() + hInvWidthsCD());
 	}
 
-	return weightsAB().transpose() * (KKW() * F2).matrix() * weightsCD();
+	return mulWeights(KKW() * F2);
 }

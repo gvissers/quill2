@@ -3,7 +3,7 @@
 template <>
 double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AAAA, 0, 0>::electronRepulsion() const
 {
-	return weightsAB().transpose() * KKW().matrix() * weightsCD();
+	return mulWeights(KKW());
 }
 
 template <>
@@ -31,8 +31,8 @@ double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AAAA, 2, 0>::electronRepulsion() cons
 		break;
 	}
 
-	auto A = ((-1.0/3)*rho1()).colwise() + hInvWidthsAB();
-	return weightsAB().transpose() * (KKW() * A).matrix() * weightsCD();
+	auto C = ((-1.0/3)*rho1()).colwise() + hInvWidthsAB();
+	return mulWeights(KKW() * C);
 }
 
 template <>
@@ -48,8 +48,8 @@ double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AAAA, 1, 1>::electronRepulsion() cons
 		break;
 	}
 
-	auto A = (0.5/3)*invWidthsSum();
-	return weightsAB().transpose() * (KKW() * A).matrix() * weightsCD();
+	auto C = (0.5/3)*invWidthsSum();
+	return mulWeights(KKW() * C);
 }
 
 template <>
@@ -65,8 +65,8 @@ double CGTOSpecQuad<CGTOShellQuad::POS_SYM_AAAA, 0, 2>::electronRepulsion() cons
 		break;
 	}
 
-	auto A = ((-1.0/3)*rho2()).rowwise() + hInvWidthsCD();
-	return weightsAB().transpose() * (KKW() * A).matrix() * weightsCD();
+	auto C = ((-1.0/3)*rho2()).rowwise() + hInvWidthsCD();
+	return mulWeights(KKW() * C);
 }
 
 template <>

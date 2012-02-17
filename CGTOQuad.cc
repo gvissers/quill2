@@ -1310,7 +1310,7 @@ double CGTOQuad::electronRepulsion_aaaa() const
 	for (--m; m >= Cm.minM(); --m)
 		A += Cm[m] / (2*m+1);
 
-	return weightsAB().transpose() * (KKW() * A).matrix() * weightsCD();
+	return mulWeights(KKW() * A);
 }
 
 double CGTOQuad::electronRepulsion_aacc() const
@@ -1331,7 +1331,7 @@ double CGTOQuad::electronRepulsion_aacc() const
 		A += Cm[m] * F;
 	}
 
-	return weightsAB().transpose() * (KKW() * A).matrix() * weightsCD();
+	return mulWeights(KKW() * A);
 }
 
 double CGTOQuad::electronRepulsion_abcc() const
@@ -1352,8 +1352,7 @@ double CGTOQuad::electronRepulsion_abcc() const
 		Cm[m] = Cm[m] * F + Cm[m+1];
 	}
 
-	return weightsAB().transpose() * (KKW() * Cm[Cm.minM()]).matrix()
-		* weightsCD();
+	return mulWeights(KKW() * Cm[Cm.minM()]);
 }
 
 double CGTOQuad::electronRepulsion_aacd() const
@@ -1374,8 +1373,7 @@ double CGTOQuad::electronRepulsion_aacd() const
 		Cm[m] = Cm[m] * F + Cm[m+1];
 	}
 
-	return weightsAB().transpose() * (KKW() * Cm[Cm.minM()]).matrix()
-		* weightsCD();
+	return mulWeights(KKW() * Cm[Cm.minM()]);
 }
 
 double CGTOQuad::electronRepulsion_abcd() const
@@ -1396,8 +1394,7 @@ double CGTOQuad::electronRepulsion_abcd() const
 		Cm[m] = Cm[m] * F + Cm[m+1];
 	}
 
-	return weightsAB().transpose() * (KKW() * Cm[Cm.minM()]).matrix()
-		* weightsCD();
+	return mulWeights(KKW() * Cm[Cm.minM()]);
 }
 
 double CGTOQuad::electronRepulsion() const

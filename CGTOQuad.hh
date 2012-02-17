@@ -111,13 +111,13 @@ public:
 		return _shell_quad.widthsReduced();
 	}
 	
-	VectorMap weightsAB() const
+	ColArrayMap weightsAB() const
 	{
-		return Eigen::VectorXd::MapAligned(p().weights().data(), p().size());
+		return ColArray::MapAligned(p().weights().data(), p().size());
 	}
-	VectorMap weightsCD() const
+	RowArrayMap weightsCD() const
 	{
-		return Eigen::VectorXd::MapAligned(q().weights().data(), q().size());
+		return RowArray::MapAligned(q().weights().data(), q().size());
 	}
 	
 	//! Return the \a i coordinate of the first orbital center
@@ -214,8 +214,6 @@ public:
 		return _shell_quad.Fm(m);
 	}
 
-	
-
 	/*!
 	 * \brief Create a new CGTOQuad
 	 *
@@ -227,6 +225,14 @@ public:
 	 */
 	static AbstractBFQuad *create(const AbstractBFPair& p,
 		const AbstractBFPair& q);
+
+protected:
+	template <typename Derived>
+	double mulWeights(const Eigen::ArrayBase<Derived>& C) const
+	{
+		return ((C.colwise() * weightsAB()).colwise().sum()
+			* weightsCD()).sum();
+	}
 
 private:
 	int _ishell_quad;
