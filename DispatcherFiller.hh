@@ -271,7 +271,7 @@ struct QuadMapFillerL2
 	static void fill()
 	{
 		Dispatcher::singleton().setQuadCreator(l1, l2,
-			createSpecQuad<l1, l2>);
+			createCGTOSpecQuad<l1, l2>);
 		QuadMapFillerL2<l1, l2-1>::fill();
 	}
 };
@@ -282,7 +282,7 @@ struct QuadMapFillerL2<l1, 0>
 	static void fill()
 	{
 		Dispatcher& dispatcher = Dispatcher::singleton();
-		dispatcher.setQuadCreator(l1, 0, createSpecQuad<l1, 0>);
+		dispatcher.setQuadCreator(l1, 0, createCGTOSpecQuad<l1, 0>);
 	}
 };
 template <int l2>
@@ -291,7 +291,7 @@ struct QuadMapFillerL2<0, l2>
 	static void fill()
 	{
 		Dispatcher::singleton().setQuadCreator(0, l2,
-			createSpecQuad<0, l2>);
+			createCGTOSpecQuad<0, l2>);
 		Dispatcher::singleton().setQuadCreator(size_t(-1), l2,
 			CGTOQuad::create);
 		QuadMapFillerL2<0, l2-1>::fill();
@@ -303,7 +303,7 @@ struct QuadMapFillerL2<0, 0>
 	static void fill()
 	{
 		Dispatcher& dispatcher = Dispatcher::singleton();
-		dispatcher.setQuadCreator(0, 0, createSpecQuad<0, 0>);
+		dispatcher.setQuadCreator(0, 0, createCGTOSpecQuad<0, 0>);
 		dispatcher.setQuadCreator(0, size_t(-1), CGTOQuad::create);
 		dispatcher.setQuadCreator(size_t(-1), 0, CGTOQuad::create);
 		dispatcher.setQuadCreator(size_t(-1), size_t(-1), CGTOQuad::create);

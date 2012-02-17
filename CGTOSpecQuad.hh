@@ -118,12 +118,17 @@ double CGTOSpecQuad<CGTOShellQuad::POS_SYM_ABCD, 0, 2>::electronRepulsion() cons
  * \param q   The second orbital pair in the quartet. Should be a CGTOPair.
  */
 template <int l1, int l2>
-AbstractBFQuad* createSpecQuad(const AbstractBFPair& p, const AbstractBFPair& q)
+AbstractBFQuad* createCGTOSpecQuad(const AbstractBFPair& p, const AbstractBFPair& q)
 {
 	try
 	{
+#ifdef DEBUG
 		const CGTOPair& pp = dynamic_cast< const CGTOPair& >(p);
 		const CGTOPair& qq = dynamic_cast< const CGTOPair& >(q);
+#else
+		const CGTOPair& pp = static_cast< const CGTOPair& >(p);
+		const CGTOPair& qq = static_cast< const CGTOPair& >(q);
+#endif
 		int idx = CGTOShellList::pairIndex(pp.ishellPair(), qq.ishellPair());
 		switch (CGTOShellList::singleton().quad(idx).positionSymmetry())
 		{

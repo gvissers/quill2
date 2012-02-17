@@ -1419,8 +1419,13 @@ AbstractBFQuad* CGTOQuad::create(const AbstractBFPair& p,
 {
 	try
 	{
+#ifdef DEBUG
 		const CGTOPair& pp = dynamic_cast< const CGTOPair& >(p);
 		const CGTOPair& qq = dynamic_cast< const CGTOPair& >(q);
+#else
+		const CGTOPair& pp = static_cast< const CGTOPair& >(p);
+		const CGTOPair& qq = static_cast< const CGTOPair& >(q);
+#endif
 		return new CGTOQuad(pp, qq);
 	}
 	catch (const std::bad_cast&)
