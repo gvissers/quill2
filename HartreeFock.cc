@@ -2,6 +2,7 @@
 #include <Eigen/Dense>
 #include <Exception.hh>
 #include "HartreeFock.hh"
+#include "DIIS.hh"
 #include "exceptions.hh"
 
 const int HartreeFock::default_max_iter = 50;
@@ -39,13 +40,14 @@ void HartreeFock::iterate(const Basis& basis, const Geometry& geometry,
 	std::cout << "orbital energies: " << _orb_ener.transpose() << "\n";
 
 	Eigen::MatrixXd G;
+	DIIS diis(basis.size());
 	for (int iter = 0; iter < _max_iter; ++iter)
 	{
 		double last_energy = _energy;
 		
-		const Eigen::MatrixXd& P = density();
-		basis.electronRepulsion(P, G);
-		_energy = (H + 0.5*G).cwiseProduct(P).sum() + nuc_rep;
+		const Eigen::MatrixXd& D = density();
+		basis.electronRepulsion(D, G);
+		_energy = (H + 0.5*G).cwiseProduct(D).sum() + nuc_rep;
  		std::cout << "Energy: " << std::setprecision(15) << _energy << "\n";
 		//std::cout << "orbital energies: " << _orb_ener.transpose() << "\n";
 
@@ -56,6 +58,7 @@ void HartreeFock::iterate(const Basis& basis, const Geometry& geometry,
 		}
 
 		Eigen::MatrixXd F = G + H;
+		diis.step(F, D, basis.overlap(), _energy);
 		calcOrbitals(F, basis.overlap());
 	}
 	
