@@ -17,8 +17,8 @@ void DIIS::step(Eigen::MatrixXd& F, const Eigen::MatrixXd& D,
         // upper triangle in vector err.
 	Eigen::MatrixXd FDS = F*D*S;
 	int idx = 0;
-	for (int i = 0; i < _size; ++i)
-		for (int j = 0; j <= i; ++j, ++idx)
+	for (int i = 1; i < _size; ++i)
+		for (int j = 0; j < i; ++j, ++idx)
 			_errors(idx, _err_used) = FDS(i,j) - FDS(j,i);
 
 	double maxerr = _errors.col(_err_used).lpNorm<Eigen::Infinity>();
