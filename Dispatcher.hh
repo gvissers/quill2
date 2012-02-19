@@ -10,6 +10,7 @@
 #include <memory>
 #include <unordered_map>
 #include <Singleton.hh>
+#include "BFQuadPool.hh"
 #include "support.hh"
 
 // Forward declarations
@@ -36,7 +37,8 @@ public:
 	//! Local typedef for a lookup table of pair creation functions
 	typedef std::unordered_map<std::pair<size_t, size_t>, PairCreatorPtr> PairMap;
 	//! Local typedef for a quartet creation function
-	typedef AbstractBFQuad* (*QuadCreatorPtr)(const AbstractBFPair& p, const AbstractBFPair& q);
+	typedef AbstractBFQuad* (*QuadCreatorPtr)(const AbstractBFPair& p,
+		const AbstractBFPair& q, BFQuadPool& pool);
 	//! Local typedef for a lookup table of pair creation functions
 	typedef std::unordered_map<std::pair<size_t, size_t>, QuadCreatorPtr> QuadMap;
 
@@ -63,8 +65,7 @@ public:
 	 * \param g The second function in the pair
 	 * \return Pointer to the basis function pair (f,g)
 	 */
-	std::unique_ptr<AbstractBFPair> pair(const AbstractBF& f,
-		const AbstractBF& g) const;
+	AbstractBFPair* pair(const AbstractBF& f, const AbstractBF& g) const;
 	/*!
 	 * \brief Create a quartet of basis functions
 	 *
@@ -75,8 +76,8 @@ public:
 	 * \param q The second function pair in the quartet
 	 * \return Pointer to the basis function quartet (p,q)
 	 */
-	std::unique_ptr<AbstractBFQuad> quad(const AbstractBFPair& p,
-		const AbstractBFPair& q) const;
+	AbstractBFQuad *quad(const AbstractBFPair& p,
+		const AbstractBFPair& q, BFQuadPool& pool) const;
 
 	//! Return the number of type pairs in this dispatcher
 	int nrPairs() { return _pair_funs.size(); }

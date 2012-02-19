@@ -10,6 +10,7 @@
 #include <bitset>
 #include <memory>
 #include "AbstractBFQuad.hh"
+#include "BFQuadPool.hh"
 
 /*!
  * \brief Class representing a basis
@@ -30,7 +31,7 @@ public:
 	//! Local typedef for a list of basis function pairs
 	typedef std::vector<PairPtr> PairList;
 	//! Local typedef for a pointer to a quartet of basis functions
-	typedef std::unique_ptr<AbstractBFQuad> QuadPtr;
+	typedef std::unique_ptr<AbstractBFQuad, BFQuadPool::Deleter> QuadPtr;
 	//! Local typedef for a list of basis function quadruples
 	typedef std::vector<QuadPtr> QuadList;
 
@@ -58,7 +59,8 @@ public:
 	 *
 	 * Create a new and empty basis
 	 */
-	Basis(): _funs(), _status(), _overlap(), _kinetic() {}
+	Basis(): _funs(), _quad_pool(), _pairs(), _quads(), _status(),
+		_overlap(), _kinetic() {}
 
 	//! Return the number of functions in this basis
 	int size() const { return _funs.size(); }
@@ -139,6 +141,8 @@ public:
 private:
 	//! The list of basis functions
 	BasisFunList _funs;
+	//! Memory pool for storing basis function quartets
+	mutable BFQuadPool _quad_pool;
 	//! The list of function pairs
 	mutable PairList _pairs;
 	//! The list of function quadruples

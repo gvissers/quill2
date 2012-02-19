@@ -25,7 +25,9 @@ public:
 		//! First pair is on one center, second pair on another
 		POS_SYM_AACC,
 		//! All orbitals are on the same center
-		POS_SYM_AAAA
+		POS_SYM_AAAA,
+		//! The number of different symmetries
+		POS_SYM_COUNT
 	};
 
 	typedef Eigen::ArrayXd ColArray;

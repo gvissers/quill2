@@ -4,7 +4,9 @@
 #include "AbstractBFQuad.hh"
 #include "CGTOPair.hh"
 
+// Forward declarations
 class FmCoefs;
+class BFQuadPool;
 
 class CGTOQuad: public AbstractBFQuad
 {
@@ -34,6 +36,8 @@ public:
 	 * \param q       The second orbital pair in the quartet.
 	 */
 	CGTOQuad(const CGTOPair& pp, const CGTOPair& qq);
+	//! Destructor
+	virtual ~CGTOQuad() {}
 	
 	//! Return the first orbital pair in the quartet
 	const CGTOPair& p() const
@@ -224,7 +228,7 @@ public:
 	 * \param q The second orbital pair in the quartet. Should be a CGTOPair.
 	 */
 	static AbstractBFQuad *create(const AbstractBFPair& p,
-		const AbstractBFPair& q);
+		const AbstractBFPair& q, BFQuadPool& pool);
 
 protected:
 	template <typename Derived>

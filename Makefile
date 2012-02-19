@@ -18,13 +18,13 @@ CXXFLAGS = $(OPT) $(INCLUDES) \
 LDFLAGS = -L /home/ge/Programs/lithium/lib -lli_base \
 	-Wl,-rpath=/home/ge/Programs/lithium/lib
 
-OBJS = main.o Basis.o BasisSet.o boys.o CGTO.o CGTOPair.o CGTOQuad.o \
-	CGTOShell.o CGTOShellList.o CGTOShellQuad.o CGTOSpecPair.o \
-	CGTOSpecQuad_aaaa.o CGTOSpecQuad_aacc.o CGTOSpecQuad_aacd.o \
-	CGTOSpecQuad_abcc.o CGTOSpecQuad_abcd.o CommentFilter.o DIIS.o \
-	Dispatcher.o Element.o Geometry.o HartreeFock.o IndentFilter.o \
-	JobFilter.o LineIStream.o manipulators.o PeriodicTable.o support.o \
-	XYZMatrix.o ZMatrix.o
+OBJS = main.o Basis.o BasisSet.o boys.o BFQuadPool.o CGTO.o CGTOPair.o \
+	CGTOQuad.o CGTOShell.o CGTOShellList.o CGTOShellQuad.o \
+	CGTOSpecPair.o CGTOSpecQuad_aaaa.o CGTOSpecQuad_aacc.o \
+	CGTOSpecQuad_aacd.o CGTOSpecQuad_abcc.o CGTOSpecQuad_abcd.o \
+	CommentFilter.o DIIS.o Dispatcher.o Element.o Geometry.o HartreeFock.o \
+	IndentFilter.o JobFilter.o LineIStream.o manipulators.o \
+	PeriodicTable.o support.o XYZMatrix.o ZMatrix.o
 
 .PHONY: doc
 
@@ -41,7 +41,8 @@ doc:
 
 %.d: %.cc *.hh
 	set -e;\
-	$(CXX) -MM $(CXXFLAGS) $< | sed 's/\($*\).o[ :]*/\1.o $@: /g' > $@
+	$(CXX) -MM $(CXXFLAGS) $< | sed -r 's/(.*)\.o *:/\1.o \1.d: /g' > $@
+	#$(CXX) -MM $(CXXFLAGS) $< | sed 's/\($*\).o[ :]*/\1.o $@: /g' > $@
 
 ifneq "$(MAKECMDGOALS)" "clean"
 -include $(OBJS:.o=.d)

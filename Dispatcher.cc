@@ -18,25 +18,24 @@ Dispatcher::Dispatcher(): Li::Singleton<Dispatcher, true>(),
 	QuadMapFiller<Limits::lmax_specialized, Limits::lmax_specialized>::fill();
 }
 
-std::unique_ptr<AbstractBFPair> Dispatcher::pair(const AbstractBF& f,
-	const AbstractBF& g) const
+AbstractBFPair* Dispatcher::pair(const AbstractBF& f, const AbstractBF& g) const
 {
 	PairMap::const_iterator pit = _pair_funs.find(std::make_pair(f.cid, g.cid));
 #ifdef DEBUG
 	if (pit == _pair_funs.end())
 		throw InvalidIndex(f.cid, g.cid);
 #endif
-	return std::unique_ptr<AbstractBFPair>(pit->second(f, g));
+	return pit->second(f, g);
 }
 
-std::unique_ptr<AbstractBFQuad> Dispatcher::quad(const AbstractBFPair& p,
-	const AbstractBFPair& q) const
+AbstractBFQuad* Dispatcher::quad(const AbstractBFPair& p,
+	const AbstractBFPair& q, BFQuadPool& pool) const
 {
 	QuadMap::const_iterator pit = _quad_funs.find(std::make_pair(p.cid, q.cid));
 #ifdef DEBUG
 	if (pit == _quad_funs.end())
 		throw InvalidIndex(p.cid, q.cid);
 #endif
-	return std::unique_ptr<AbstractBFQuad>(pit->second(p, q));
+	return pit->second(p, q, pool);
 }
 

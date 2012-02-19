@@ -156,7 +156,10 @@ void Basis::setPairs() const
 	for (BasisFunList::const_iterator iit = _funs.begin(); iit != _funs.end(); ++iit)
 	{
 		for (BasisFunList::const_iterator jit = _funs.begin(); jit <= iit; ++jit)
-			_pairs.push_back(dispatcher.pair(**iit, **jit));
+		{
+			AbstractBFPair *pair = dispatcher.pair(**iit, **jit);
+			_pairs.push_back(PairPtr(pair));
+		}
 	}
 
 	_status.set(PAIRS_CURRENT);
@@ -173,7 +176,10 @@ void Basis::setQuads() const
 	for (PairList::const_iterator iit = _pairs.begin(); iit != _pairs.end(); ++iit)
 	{
 		for (PairList::const_iterator jit = _pairs.begin(); jit <= iit; ++jit)
-			_quads.push_back(dispatcher.quad(**iit, **jit));
+		{
+			AbstractBFQuad *quad = dispatcher.quad(**iit, **jit, _quad_pool);
+			_quads.push_back(QuadPtr(quad, _quad_pool.deleter()));
+		}
 	}
 	
 	_status.set(QUADS_CURRENT);

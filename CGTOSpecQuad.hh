@@ -118,7 +118,8 @@ double CGTOSpecQuad<CGTOShellQuad::POS_SYM_ABCD, 0, 2>::electronRepulsion() cons
  * \param q   The second orbital pair in the quartet. Should be a CGTOPair.
  */
 template <int l1, int l2>
-AbstractBFQuad* createCGTOSpecQuad(const AbstractBFPair& p, const AbstractBFPair& q)
+AbstractBFQuad* createCGTOSpecQuad(const AbstractBFPair& p,
+	const AbstractBFPair& q, BFQuadPool& pool)
 {
 	try
 	{
@@ -133,15 +134,20 @@ AbstractBFQuad* createCGTOSpecQuad(const AbstractBFPair& p, const AbstractBFPair
 		switch (CGTOShellList::singleton().quad(idx).positionSymmetry())
 		{
 			case CGTOShellQuad::POS_SYM_AAAA:
-				return new CGTOSpecQuad<CGTOShellQuad::POS_SYM_AAAA, l1, l2>(pp, qq);
+				return new(pool)
+					CGTOSpecQuad<CGTOShellQuad::POS_SYM_AAAA, l1, l2>(pp, qq);
 			case CGTOShellQuad::POS_SYM_AACC:
-				return new CGTOSpecQuad<CGTOShellQuad::POS_SYM_AACC, l1, l2>(pp, qq);
+				return new(pool)
+					CGTOSpecQuad<CGTOShellQuad::POS_SYM_AACC, l1, l2>(pp, qq);
 			case CGTOShellQuad::POS_SYM_AACD:
-				return new CGTOSpecQuad<CGTOShellQuad::POS_SYM_AACD, l1, l2>(pp, qq);
+				return new(pool)
+					CGTOSpecQuad<CGTOShellQuad::POS_SYM_AACD, l1, l2>(pp, qq);
 			case CGTOShellQuad::POS_SYM_ABCC:
-				return new CGTOSpecQuad<CGTOShellQuad::POS_SYM_ABCC, l1, l2>(pp, qq);
+				return new(pool)
+					CGTOSpecQuad<CGTOShellQuad::POS_SYM_ABCC, l1, l2>(pp, qq);
 			default:
-				return new CGTOSpecQuad<CGTOShellQuad::POS_SYM_ABCD, l1, l2>(pp, qq);
+				return new(pool)
+					CGTOSpecQuad<CGTOShellQuad::POS_SYM_ABCD, l1, l2>(pp, qq);
 		}
 	}
 	catch (const std::bad_cast&)

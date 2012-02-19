@@ -1,4 +1,5 @@
 #include "CGTOQuad.hh"
+#include "BFQuadPool.hh"
 #include "boys.hh"
 
 class EriCoefs
@@ -1415,7 +1416,7 @@ double CGTOQuad::electronRepulsion() const
 }
 
 AbstractBFQuad* CGTOQuad::create(const AbstractBFPair& p,
-	const AbstractBFPair& q)
+	const AbstractBFPair& q, BFQuadPool& pool)
 {
 	try
 	{
@@ -1426,7 +1427,7 @@ AbstractBFQuad* CGTOQuad::create(const AbstractBFPair& p,
 		const CGTOPair& pp = static_cast< const CGTOPair& >(p);
 		const CGTOPair& qq = static_cast< const CGTOPair& >(q);
 #endif
-		return new CGTOQuad(pp, qq);
+		return new(pool) CGTOQuad(pp, qq);
 	}
 	catch (const std::bad_cast&)
 	{
