@@ -898,7 +898,7 @@ void CGTOQuad::elecRepPrim1d_abcc(int i, FmCoefs& Cm) const
 		ColArray dAPi = dxP(i, xA);
 		auto inv_zeta = hInvWidthsAB();
 		Eigen::ArrayXXd dPWi = dPW(i);
-		Eigen::ArrayXXd rho1 = this->rho1();
+		auto rho1 = this->rho1();
 		auto inv_sum = 0.5 * invWidthsSum();
 
 		int n2 = (l2+1)*(l2+2)/2;
