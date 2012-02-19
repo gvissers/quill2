@@ -44,11 +44,6 @@ int main()
 		set.expand(geom, &basis);
 		os << basis << "\n";
 
-// CGTOShellQuad q = CGTOShellList::singleton().quad(0);
-// std::cout << q.invWidthsSum() << "\n\n";
-// std::cout << q.widthsAB() << "\n\n";
-// std::cout << q.widthsCD() << "\n\n";
-// return 0;
 		std::cout << CGTOShellList::singleton().nrShells() << " shells\n";
 		std::cout << CGTOShellList::singleton().nrPairs() << " shell pairs\n";
 		std::cout << CGTOShellList::singleton().nrQuads() << " shell quads\n";
