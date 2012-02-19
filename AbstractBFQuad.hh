@@ -17,6 +17,9 @@
 class AbstractBFQuad
 {
 public:
+	//! Destructor
+	virtual ~AbstractBFQuad() {}
+	
 	//! Return the first pair in the quartet
 	const AbstractBFPair& p() const { return _p; }
 	//! Return the first pair in the quartet
