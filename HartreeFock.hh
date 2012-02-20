@@ -51,9 +51,10 @@ public:
 	 * \param basis        The electronic basis in which to compute
 	 * \param geometry     The geometry of the system
 	 * \param multiplicity The spin multiplicity of the state to compute
+	 * \param restricted   Whether to do a spin-restricted calculation
 	 */
 	HartreeFock(const Basis& basis, const Geometry& geometry,
-		int multiplicity);
+		int multiplicity, bool restricted=true);
 
 	/*!
 	 * \brief Start a Hartree-Fock calculation
@@ -63,9 +64,10 @@ public:
 	 * \param basis        The electronic basis in which to compute
 	 * \param geometry     The geometry of the system
 	 * \param multiplicity The spin multiplicity of the state to compute
+	 * \param restricted   Whether to do a spin-restricted calculation
 	 */
 	void iterate(const Basis& basis, const Geometry& geometry,
-		int multiplicity);
+		int multiplicity, bool restricted=true);
 
 	//! Return the total energy of the system
 	double energy();
@@ -91,10 +93,16 @@ private:
 
 	//! The state of the calculation
 	std::bitset<NR_FLAGS> _status;
-	//! The number of singly occupied orbitals
+	//! The number of singly occupied orbitals in a restricted calculation
 	int _nr_single;
-	//! The number of doubly occupied orbitals
+	//! The number of doubly occupied orbitals in a restricted calculation
 	int _nr_double;
+	//! The number of orbitals with \f$\alpha\f$ spin in an unrestricted calculation
+	int _nr_alpha;
+	//! The number of orbitals with \f$\beta\f$ spin in an unrestricted calculation
+	int _nr_beta;
+	//! Whether to do a spin-restricted or spin-unrestriced calculation
+	bool _restricted;
 	//! The molecular orbitals
 	Eigen::MatrixXd _orbitals;
 	//! The orbital energies
@@ -103,6 +111,29 @@ private:
 	Eigen::MatrixXd _density;
 	//! The total energy of the system
 	double _energy;
+
+	/*!
+	 * \brief Do a spin-restricted calculation
+	 *
+	 * Do a spin-restricted self-consistent field calculation.
+	 * \param basis   The electronic basis in which to compute
+	 * \param H       The one-electron Hamiltonian
+	 * \param S       The overlap matrix
+	 * \param nuc_rep The nuclear repulsion energy of the system
+	 */
+	void iterateRestricted(const Basis& basis, const Eigen::MatrixXd& H,
+		const Eigen::MatrixXd& S, double nuc_rep);
+	/*!
+	 * \brief Do a spin-unrestricted calculation
+	 *
+	 * Do a spin-unrestricted self-consistent field calculation.
+	 * \param basis   The electronic basis in which to compute
+	 * \param H       The one-electron Hamiltonian
+	 * \param S       The overlap matrix
+	 * \param nuc_rep The nuclear repulsion energy of the system
+	 */
+	void iterateUnrestricted(const Basis& basis, const Eigen::MatrixXd& H,
+		const Eigen::MatrixXd& S, double nuc_rep);
 
 	/*!
 	 * \brief Set the spin multiplicity
@@ -130,6 +161,17 @@ private:
 	 * \param S The overlap matrix of the basis
 	 */
 	void calcOrbitals(const Eigen::MatrixXd& F, const Eigen::MatrixXd& S);
+	/*!
+	 * \brief Compute the orbitals
+	 *
+	 * Compute the electronic orbitals in a spin-unrestricted calculation
+	 * from the Fock matrices \a Fa and \a Fb, and the overlap matrix \a S.
+	 * \param Fa The current Fock matrix of the \f$\alpha\f$-spin electrons
+	 * \param Fb The current Fock matrix of the \f$\beta\f$-spin electrons
+	 * \param S  The overlap matrix of the basis
+	 */
+	void calcOrbitals(const Eigen::MatrixXd& Fa, const Eigen::MatrixXd& Fb,
+		const Eigen::MatrixXd& S);
 };
 
 #endif // HARTREEFOCK_HH
