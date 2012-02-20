@@ -3,14 +3,14 @@
 #include "Dispatcher.hh"
 #include "io/manipulators.hh"
 
-void Basis::twoElectron(const Eigen::MatrixXd& P, Eigen::MatrixXd& G) const
+void Basis::twoElectron(const Eigen::MatrixXd& D, Eigen::MatrixXd& G) const
 {
 	if (!_status.test(ELEC_REP_CURRENT))
 		calcElectronRepulsion();
 
-	int n = P.rows();
+	int n = D.rows();
 #ifdef DEBUG
-	if (P.cols() != n)
+	if (D.cols() != n)
 		throw Li::Exception("Density matrix is not square");
 #endif
 	G.resize(n, n);
@@ -19,114 +19,114 @@ void Basis::twoElectron(const Eigen::MatrixXd& P, Eigen::MatrixXd& G) const
 	double e;
 	for (int i = 0; i < n; ++i)
 	{
-		double Pii = P(i,i);
+		double Dii = D(i,i);
 		for (int j = 0; j < i; ++j)
 		{
-			double Pij = P(i,j);
-			double Pjj = P(j,j);
+			double Dij = D(i,j);
+			double Djj = D(j,j);
 			for (int k = 0; k < j; ++k)
 			{
-				double Pik = P(i,k);
-				double Pjk = P(j,k);
+				double Dik = D(i,k);
+				double Djk = D(j,k);
 				for (int l = 0; l < k; ++l)
 				{
 					e = _elec_rep(idx++);
-					G(i,j) += 2 * P(k,l) * e;
-					G(i,k) -= 0.5 * P(j,l) * e;
-					G(i,l) -= 0.5 * Pjk * e;
-					G(j,k) -= 0.5 * P(i,l) * e;
-					G(j,l) -= 0.5 * Pik * e;
-					G(k,l) += 2 * Pij * e;
+					G(i,j) += 2 * D(k,l) * e;
+					G(i,k) -= 0.5 * D(j,l) * e;
+					G(i,l) -= 0.5 * Djk * e;
+					G(j,k) -= 0.5 * D(i,l) * e;
+					G(j,l) -= 0.5 * Dik * e;
+					G(k,l) += 2 * Dij * e;
 				}
 				e = _elec_rep(idx++);
-				G(i,j) += P(k,k) * e;
-				G(i,k) -= 0.5 * Pjk * e;
-				G(j,k) -= 0.5 * Pik * e;
-				G(k,k) += 2 * Pij * e;
+				G(i,j) += D(k,k) * e;
+				G(i,k) -= 0.5 * Djk * e;
+				G(j,k) -= 0.5 * Dik * e;
+				G(k,k) += 2 * Dij * e;
 			}
 			for (int l = 0; l < j; ++l)
 			{
 				e = _elec_rep(idx++);
-				G(i,j) += 1.5 * P(j,l) * e;
-				G(i,l) -= 0.5 * Pjj * e;
-				G(j,j) -= P(i,l) * e;
-				G(j,l) += 1.5 * Pij * e;
+				G(i,j) += 1.5 * D(j,l) * e;
+				G(i,l) -= 0.5 * Djj * e;
+				G(j,j) -= D(i,l) * e;
+				G(j,l) += 1.5 * Dij * e;
 			}
 			e = _elec_rep(idx++);
-			G(i,j) += 0.5 * Pjj * e;
-			G(j,j) += Pij * e;
+			G(i,j) += 0.5 * Djj * e;
+			G(j,j) += Dij * e;
 			for (int k = j+1; k < i; ++k)
 			{
-				double Pik = P(i,k);
-				double Pkj = P(k,j);
+				double Dik = D(i,k);
+				double Dkj = D(k,j);
 				for (int l = 0; l < j; ++l)
 				{
 					e = _elec_rep(idx++);
-					G(i,j) += 2 * P(k,l) * e;
-					G(i,k) -= 0.5 * P(j,l) * e;
-					G(i,l) -= 0.5 * Pkj * e;
-					G(j,l) -= 0.5 * Pik * e;
-					G(k,j) -= 0.5 * P(i,l) * e;
-					G(k,l) += 2 * Pij * e;
+					G(i,j) += 2 * D(k,l) * e;
+					G(i,k) -= 0.5 * D(j,l) * e;
+					G(i,l) -= 0.5 * Dkj * e;
+					G(j,l) -= 0.5 * Dik * e;
+					G(k,j) -= 0.5 * D(i,l) * e;
+					G(k,l) += 2 * Dij * e;
 				}
 				e = _elec_rep(idx++);
-				G(i,j) += 1.5 * Pkj * e;
-				G(i,k) -= 0.5 * Pjj * e;
-				G(j,j) -= Pik * e;
-				G(k,j) += 1.5 * Pij * e;
+				G(i,j) += 1.5 * Dkj * e;
+				G(i,k) -= 0.5 * Djj * e;
+				G(j,j) -= Dik * e;
+				G(k,j) += 1.5 * Dij * e;
 				for (int l = j+1; l < k; ++l)
 				{
 					e = _elec_rep(idx++);
-					G(i,j) += 2 * P(k,l) * e;
-					G(i,k) -= 0.5 * P(l,j) * e;
-					G(i,l) -= 0.5 * Pkj * e;
-					G(k,l) += 2 * Pij * e;
-					G(k,j) -= 0.5 * P(i,l) * e;
-					G(l,j) -= 0.5 * Pik * e;
+					G(i,j) += 2 * D(k,l) * e;
+					G(i,k) -= 0.5 * D(l,j) * e;
+					G(i,l) -= 0.5 * Dkj * e;
+					G(k,l) += 2 * Dij * e;
+					G(k,j) -= 0.5 * D(i,l) * e;
+					G(l,j) -= 0.5 * Dik * e;
 				}
 				e = _elec_rep(idx++);
-				G(i,j) += P(k,k) * e;
-				G(i,k) -= 0.5 * Pkj * e;
-				G(k,j) -= 0.5 * Pik * e;
-				G(k,k) += 2 * Pij * e;
+				G(i,j) += D(k,k) * e;
+				G(i,k) -= 0.5 * Dkj * e;
+				G(k,j) -= 0.5 * Dik * e;
+				G(k,k) += 2 * Dij * e;
 			}
 			for (int l = 0; l < j; ++l)
 			{
 				e = _elec_rep(idx++);
-				G(i,i) -= P(j,l) * e;
-				G(i,j) += 1.5 * P(i,l) * e;
-				G(i,l) += 1.5 * Pij * e;
-				G(j,l) -= 0.5 * Pii * e;
+				G(i,i) -= D(j,l) * e;
+				G(i,j) += 1.5 * D(i,l) * e;
+				G(i,l) += 1.5 * Dij * e;
+				G(j,l) -= 0.5 * Dii * e;
 			}
 			e = _elec_rep(idx++);
-			G(i,i) -= 0.5 * Pjj * e;
-			G(i,j) += 1.5 * Pij * e;
-			G(j,j) -= 0.5 * Pii * e;
+			G(i,i) -= 0.5 * Djj * e;
+			G(i,j) += 1.5 * Dij * e;
+			G(j,j) -= 0.5 * Dii * e;
 		}
 
 		for (int k = 0; k < i; ++k)
 		{
-			double Pik = P(i, k);
+			double Dik = D(i, k);
 			for (int l = 0; l < k; ++l)
 			{
 				e = _elec_rep(idx++);
-				G(i,i) += 2 * P(k,l) * e;
-				G(i,k) -= 0.5 * P(i,l) * e;
-				G(i,l) -= 0.5 * Pik * e;
-				G(k,l) += Pii * e;
+				G(i,i) += 2 * D(k,l) * e;
+				G(i,k) -= 0.5 * D(i,l) * e;
+				G(i,l) -= 0.5 * Dik * e;
+				G(k,l) += Dii * e;
 			}
 			e = _elec_rep(idx++);
-			G(i,i) += P(k,k) * e;
-			G(i,k) -= 0.5 * Pik * e;
-			G(k,k) += Pii * e;
+			G(i,i) += D(k,k) * e;
+			G(i,k) -= 0.5 * Dik * e;
+			G(k,k) += Dii * e;
 		}
 		for (int l = 0; l < i; ++l)
 		{
 			e = _elec_rep(idx++);
-			G(i,i) += P(i,l) * e;
-			G(i,l) += 0.5 * Pii * e;
+			G(i,i) += D(i,l) * e;
+			G(i,l) += 0.5 * Dii * e;
 		}
-		G(i,i) += 0.5 * Pii * _elec_rep(idx++);
+		G(i,i) += 0.5 * Dii * _elec_rep(idx++);
 	}
 
 	for (int i = 0; i < n; ++i)
@@ -136,15 +136,15 @@ void Basis::twoElectron(const Eigen::MatrixXd& P, Eigen::MatrixXd& G) const
 	}
 }
 
-void Basis::twoElectron(const Eigen::MatrixXd& P, Eigen::MatrixXd& J,
+void Basis::twoElectron(const Eigen::MatrixXd& D, Eigen::MatrixXd& J,
 	Eigen::MatrixXd& K) const
 {
 	if (!_status.test(ELEC_REP_CURRENT))
 		calcElectronRepulsion();
 
-	int n = P.rows();
+	int n = D.rows();
 #ifdef DEBUG
-	if (P.cols() != n)
+	if (D.cols() != n)
 		throw Li::Exception("Density matrix is not square");
 #endif
 	J.resize(n, n);
@@ -155,127 +155,127 @@ void Basis::twoElectron(const Eigen::MatrixXd& P, Eigen::MatrixXd& J,
 	double e;
 	for (int i = 0; i < n; ++i)
 	{
-		double Pii = P(i,i);
+		double Dii = D(i,i);
 		for (int j = 0; j < i; ++j)
 		{
-			double Pij = P(i,j);
-			double Pjj = P(j,j);
+			double Dij = D(i,j);
+			double Djj = D(j,j);
 			for (int k = 0; k < j; ++k)
 			{
-				double Pik = P(i,k);
-				double Pjk = P(j,k);
+				double Dik = D(i,k);
+				double Djk = D(j,k);
 				for (int l = 0; l < k; ++l)
 				{
 					e = _elec_rep(idx++);
-					J(i,j) += 2 * P(k,l) * e;
-					J(k,l) += 2 * Pij * e;
-					K(i,k) += P(j,l) * e;
-					K(i,l) += Pjk * e;
-					K(j,k) += P(i,l) * e;
-					K(j,l) += Pik * e;
+					J(i,j) += 2 * D(k,l) * e;
+					J(k,l) += 2 * Dij * e;
+					K(i,k) += D(j,l) * e;
+					K(i,l) += Djk * e;
+					K(j,k) += D(i,l) * e;
+					K(j,l) += Dik * e;
 				}
 				e = _elec_rep(idx++);
-				J(i,j) += P(k,k) * e;
-				J(k,k) += 2 * Pij * e;
-				K(i,k) += Pjk * e;
-				K(j,k) += Pik * e;
+				J(i,j) += D(k,k) * e;
+				J(k,k) += 2 * Dij * e;
+				K(i,k) += Djk * e;
+				K(j,k) += Dik * e;
 			}
 			for (int l = 0; l < j; ++l)
 			{
 				e = _elec_rep(idx++);
-				J(i,j) += 2 * P(j,l) * e;
-				J(j,l) += 2 * Pij * e;
-				K(i,j) += P(j,l) * e;
-				K(i,l) += Pjj * e;
-				K(j,j) += 2 * P(i,l) * e;
-				K(j,l) += Pij * e;
+				J(i,j) += 2 * D(j,l) * e;
+				J(j,l) += 2 * Dij * e;
+				K(i,j) += D(j,l) * e;
+				K(i,l) += Djj * e;
+				K(j,j) += 2 * D(i,l) * e;
+				K(j,l) += Dij * e;
 			}
 			e = _elec_rep(idx++);
-			J(i,j) += Pjj * e;
-			J(j,j) += 2 * Pij * e;
-			K(i,j) += Pjj * e;
-			K(j,j) += 2 * Pij * e;
+			J(i,j) += Djj * e;
+			J(j,j) += 2 * Dij * e;
+			K(i,j) += Djj * e;
+			K(j,j) += 2 * Dij * e;
 			for (int k = j+1; k < i; ++k)
 			{
-				double Pik = P(i,k);
-				double Pkj = P(k,j);
+				double Dik = D(i,k);
+				double Dkj = D(k,j);
 				for (int l = 0; l < j; ++l)
 				{
 					e = _elec_rep(idx++);
-					J(i,j) += 2 * P(k,l) * e;
-					J(k,l) += 2 * Pij * e;
-					K(i,k) += P(j,l) * e;
-					K(i,l) += Pkj * e;
-					K(j,l) += Pik * e;
-					K(k,j) += P(i,l) * e;
+					J(i,j) += 2 * D(k,l) * e;
+					J(k,l) += 2 * Dij * e;
+					K(i,k) += D(j,l) * e;
+					K(i,l) += Dkj * e;
+					K(j,l) += Dik * e;
+					K(k,j) += D(i,l) * e;
 				}
 				e = _elec_rep(idx++);
-				J(i,j) += 2 * Pkj * e;
-				J(k,j) += 2 * Pij * e;
-				K(i,k) += Pjj * e;
-				K(i,j) += Pkj * e;
-				K(j,j) += 2 * Pik * e;
-				K(k,j) += Pij * e;
+				J(i,j) += 2 * Dkj * e;
+				J(k,j) += 2 * Dij * e;
+				K(i,k) += Djj * e;
+				K(i,j) += Dkj * e;
+				K(j,j) += 2 * Dik * e;
+				K(k,j) += Dij * e;
 				for (int l = j+1; l < k; ++l)
 				{
 					e = _elec_rep(idx++);
-					J(i,j) += 2 * P(k,l) * e;
-					J(k,l) += 2 * Pij * e;
-					K(i,k) += P(l,j) * e;
-					K(i,l) += Pkj * e;
-					K(k,j) += P(i,l) * e;
-					K(l,j) += Pik * e;
+					J(i,j) += 2 * D(k,l) * e;
+					J(k,l) += 2 * Dij * e;
+					K(i,k) += D(l,j) * e;
+					K(i,l) += Dkj * e;
+					K(k,j) += D(i,l) * e;
+					K(l,j) += Dik * e;
 				}
 				e = _elec_rep(idx++);
-				J(i,j) += P(k,k) * e;
-				J(k,k) += 2 * Pij * e;
-				K(i,k) += Pkj * e;
-				K(k,j) += Pik * e;
+				J(i,j) += D(k,k) * e;
+				J(k,k) += 2 * Dij * e;
+				K(i,k) += Dkj * e;
+				K(k,j) += Dik * e;
 			}
 			for (int l = 0; l < j; ++l)
 			{
 				e = _elec_rep(idx++);
-				J(i,j) += 2 * P(i,l) * e;
-				J(i,l) += 2 * Pij * e;
-				K(i,i) += 2 * P(j,l) * e;
-				K(i,j) += P(i,l) * e;
-				K(i,l) += Pij * e;
-				K(j,l) += Pii * e;
+				J(i,j) += 2 * D(i,l) * e;
+				J(i,l) += 2 * Dij * e;
+				K(i,i) += 2 * D(j,l) * e;
+				K(i,j) += D(i,l) * e;
+				K(i,l) += Dij * e;
+				K(j,l) += Dii * e;
 			}
 			e = _elec_rep(idx++);
-			J(i,j) += 2 * Pij * e;
-			K(i,i) += Pjj * e;
-			K(i,j) += Pij * e;
-			K(j,j) += Pii * e;
+			J(i,j) += 2 * Dij * e;
+			K(i,i) += Djj * e;
+			K(i,j) += Dij * e;
+			K(j,j) += Dii * e;
 		}
 		for (int k = 0; k < i; ++k)
 		{
-			double Pik = P(i,k);
+			double Dik = D(i,k);
 			for (int l = 0; l < k; ++l)
 			{
 				e = _elec_rep(idx++);
-				J(i,i) += 2 * P(k,l) * e;
-				J(k,l) += Pii * e;
-				K(i,k) += P(i,l) * e;
-				K(i,l) += Pik * e;
+				J(i,i) += 2 * D(k,l) * e;
+				J(k,l) += Dii * e;
+				K(i,k) += D(i,l) * e;
+				K(i,l) += Dik * e;
 			}
 			e = _elec_rep(idx++);
-			J(i,i) += P(k,k) * e;
-			J(k,k) += Pii * e;
-			K(i,k) += Pik * e;
+			J(i,i) += D(k,k) * e;
+			J(k,k) += Dii * e;
+			K(i,k) += Dik * e;
 		}
 		for (int l = 0; l < i; ++l)
 		{
 			e = _elec_rep(idx++);
-			J(i,i) += 2 * P(i,l) * e;
-			J(i,l) += Pii * e;
-			K(i,i) += P(i,l) * e;
-			K(i,l) += Pii * e;
-			K(i,i) += P(i,l) * e;
+			J(i,i) += 2 * D(i,l) * e;
+			J(i,l) += Dii * e;
+			K(i,i) += D(i,l) * e;
+			K(i,l) += Dii * e;
+			K(i,i) += D(i,l) * e;
 		}
 		e = _elec_rep(idx++);
-		J(i,i) += Pii * e;
-		K(i,i) += Pii * e;
+		J(i,i) += Dii * e;
+		K(i,i) += Dii * e;
 	}
 
 	for (int i = 0; i < n; ++i)

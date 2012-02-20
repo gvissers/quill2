@@ -121,22 +121,21 @@ public:
 	 * \brief Effective electron repulsion
 	 *
 	 * Compute the two-electron matrix \f$G = J - \frac{1}{2}K\f$, given
-	 * the electron density matrix \a P.
-	 * \param P The electron density matrix
+	 * the electron density matrix \a D.
+	 * \param D The electron density matrix
 	 * \param G Place to store the ERI matrix
 	 */
-	void twoElectron(const Eigen::MatrixXd& P,
-		Eigen::MatrixXd& G) const;
+	void twoElectron(const Eigen::MatrixXd& D, Eigen::MatrixXd& G) const;
 	/*!
 	 * \brief Effective electron repulsion
 	 *
 	 * Compute the Coulomb and exchange matrices, given the electron density
-	 * matrix \a P.
-	 * \param P The electron density matrix
+	 * matrix \a D.
+	 * \param D The electron density matrix
 	 * \param J Place to store the Coulomb repulsion matrix
 	 * \param K Place to store the exchange matrix
 	 */
-	void twoElectron(const Eigen::MatrixXd& P,
+	void twoElectron(const Eigen::MatrixXd& D,
 		Eigen::MatrixXd& J, Eigen::MatrixXd& K) const;
 
 	/*!
