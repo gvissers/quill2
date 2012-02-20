@@ -39,15 +39,15 @@ void HartreeFock::iterate(const Basis& basis, const Geometry& geometry,
 	std::cout << "Energy: " << _energy << "\n";
 	std::cout << "orbital energies: " << _orb_ener.transpose() << "\n";
 
-	Eigen::MatrixXd G;
+	Eigen::MatrixXd J, K;
 	DIIS diis(basis.size());
 	for (int iter = 0; iter < _max_iter; ++iter)
 	{
 		double last_energy = _energy;
 		
 		const Eigen::MatrixXd& D = density();
-		basis.electronRepulsion(D, G);
-		_energy = (H + 0.5*G).cwiseProduct(D).sum() + nuc_rep;
+		basis.twoElectron(D, J, K);
+		_energy = (H + 0.5*(J - 0.5*K)).cwiseProduct(D).sum() + nuc_rep;
  		std::cout << "Energy: " << std::setprecision(15) << _energy << "\n";
 		//std::cout << "orbital energies: " << _orb_ener.transpose() << "\n";
 
@@ -57,7 +57,7 @@ void HartreeFock::iterate(const Basis& basis, const Geometry& geometry,
 			return;
 		}
 
-		Eigen::MatrixXd F = G + H;
+		Eigen::MatrixXd F = H + J - 0.5*K;
 		diis.step(F, D, basis.overlap(), _energy);
 		calcOrbitals(F, basis.overlap());
 	}

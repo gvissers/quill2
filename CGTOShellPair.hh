@@ -97,7 +97,6 @@ private:
 	Eigen::ArrayXXd _hinv_widths;
 	//! Weighted average coordinates
 	Eigen::ArrayXXd _P[3];
-
 };
 
 #endif // CGTOSHELLPAIR_HH

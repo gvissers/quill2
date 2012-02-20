@@ -3,7 +3,7 @@
 #include "Dispatcher.hh"
 #include "io/manipulators.hh"
 
-void Basis::electronRepulsion(const Eigen::MatrixXd& P, Eigen::MatrixXd& G) const
+void Basis::twoElectron(const Eigen::MatrixXd& P, Eigen::MatrixXd& G) const
 {
 	if (!_status.test(ELEC_REP_CURRENT))
 		calcElectronRepulsion();
@@ -133,6 +133,158 @@ void Basis::electronRepulsion(const Eigen::MatrixXd& P, Eigen::MatrixXd& G) cons
 	{
 		for (int j = 0; j < i; ++j)
 			G(j,i) = G(i,j);
+	}
+}
+
+void Basis::twoElectron(const Eigen::MatrixXd& P, Eigen::MatrixXd& J,
+	Eigen::MatrixXd& K) const
+{
+	if (!_status.test(ELEC_REP_CURRENT))
+		calcElectronRepulsion();
+
+	int n = P.rows();
+#ifdef DEBUG
+	if (P.cols() != n)
+		throw Li::Exception("Density matrix is not square");
+#endif
+	J.resize(n, n);
+	J.setZero();
+	K.resize(n, n);
+	K.setZero();
+	int idx = 0;
+	double e;
+	for (int i = 0; i < n; ++i)
+	{
+		double Pii = P(i,i);
+		for (int j = 0; j < i; ++j)
+		{
+			double Pij = P(i,j);
+			double Pjj = P(j,j);
+			for (int k = 0; k < j; ++k)
+			{
+				double Pik = P(i,k);
+				double Pjk = P(j,k);
+				for (int l = 0; l < k; ++l)
+				{
+					e = _elec_rep(idx++);
+					J(i,j) += 2 * P(k,l) * e;
+					J(k,l) += 2 * Pij * e;
+					K(i,k) += P(j,l) * e;
+					K(i,l) += Pjk * e;
+					K(j,k) += P(i,l) * e;
+					K(j,l) += Pik * e;
+				}
+				e = _elec_rep(idx++);
+				J(i,j) += P(k,k) * e;
+				J(k,k) += 2 * Pij * e;
+				K(i,k) += Pjk * e;
+				K(j,k) += Pik * e;
+			}
+			for (int l = 0; l < j; ++l)
+			{
+				e = _elec_rep(idx++);
+				J(i,j) += 2 * P(j,l) * e;
+				J(j,l) += 2 * Pij * e;
+				K(i,j) += P(j,l) * e;
+				K(i,l) += Pjj * e;
+				K(j,j) += 2 * P(i,l) * e;
+				K(j,l) += Pij * e;
+			}
+			e = _elec_rep(idx++);
+			J(i,j) += Pjj * e;
+			J(j,j) += 2 * Pij * e;
+			K(i,j) += Pjj * e;
+			K(j,j) += 2 * Pij * e;
+			for (int k = j+1; k < i; ++k)
+			{
+				double Pik = P(i,k);
+				double Pkj = P(k,j);
+				for (int l = 0; l < j; ++l)
+				{
+					e = _elec_rep(idx++);
+					J(i,j) += 2 * P(k,l) * e;
+					J(k,l) += 2 * Pij * e;
+					K(i,k) += P(j,l) * e;
+					K(i,l) += Pkj * e;
+					K(j,l) += Pik * e;
+					K(k,j) += P(i,l) * e;
+				}
+				e = _elec_rep(idx++);
+				J(i,j) += 2 * Pkj * e;
+				J(k,j) += 2 * Pij * e;
+				K(i,k) += Pjj * e;
+				K(i,j) += Pkj * e;
+				K(j,j) += 2 * Pik * e;
+				K(k,j) += Pij * e;
+				for (int l = j+1; l < k; ++l)
+				{
+					e = _elec_rep(idx++);
+					J(i,j) += 2 * P(k,l) * e;
+					J(k,l) += 2 * Pij * e;
+					K(i,k) += P(l,j) * e;
+					K(i,l) += Pkj * e;
+					K(k,j) += P(i,l) * e;
+					K(l,j) += Pik * e;
+				}
+				e = _elec_rep(idx++);
+				J(i,j) += P(k,k) * e;
+				J(k,k) += 2 * Pij * e;
+				K(i,k) += Pkj * e;
+				K(k,j) += Pik * e;
+			}
+			for (int l = 0; l < j; ++l)
+			{
+				e = _elec_rep(idx++);
+				J(i,j) += 2 * P(i,l) * e;
+				J(i,l) += 2 * Pij * e;
+				K(i,i) += 2 * P(j,l) * e;
+				K(i,j) += P(i,l) * e;
+				K(i,l) += Pij * e;
+				K(j,l) += Pii * e;
+			}
+			e = _elec_rep(idx++);
+			J(i,j) += 2 * Pij * e;
+			K(i,i) += Pjj * e;
+			K(i,j) += Pij * e;
+			K(j,j) += Pii * e;
+		}
+		for (int k = 0; k < i; ++k)
+		{
+			double Pik = P(i,k);
+			for (int l = 0; l < k; ++l)
+			{
+				e = _elec_rep(idx++);
+				J(i,i) += 2 * P(k,l) * e;
+				J(k,l) += Pii * e;
+				K(i,k) += P(i,l) * e;
+				K(i,l) += Pik * e;
+			}
+			e = _elec_rep(idx++);
+			J(i,i) += P(k,k) * e;
+			J(k,k) += Pii * e;
+			K(i,k) += Pik * e;
+		}
+		for (int l = 0; l < i; ++l)
+		{
+			e = _elec_rep(idx++);
+			J(i,i) += 2 * P(i,l) * e;
+			J(i,l) += Pii * e;
+			K(i,i) += P(i,l) * e;
+			K(i,l) += Pii * e;
+			K(i,i) += P(i,l) * e;
+		}
+		e = _elec_rep(idx++);
+		J(i,i) += Pii * e;
+		K(i,i) += Pii * e;
+	}
+
+	for (int i = 0; i < n; ++i)
+	{
+		for (int j = 0; j < i; ++j)
+		{
+			J(j,i) = J(i,j);
+			K(j,i) = K(i,j);
+		}
 	}
 }
 
