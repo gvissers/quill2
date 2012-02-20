@@ -10,7 +10,8 @@ OPT = -std=c++0x -Wall -W -O2 -DNDEBUG
 
 VPATH = io
 
-INCLUDES = -I . -I /home/ge/Programs/lithium/include -I eigen
+INCLUDES = -I . -I /home/ge/Programs/lithium/include -I eigen \
+	-I eigen/unsupported
 CXXFLAGS = $(OPT) $(INCLUDES) \
 	-DEIGEN_ARRAYBASE_PLUGIN=\"eigen_addons.hh\" \
 	-DEIGEN_FUNCTORS_PLUGIN=\"quill_functors.hh\" \

@@ -122,7 +122,8 @@ private:
 	 * \param nuc_rep The nuclear repulsion energy of the system
 	 */
 	void iterateRestricted(const Basis& basis, const Eigen::MatrixXd& H,
-		const Eigen::MatrixXd& S, double nuc_rep);
+		const Eigen::MatrixXd& S, const Eigen::MatrixXd& X,
+		double nuc_rep);
 	/*!
 	 * \brief Do a spin-unrestricted calculation
 	 *
@@ -133,7 +134,8 @@ private:
 	 * \param nuc_rep The nuclear repulsion energy of the system
 	 */
 	void iterateUnrestricted(const Basis& basis, const Eigen::MatrixXd& H,
-		const Eigen::MatrixXd& S, double nuc_rep);
+		const Eigen::MatrixXd& S, const Eigen::MatrixXd& X,
+		double nuc_rep);
 
 	/*!
 	 * \brief Set the spin multiplicity

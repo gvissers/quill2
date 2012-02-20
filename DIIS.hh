@@ -27,9 +27,8 @@ public:
 	 * Create a new DIIS object, for a basis of size \a size.
 	 * \param size The size of the matrices (basis set size).
 	 */
-	DIIS(int size): _size(size), _err_used(0),
-		_errors((_size-1)*size/2, 10), _values(),
-		_started(false) {}
+	DIIS(int size): _size(size), _err_vecs_used(0), _err_vecs(), _values(),
+		_started(false), _max_err(0) {}
 
 	/*!
 	 * \brief Create a new Fock matrix
@@ -44,22 +43,31 @@ public:
 	 * \param F    The current Fock matrix
 	 * \param P    The density matrix from which \a F was computed
 	 * \param S    The overlap matrix for the basis
+	 * \param X    The orthogonalization matrix \f$X = S^{-1/2}\f$ for the basis
 	 * \param Etot The total energy
 	 */
 	void step(Eigen::MatrixXd& F, const Eigen::MatrixXd& D,
-		const Eigen::MatrixXd& S, double Etot);
+		const Eigen::MatrixXd& S, const Eigen::MatrixXd& X, double Etot);
+	void step(Eigen::MatrixXd& Fa, const Eigen::MatrixXd& Da,
+		Eigen::MatrixXd& Fb, const Eigen::MatrixXd& Db,
+		const Eigen::MatrixXd& S, const Eigen::MatrixXd& X, double Etot);
+
+	//! Return the maximum error on the last iteration
+	double error() const { return _max_err; }
 
 private:
 	//! The basis set size
 	int _size;
 	//! The number of error vectors currently stored
-	int _err_used;
+	int _err_vecs_used;
 	//! The error vectors themselves, one per column
-	Eigen::MatrixXd _errors;
+	Eigen::MatrixXd _err_vecs;
 	//! The previous Fock matrices
 	std::vector<Eigen::MatrixXd> _values;
 	//! Whether DIIS was started
 	bool _started;
+	//! Maximum error in the last DIIS step
+	double _max_err;
 };
 
 #endif // DIIS_HH

@@ -1,4 +1,5 @@
 #include <memory>
+#include <Eigen/MatrixFunctions>
 #include "Basis.hh"
 #include "Dispatcher.hh"
 #include "io/manipulators.hh"
@@ -431,4 +432,12 @@ void Basis::calcElectronRepulsion() const
 		_elec_rep[i] = _quads[i]->electronRepulsion();
 
 	_status.set(ELEC_REP_CURRENT);
+}
+
+void Basis::calcOrtho() const
+{
+	if (!_status.test(OVERLAP_CURRENT))
+		calcOverlap();
+	_ortho = _overlap.sqrt().inverse();
+	_status.set(ORTHO_CURRENT);
 }

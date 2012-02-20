@@ -44,6 +44,8 @@ public:
 		QUADS_CURRENT,
 		//! Set when the overlap matrix is computed and up to date
 		OVERLAP_CURRENT,
+		//! Set when the orthogonalization matrix is computed and up to date
+		ORTHO_CURRENT,
 		//! Set when the kinetic energy matrix is computed and up to date
 		KINETIC_CURRENT,
 		//! Set when the nuclear attraction matrix is computed and up to date
@@ -87,6 +89,18 @@ public:
 		if (!_status.test(OVERLAP_CURRENT))
 			calcOneElectron();
 		return _overlap;
+	}
+	/*!
+	 * \brief Return the orthogonalization matrix
+	 *
+	 * Return the matrix with the\f$X = S^{-1/2}\f$ which orthogonalizes
+	 * this basis.
+	 */
+	const Eigen::MatrixXd& ortho() const
+	{
+		if (!_status.test(ORTHO_CURRENT))
+			calcOrtho();
+		return _ortho;
 	}
 	/*!
 	 * \brief Return the kinetic energy matrix
@@ -161,6 +175,8 @@ private:
 	mutable std::bitset<NR_FLAGS> _status;
 	//! The overlap matrix for this basis
 	mutable Eigen::MatrixXd _overlap;
+	//! Orhtogonalization matrix \f$S^{-1/2}\f$
+	mutable Eigen::MatrixXd _ortho;
 	//! The kinetic energy matrix for this basis
 	mutable Eigen::MatrixXd _kinetic;
 	//! The nuclear attraction matrix for this basis
@@ -194,6 +210,8 @@ private:
 	 * Compute the electron repulsion integrals for this basis
 	 */
 	void calcElectronRepulsion() const;
+	//! Compute the orthogonalization matrix for this basis
+	void calcOrtho() const;
 	
 	double eri(size_t i, size_t j, size_t k, size_t l) const
 	{

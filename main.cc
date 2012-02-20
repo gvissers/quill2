@@ -54,7 +54,7 @@ int main()
 			<< basis.nuclearAttraction(geom.positions(), geom.charges())
 			<< "\n";
 
-		HartreeFock hf(basis, geom, 1, false);
+		HartreeFock hf(basis, geom, 3, false);
 		std::cout << "Total energy: " << hf.energy() << "\n";
 /*
 		std::string mat = "C\n"
