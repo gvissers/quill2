@@ -1,4 +1,5 @@
 #include <fstream>
+#include <iomanip>
 #include "PeriodicTable.hh"
 #include "CGTOShellList.hh"
 #include "Geometry.hh"
@@ -54,8 +55,9 @@ int main()
 			<< basis.nuclearAttraction(geom.positions(), geom.charges())
 			<< "\n";
 
-		HartreeFock hf(basis, geom, 3, false);
-		std::cout << "Total energy: " << hf.energy() << "\n";
+		HartreeFock hf(basis, geom, 1);
+		std::cout << "Total energy: " << std::setprecision(15) << std::fixed
+			<< hf.energy() << " Eh\n";
 /*
 		std::string mat = "C\n"
 			"H   1 1.089000\n"
