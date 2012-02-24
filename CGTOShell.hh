@@ -12,13 +12,15 @@ class CGTOShell
 {
 public:
 	//! Constructor
-	CGTOShell(const Eigen::ArrayXd& widths,
+	CGTOShell(int lsum, const Eigen::ArrayXd& widths,
 		int ipos, const Eigen::Vector3d& center):
-		_widths(widths), _ipos(ipos), _center(center) {}
+		_lsum(lsum), _widths(widths), _ipos(ipos), _center(center) {}
 
 	//! Return the number of primitive widths in this shell
 	int size() const { return _widths.size(); }
-		
+
+	//! Return the total angular momentum of the shell
+	int lsum() const { return _lsum; }
 	//! Return the width of the \a i'th primitive
 	double width(int i) const { return _widths[i]; }
 	//! Return the widths of all primitives in this shell
@@ -40,6 +42,8 @@ public:
 	std::ostream& print(std::ostream& os) const;
 
 private:
+	//! The total angular momentum of the shell
+	int _lsum;
 	//! The widths of the primitive Gaussians
 	Eigen::ArrayXd _widths;
 	//! Position identifier of the center

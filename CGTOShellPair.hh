@@ -20,7 +20,8 @@ public:
 		_widths_red(_widthsA * _widthsB / _widths_sum),
 		_gauss_red((-(shA.center()-shB.center()).squaredNorm() * _widths_red).exp()
 			/ _widths_sum),
-		_hinv_widths(0.5*_widths_sum.inverse())
+		_hinv_widths(0.5*_widths_sum.inverse()),
+		_lsum(shA.lsum() + shB.lsum())
 	{
 		for (int i = 0; i < 3; ++i)
 		{
@@ -97,6 +98,8 @@ private:
 	Eigen::ArrayXXd _hinv_widths;
 	//! Weighted average coordinates
 	Eigen::ArrayXXd _P[3];
+	//! The total angular momentum of the two shells
+	int _lsum;
 };
 
 #endif // CGTOSHELLPAIR_HH
