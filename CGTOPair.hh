@@ -28,9 +28,9 @@ public:
 	//! Constructor
 	CGTOPair(const CGTO& f, const CGTO& g):
 		AbstractBFPair(cid, f, g),
+		_norm(f.norm() * g.norm()),
 		_ishell_pair(CGTOShellList::pairIndex(f.ishell(), g.ishell())),
-		_shell_pair(CGTOShellList::singleton().pair(_ishell_pair)),
-		_weights(f.weights().replicate(1, g.size()).rowwise() * g.weights().transpose()) {}
+		_shell_pair(CGTOShellList::singleton().pair(_ishell_pair)) {}
 
 	//! Return the first orbital in the pair
 	const CGTO& f() const
@@ -42,6 +42,9 @@ public:
 	{
 		return static_cast< const CGTO& >(AbstractBFPair::g());
 	}
+
+	//! Return normalization factor for integrals
+	double norm() const { return _norm; }
 
 	//! Return the index of this pair in the CGTOShellList
 	int ishellPair() const { return _ishell_pair; }
@@ -163,7 +166,7 @@ public:
 	}
 	/*!
 	 * \brief Return the weighted average \a i coordinate, for each
-	 *    combination of primitive weights.
+	 *    combination of primitive widths.
 	 */
 	const Eigen::ArrayXXd& P(int i) const
 	{
@@ -179,7 +182,7 @@ public:
 	 */
 	const Eigen::ArrayXXd& weights() const
 	{
-		return _weights;
+		return _shell_pair.weights();
 	}
 
 	/*!
@@ -215,9 +218,9 @@ protected:
 	 */
 	CGTOPair(size_t cid, const CGTO& f, const CGTO& g):
 		AbstractBFPair(cid, f, g),
+		_norm(f.norm() * g.norm()),
 		_ishell_pair(CGTOShellList::pairIndex(f.ishell(), g.ishell())),
-		_shell_pair(CGTOShellList::singleton().pair(_ishell_pair)),
-		_weights(f.weights().replicate(1, g.size()).rowwise() * g.weights().transpose()) {}
+		_shell_pair(CGTOShellList::singleton().pair(_ishell_pair)) {}
 
 	/*!
 	 * Multiply the contributions to an integral \a C of each primitive pair
@@ -228,17 +231,16 @@ protected:
 	template <typename Derived>
 	double mulWeights(const Eigen::ArrayBase<Derived>& C) const
 	{
-		return ((C.colwise() * f().weights()).colwise().sum().transpose()
-			* g().weights()).sum();
+		return _shell_pair.mulWeights(C) * _norm;
 	}
 
 private:
+	//! Normalization factor for integrals
+	double _norm;
 	//! The combined index of this pair's shells in the CGTOShellList
 	int _ishell_pair;
 	//! The shells for this pair of orbitals
 	CGTOShellPair _shell_pair;
-	//! Products of the weights, for all combinations of primitives
-	Eigen::ArrayXXd _weights;
 
 	//! Integrate the overlap matrix for this pair over dimension \a i.
 	void overlapPrim1D(int i, Eigen::ArrayXXd& Sp) const;

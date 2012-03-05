@@ -14,6 +14,8 @@ class CGTOShellPair
 public:
 	CGTOShellPair(const CGTOShell& shA, const CGTOShell& shB):
 		_shA(shA), _shB(shB),
+		_weights(shA.weights().replicate(1, shB.size()).rowwise()
+			* shB.weights().transpose()),
 		_widthsA(shA.widths().replicate(1, shB.size())),
 		_widthsB(shB.widths().transpose().replicate(shA.size(), 1)),
 		_widths_sum(_widthsA + _widthsB),
@@ -33,6 +35,10 @@ public:
 	//! Return the number of primitive combinations in this pair
 	int size() const { return widthsSum().size(); }
 	
+	//! Return the total angular momentum of the swo shells combined
+	int lsum() const { return _lsum; }
+	//! Return the unnormalized weights of the primitive combinations
+	const Eigen::ArrayXXd& weights() const { return _weights; }
 	/*!
 	 * \brief Return the widths of the primitives in the first shell,
 	 *    for all primitives in the second shell.
@@ -52,8 +58,14 @@ public:
 	 *    distance between the centers of the two orbitals.
 	 */
 	const Eigen::ArrayXXd& gaussReduced() const { return _gauss_red; }
-	//! Return half ithe inverse widfths summs, \f$\frac{1}{2(\alpha+\beta)}\f$
+	//! Return half the inverse widths sums, \f$\frac{1}{2(\alpha+\beta)}\f$
 	const Eigen::ArrayXXd& hInvWidths() const { return _hinv_widths; }
+
+	//! Return the \a i coordinate of the first shell in this pair
+	double centerA(int i) const { return _shA.center(i); }
+	//! Return the \a i coordinate of the second shell in this pair
+	double centerB(int i) const { return _shA.center(i); }
+	
 	/*!
 	 * \brief Return the weighted average \a i coordinate, for each
 	 *    combination of primitive weights.
@@ -79,11 +91,26 @@ public:
 		return positionIdA() == positionIdB();
 	}
 
+	/*!
+	 * Multiply the contributions to an integral \a C of each primitive pair
+	 * with the weights of the primitives, and sum the results to compute
+	 * the integral over the contraction.
+	 * \param C the primitve integrals
+	 */
+	template <typename Derived>
+	double mulWeights(const Eigen::ArrayBase<Derived>& C) const
+	{
+		return ((C.colwise() * _shA.weights()).colwise().sum().transpose()
+			* _shB.weights()).sum();
+	}
+
 private:
 	//! First shell in this pair
 	const CGTOShell& _shA;
 	//! Second shell in this pair
 	const CGTOShell& _shB;
+	//! Unnormalized weights of the primitive combinations
+	Eigen::ArrayXXd _weights;
 	//! Primitive widths of the first orbital
 	Eigen::ArrayXXd _widthsA;
 	//! Primitive widths of the second orbital

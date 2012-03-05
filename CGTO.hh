@@ -33,7 +33,6 @@ public:
 	 * Create a new contraction of primitive Gaussian type orbitals with
 	 * angular momentum quantum numbers \a ls on position \a center.
 	 * \param ls      Angular momentum of the orbital
-	 * \param weights The weights of the primitives in the contraction
  	 * \param ishell  Index of this orbital's shell in the CGTOShellList
 	 */
 	CGTO(const Eigen::Vector3i& ls, int ishell):
@@ -71,8 +70,6 @@ public:
 	const CGTOShell& shell() const { return _shell; }
 	//! Return the width of the \a i'th primitive
 	double width(int i) const { return shell().width(i); }
-	//! Return the weights of all primitives in this orbital
-	const Eigen::ArrayXd weights() const { return shell().weights() * _norm; }
 	//! Return the widths of all primitives in this orbital
 	const Eigen::ArrayXd& widths() const { return shell().widths(); }
 	//! Return the position ID of this orbital's center
@@ -111,7 +108,6 @@ protected:
 	 * for specialized integral calculations.
 	 * \param cid     Class ID of the child class
 	 * \param ls      Angular momentum of the orbital
-	 * \param weights The weights of the primitives in the contraction
  	 * \param ishell  Index of this orbital's shell in the CGTOShellList
 	 */
 	CGTO(size_t cid, const Eigen::Vector3i& ls, int ishell):

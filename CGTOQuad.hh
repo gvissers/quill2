@@ -27,10 +27,10 @@ public:
 	typedef ColArrayMap HInvWidthsABExpression;
 	typedef RowArrayMap HInvWidthsCDExpression;
 	typedef CGTOShellQuad::KKWExpression KKWExpression;
-	
+
 	/*!
 	 * \brief Constructor
-	 * 
+	 *
 	 * Create a new CGTOQuad from pairs \a p and \a q.
 	 * \param p       The first orbital pair in the quartet.
 	 * \param q       The second orbital pair in the quartet.
@@ -38,7 +38,7 @@ public:
 	CGTOQuad(const CGTOPair& pp, const CGTOPair& qq);
 	//! Destructor
 	virtual ~CGTOQuad() {}
-	
+
 	//! Return the first orbital pair in the quartet
 	const CGTOPair& p() const
 	{
@@ -114,16 +114,7 @@ public:
 	{
 		return _shell_quad.widthsReduced();
 	}
-	
-	ColArrayMap weightsAB() const
-	{
-		return ColArray::MapAligned(p().weights().data(), p().size());
-	}
-	RowArrayMap weightsCD() const
-	{
-		return RowArray::MapAligned(q().weights().data(), q().size());
-	}
-	
+
 	//! Return the \a i coordinate of the first orbital center
 	double centerA(int i) const
 	{
@@ -199,7 +190,7 @@ public:
 	{
 		return _shell_quad.rho2();
 	}
-	
+
 	KKWExpression KKW() const
 	{
 		return _shell_quad.KKW();
@@ -234,14 +225,14 @@ protected:
 	template <typename Derived>
 	double mulWeights(const Eigen::ArrayBase<Derived>& C) const
 	{
-		return ((C.colwise() * weightsAB()).colwise().sum()
-			* weightsCD()).sum();
+		return ((C.colwise() * ColArray::MapAligned(p().weights().data(), p().size())).colwise().sum()
+			* RowArray::MapAligned(q().weights().data(), q().size())).sum() * p().norm() * q().norm();
 	}
 
 private:
 	int _ishell_quad;
 	const CGTOShellQuad& _shell_quad;
-	
+
 	void elecRepPrim1d_aacc_psss(int i, FmCoefs& Cm) const;
 	void elecRepPrim1d_abcc_psss(int i, FmCoefs& Cm) const;
 	void elecRepPrim1d_aacd_psss(int i, FmCoefs& Cm) const;
