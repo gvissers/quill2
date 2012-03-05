@@ -26,48 +26,41 @@ struct CGTODefExpander
 	 * Add a contracted Gaussian type orbital with angular momentum
 	 * quantum numbers \a lx, \a ly, and \a lz to the basis, and continue
 	 * with the next function.
-	 * \param weights Weights of the primitives in the contraction
 	 * \param ishell  Index of this orbital's shell in the CGTOShellList
 	 * \param basis   The basis to be filled
 	 */
-	static void exec(const Eigen::VectorXd& weights, int ishell,
-		Basis *basis)
+	static void exec(int ishell, Basis *basis)
 	{
 		if (Limits::lmax_specialized >= int(lx+ly+lz))
-			basis->add(new CGTOSpec<lx, ly, lz>(weights, ishell));
+			basis->add(new CGTOSpec<lx, ly, lz>(ishell));
 		else
-			basis->add(new CGTO(Eigen::Vector3i(lx, ly, lz),
-				weights, ishell));
-		CGTODefExpander<lx, ly-1, lz+1>::exec(weights, ishell, basis);
+			basis->add(new CGTO(Eigen::Vector3i(lx, ly, lz), ishell));
+		CGTODefExpander<lx, ly-1, lz+1>::exec(ishell, basis);
 	}
 };
 
 template <unsigned int lx, unsigned int lz>
 struct CGTODefExpander<lx, 0, lz>
 {
-	static void exec(const Eigen::VectorXd& weights, int ishell,
-		Basis *basis)
+	static void exec(int ishell, Basis *basis)
 	{
 		if (Limits::lmax_specialized >= int(lx+lz))
-			basis->add(new CGTOSpec<lx, 0, lz>(weights, ishell));
+			basis->add(new CGTOSpec<lx, 0, lz>(ishell));
 		else
-			basis->add(new CGTO(Eigen::Vector3i(lx, 0, lz), weights,
-				ishell));
-		CGTODefExpander<lx-1, lz+1, 0>::exec(weights, ishell, basis);
+			basis->add(new CGTO(Eigen::Vector3i(lx, 0, lz), ishell));
+		CGTODefExpander<lx-1, lz+1, 0>::exec(ishell, basis);
 	}
 };
 
 template <unsigned int lz>
 struct CGTODefExpander<0, 0, lz>
 {
-	static void exec(const Eigen::VectorXd& weights, int ishell,
-		Basis *basis)
+	static void exec(int ishell, Basis *basis)
 	{
 		if (Limits::lmax_specialized >= int(lz))
-			basis->add(new CGTOSpec<0, 0, lz>(weights, ishell));
+			basis->add(new CGTOSpec<0, 0, lz>(ishell));
 		else
-			basis->add(new CGTO(Eigen::Vector3i(0, 0, lz), weights,
-				ishell));
+			basis->add(new CGTO(Eigen::Vector3i(0, 0, lz), ishell));
 	}
 };
 

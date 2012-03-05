@@ -36,16 +36,21 @@ public:
 	 * \param weights The weights of the primitives in the contraction
  	 * \param ishell  Index of this orbital's shell in the CGTOShellList
 	 */
-	CGTO(const Eigen::Vector3i& ls, const Eigen::VectorXd& weights,
-		int ishell):
-		AbstractBF(cid), _ls(ls), _weights(weights), _ishell(ishell),
+	CGTO(const Eigen::Vector3i& ls, int ishell):
+		AbstractBF(cid), _ls(ls), _ishell(ishell),
 		_shell(CGTOShellList::singleton().shell(ishell))
 	{
-		normalizeWeights();	
+		_norm = 1;
+		for (int i = 0; i < 3; ++i)
+		{
+			for (int l = 1; l < ls(i); ++l)
+				_norm /= 2*l + 1;
+		}
+		_norm = std::sqrt(_norm);
 	}
 
 	//! Return the number of primitives in this contraction
-	int size() const { return _weights.size(); }
+	int size() const { return shell().size(); }
 	//! Return the angular momentum quantum numbers
 	const Eigen::Vector3i& ls() const { return _ls; }
 	//! Return the angular momentum in the \f$x\f$ direction
@@ -58,20 +63,16 @@ public:
 	int l(int i) const { return _ls[i]; }
 	//! Return the total angular momentum
 	int lsum() const { return _ls.sum(); }
+	//! Return the normalization factor for this contraction
+	double norm() const { return _norm; }
 	//! Return the index of this orbital's shell in the CGTOShellList
 	int ishell() const { return _ishell; }
 	//! Return the shell of this orbital
 	const CGTOShell& shell() const { return _shell; }
-	//! Return the weight of the \a i'th primitive
-	double weight(int i) const
-	{
-		checkIndex(i);
-		return _weights(i);
-	}
 	//! Return the width of the \a i'th primitive
 	double width(int i) const { return shell().width(i); }
 	//! Return the weights of all primitives in this orbital
-	const Eigen::VectorXd& weights() const { return _weights; }
+	const Eigen::ArrayXd weights() const { return shell().weights() * _norm; }
 	//! Return the widths of all primitives in this orbital
 	const Eigen::ArrayXd& widths() const { return shell().widths(); }
 	//! Return the position ID of this orbital's center
@@ -79,7 +80,7 @@ public:
 	//! Return the center position of this orbital
 	const Eigen::Vector3d& center() const { return shell().center(); }
 	//! Return the \a i coordinate of the center of this orbital
-	double center(int i) const { return _shell.center(i); }
+	double center(int i) const { return shell().center(i); }
 
 	/*!
 	 * \brief Print this CGTO
@@ -113,32 +114,29 @@ protected:
 	 * \param weights The weights of the primitives in the contraction
  	 * \param ishell  Index of this orbital's shell in the CGTOShellList
 	 */
-	CGTO(size_t cid, const Eigen::Vector3i& ls,
-		const Eigen::VectorXd& weights, int ishell):
-		AbstractBF(cid), _ls(ls), _weights(weights), _ishell(ishell),
+	CGTO(size_t cid, const Eigen::Vector3i& ls, int ishell):
+		AbstractBF(cid), _ls(ls), _ishell(ishell),
 		_shell(CGTOShellList::singleton().shell(ishell))
 	{
-		normalizeWeights();
+		_norm = 1;
+		for (int i = 0; i < 3; ++i)
+		{
+			for (int l = 1; l < ls(i); ++l)
+				_norm /= 2*l + 1;
+		}
+		_norm = std::sqrt(_norm);
 	}
 
 private:
 	//! The angular momentum quantum numbers
 	Eigen::Vector3i _ls;
-	//! The weights of the primitives in this contraction
-	Eigen::VectorXd _weights;
+	//! Scale factor for normalization
+	double _norm;
 	//! Index of this orbital's shell in the CGTOShellList
 	int _ishell;
 	//! The shell parameters: widths, weights, and position
 	const CGTOShell& _shell;
 
-	/*!
-	 * \brief Normalize the weights
-	 *
-	 * Scale the weights of the primitives in this contraction, to
-	 *  normalize this CGTO.
-	 */
-	void normalizeWeights();
-	
 	/*!
 	 * \brief Check if a primitive index is valid
 	 *

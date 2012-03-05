@@ -30,7 +30,7 @@ public:
 		AbstractBFPair(cid, f, g),
 		_ishell_pair(CGTOShellList::pairIndex(f.ishell(), g.ishell())),
 		_shell_pair(CGTOShellList::singleton().pair(_ishell_pair)),
-		_weights(f.weights() * g.weights().transpose()) {}
+		_weights(f.weights().replicate(1, g.size()).rowwise() * g.weights().transpose()) {}
 
 	//! Return the first orbital in the pair
 	const CGTO& f() const
@@ -217,8 +217,20 @@ protected:
 		AbstractBFPair(cid, f, g),
 		_ishell_pair(CGTOShellList::pairIndex(f.ishell(), g.ishell())),
 		_shell_pair(CGTOShellList::singleton().pair(_ishell_pair)),
-		_weights(f.weights() * g.weights().transpose()) {}
+		_weights(f.weights().replicate(1, g.size()).rowwise() * g.weights().transpose()) {}
 
+	/*!
+	 * Multiply the contributions to an integral \a C of each primitive pair
+	 * with the weights of the primitives, and sum the results to compute
+	 * the integral over the contraction.
+	 * \param C the primitve integrals
+	 */
+	template <typename Derived>
+	double mulWeights(const Eigen::ArrayBase<Derived>& C) const
+	{
+		return ((C.colwise() * f().weights()).colwise().sum().transpose()
+			* g().weights()).sum();
+	}
 
 private:
 	//! The combined index of this pair's shells in the CGTOShellList

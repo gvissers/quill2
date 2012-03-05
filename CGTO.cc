@@ -8,11 +8,9 @@ std::ostream& CGTO::print(std::ostream& os) const
 {
 	os << "CGTO (\n" << indent;
 	os << "angular momentum: " << lx() << ", " << ly() << ", " << lz() << "\n";
-	os << "center: " << center().transpose() << "\n";
-	os << "primitives:\n" << indent;
-	for (int i = 0; i < size(); i++)
-		os << weight(i) << " " << width(i) << "\n";
-	os << dedent << dedent << ")";
+	os << "norm: " << _norm << "\n";
+	os << "shell:\n" << indent << shell() << "\n" << dedent;
+	os << dedent << ")";
 	return os;
 }
 
@@ -25,23 +23,4 @@ double CGTO::eval(const Eigen::Vector3d& pos) const
 	for (int p = 0; p < ly(); p++) res *= dr.y();
 	for (int p = 0; p < lz(); p++) res *= dr.z();
 	return res;
-}
-
-void CGTO::normalizeWeights()
-{
-	for (int iprim = 0; iprim < size(); ++iprim)
-	{
-		double alpha = width(iprim);
-		double norm = 2 * alpha / M_PI;
-		norm *= std::sqrt(norm);
-		for (int l = 0; l < lx(); ++l)
-			norm *= 4*alpha / (2*l+1);
-		for (int l = 0; l < ly(); ++l)
-			norm *= 4*alpha / (2*l+1);
-		for (int l = 0; l < lz(); ++l)
-			norm *= 4*alpha / (2*l+1);
-		norm = std::sqrt(norm);
-
-		_weights[iprim] *= norm;
-	}
 }

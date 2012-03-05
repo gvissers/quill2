@@ -237,8 +237,7 @@ double CGTOPair::overlap() const
 	for (int i = 0; i < 3; i++)
 		overlapPrim1D(i, Sp);
 
-	return Constants::pi_sqrt_pi
-		* f().weights().transpose() * Sp.matrix() * g().weights();
+	return Constants::pi_sqrt_pi * mulWeights(Sp);
 }
 
 double CGTOPair::kineticEnergy() const
@@ -250,8 +249,7 @@ double CGTOPair::kineticEnergy() const
 	for (int i = 0; i < 3; i++)
 		oneElecPrim1D(i, Sp, Tp);
 
-	return Constants::pi_sqrt_pi
-		* f().weights().transpose() * Tp.matrix() * g().weights();
+	return Constants::pi_sqrt_pi * mulWeights(Tp);
 }
 
 void CGTOPair::oneElectron(double &S, double &T) const
@@ -263,10 +261,8 @@ void CGTOPair::oneElectron(double &S, double &T) const
 	for (int i = 0; i < 3; i++)
 		oneElecPrim1D(i, Sp, Tp);
 
-	S = Constants::pi_sqrt_pi
-		* f().weights().transpose() * Sp.matrix() * g().weights();
-	T = Constants::pi_sqrt_pi
-		* f().weights().transpose() * Tp.matrix() * g().weights();
+	S = Constants::pi_sqrt_pi * mulWeights(Sp);
+	T = Constants::pi_sqrt_pi * mulWeights(Tp);
 }
 
 double CGTOPair::nuclearAttraction(const Eigen::MatrixXd& nuc_pos,
@@ -327,7 +323,5 @@ double CGTOPair::nuclearAttraction(const Eigen::MatrixXd& nuc_pos,
 		}
 	}
 
-	return 2 * M_PI * f().weights().transpose()
-		* (gaussReduced() * A).matrix()
-		* g().weights();
+	return 2 * M_PI * mulWeights(gaussReduced() * A);
 }

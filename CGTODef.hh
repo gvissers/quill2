@@ -63,8 +63,8 @@ class CGTODef: public AbstractBFDef
 			Basis *basis) const
 		{
 			int ishell = CGTOShellList::singleton().addShell(
-				l, _widths, ipos, pos);
-			CGTODefExpander<l, 0, 0>::exec(_weights, ishell, basis);
+				l, _weights, _widths, ipos, pos);
+			CGTODefExpander<l, 0, 0>::exec(ishell, basis);
 		}
 
 		/*!
@@ -79,7 +79,7 @@ class CGTODef: public AbstractBFDef
 
 	private:
 		//! Weights of the primitive GTOs in this contraction
-		Eigen::VectorXd _weights;
+		Eigen::ArrayXd _weights;
 		//! Widths of the primitive GTOs in this contraction
 		Eigen::ArrayXd _widths;
 };
@@ -99,11 +99,12 @@ template <>
 void CGTODef<0>::expand(int ipos, const Eigen::Vector3d& pos,
 	Basis* basis) const
 {
-	int ishell = CGTOShellList::singleton().addShell(0, _widths, ipos, pos);
+	int ishell = CGTOShellList::singleton().addShell(0, _weights, _widths,
+		ipos, pos);
 #if LMAX_SPECIALIZED >= 0
-	basis->add(new CGTOSpec<0, 0, 0>(_weights, ishell));
+	basis->add(new CGTOSpec<0, 0, 0>(ishell));
 #else
-	basis->add(new CGTO(Eigen::Vector3i(0, 0, 0), _weights, ishell));
+	basis->add(new CGTO(Eigen::Vector3i(0, 0, 0), ishell));
 #endif
 }
 
@@ -111,15 +112,16 @@ template <>
 void CGTODef<1>::expand(int ipos, const Eigen::Vector3d& pos,
 	Basis* basis) const
 {
-	int ishell = CGTOShellList::singleton().addShell(1, _widths, ipos, pos);
+	int ishell = CGTOShellList::singleton().addShell(1, _weights, _widths,
+		ipos, pos);
 #if LMAX_SPECIALIZED >= 1
-	basis->add(new CGTOSpec<1, 0, 0>(_weights, ishell));
-	basis->add(new CGTOSpec<0, 1, 0>(_weights, ishell));
-	basis->add(new CGTOSpec<0, 0, 1>(_weights, ishell));
+	basis->add(new CGTOSpec<1, 0, 0>(ishell));
+	basis->add(new CGTOSpec<0, 1, 0>(ishell));
+	basis->add(new CGTOSpec<0, 0, 1>(ishell));
 #else
-	basis->add(new CGTO(Eigen::Vector3i(1, 0, 0), _weights, ishell));
-	basis->add(new CGTO(Eigen::Vector3i(0, 1, 0), _weights, ishell));
-	basis->add(new CGTO(Eigen::Vector3i(0, 0, 1), _weights, ishell));
+	basis->add(new CGTO(Eigen::Vector3i(1, 0, 0), ishell));
+	basis->add(new CGTO(Eigen::Vector3i(0, 1, 0), ishell));
+	basis->add(new CGTO(Eigen::Vector3i(0, 0, 1), ishell));
 #endif
 }
 

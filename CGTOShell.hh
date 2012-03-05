@@ -12,15 +12,21 @@ class CGTOShell
 {
 public:
 	//! Constructor
-	CGTOShell(int lsum, const Eigen::ArrayXd& widths,
-		int ipos, const Eigen::Vector3d& center):
-		_lsum(lsum), _widths(widths), _ipos(ipos), _center(center) {}
+	CGTOShell(int lsum, const Eigen::ArrayXd& weights,
+		const Eigen::ArrayXd& widths, int ipos,
+		const Eigen::Vector3d& center):
+		_lsum(lsum), _weights(weights), _widths(widths), _ipos(ipos),
+		_center(center) { scaleWeights(); }
 
 	//! Return the number of primitive widths in this shell
 	int size() const { return _widths.size(); }
 
 	//! Return the total angular momentum of the shell
 	int lsum() const { return _lsum; }
+	//! Return the weight of the \a i'th primitive
+	double weight(int i) const { return _weights[i]; }
+	//! Return the weights of all primitives in this shell
+	const Eigen::ArrayXd& weights() const { return _weights; }
 	//! Return the width of the \a i'th primitive
 	double width(int i) const { return _widths[i]; }
 	//! Return the widths of all primitives in this shell
@@ -45,11 +51,16 @@ private:
 	//! The total angular momentum of the shell
 	int _lsum;
 	//! The widths of the primitive Gaussians
+	Eigen::ArrayXd _weights;
+	//! The widths of the primitive Gaussians
 	Eigen::ArrayXd _widths;
 	//! Position identifier of the center
 	int _ipos;
 	//! The center position of this function
 	Eigen::Vector3d _center;
+
+	//! Scale the weights of the primitives as a first step in normalization
+	void scaleWeights();
 };
 
 namespace {

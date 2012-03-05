@@ -2,10 +2,11 @@
 
 SINGLETON_OBJECT(CGTOShellList);
 
-int CGTOShellList::addShell(int l, const Eigen::ArrayXd& widths, int ipos,
+int CGTOShellList::addShell(int l, const Eigen::ArrayXd& weights,
+	const Eigen::ArrayXd& widths, int ipos,
 	const Eigen::Vector3d& center)
 {
-	CGTOShell *sh = new CGTOShell(l, widths, ipos, center);
+	CGTOShell *sh = new CGTOShell(l, weights, widths, ipos, center);
 	for (int i = 0; i < nrShells(); ++i)
 		addPair(*sh, shell(i));
 	addPair(*sh, *sh);

@@ -35,225 +35,197 @@ static Eigen::ArrayXXd overlap_ds(double x, double y, const Eigen::ArrayXXd& bet
 template <>
 double CGTOSpecPair<0, 0, 0, 0, 0, 0>::overlap() const
 {
-	return Constants::pi_sqrt_pi * f().weights().transpose()
-		* (gaussReduced() / widthsSum().sqrt()).matrix()
-		* g().weights();
+	return Constants::pi_sqrt_pi
+		* mulWeights(gaussReduced() / widthsSum().sqrt());
 }
 
 template <>
 double CGTOSpecPair<1, 0, 0, 0, 0, 0>::overlap() const
 {
-	return Constants::pi_sqrt_pi * f().weights().transpose()
-		* overlap_ps(r(0), widthsB(), widthsSum(), gaussReduced()).matrix()
-		* g().weights();
+	return Constants::pi_sqrt_pi
+		* mulWeights(overlap_ps(r(0), widthsB(), widthsSum(), gaussReduced()));
 }
 
 template <>
 double CGTOSpecPair<0, 1, 0, 0, 0, 0>::overlap() const
 {
-	return Constants::pi_sqrt_pi * f().weights().transpose()
-		* overlap_ps(r(1), widthsB(), widthsSum(), gaussReduced()).matrix()
-		* g().weights();
+	return Constants::pi_sqrt_pi
+		* mulWeights(overlap_ps(r(1), widthsB(), widthsSum(), gaussReduced()));
 }
 
 template <>
 double CGTOSpecPair<0, 0, 1, 0, 0, 0>::overlap() const
 {
-	return Constants::pi_sqrt_pi * f().weights().transpose()
-		* overlap_ps(r(2), widthsB(), widthsSum(), gaussReduced()).matrix()
-		* g().weights();
+	return Constants::pi_sqrt_pi
+		* mulWeights(overlap_ps(r(2), widthsB(), widthsSum(), gaussReduced()));
 }
 
 template <>
 double CGTOSpecPair<0, 0, 0, 1, 0, 0>::overlap() const
 {
-	return Constants::pi_sqrt_pi * f().weights().transpose()
-		* overlap_ps(-r(0), widthsA(), widthsSum(), gaussReduced()).matrix()
-		* g().weights();
+	return Constants::pi_sqrt_pi
+		* mulWeights(overlap_ps(-r(0), widthsA(), widthsSum(), gaussReduced()));
 }
 
 template <>
 double CGTOSpecPair<0, 0, 0, 0, 1, 0>::overlap() const
 {
-	return Constants::pi_sqrt_pi * f().weights().transpose()
-		* overlap_ps(-r(1), widthsA(), widthsSum(), gaussReduced()).matrix()
-		* g().weights();
+	return Constants::pi_sqrt_pi
+		* mulWeights(overlap_ps(-r(1), widthsA(), widthsSum(), gaussReduced()));
 }
 
 template <>
 double CGTOSpecPair<0, 0, 0, 0, 0, 1>::overlap() const
 {
-	return Constants::pi_sqrt_pi * f().weights().transpose()
-		* overlap_ps(-r(2), widthsA(), widthsSum(), gaussReduced()).matrix()
-		* g().weights();
+	return Constants::pi_sqrt_pi
+		* mulWeights(overlap_ps(-r(2), widthsA(), widthsSum(), gaussReduced()));
 }
 
 template <>
 double CGTOSpecPair<2, 0, 0, 0, 0, 0>::overlap() const
 {
-	return Constants::pi_sqrt_pi * f().weights().transpose()
-		* overlap_ds(r(0), widthsB(), widthsSum(), gaussReduced()).matrix()
-		* g().weights();
+	return Constants::pi_sqrt_pi
+		* mulWeights(overlap_ds(r(0), widthsB(), widthsSum(), gaussReduced()));
 }
 
 template <>
 double CGTOSpecPair<1, 1, 0, 0, 0, 0>::overlap() const
 {
-	return Constants::pi_sqrt_pi * f().weights().transpose()
-		* overlap_ds(r(0), r(1), widthsB(), widthsSum(), gaussReduced()).matrix()
-		* g().weights();
+	return Constants::pi_sqrt_pi
+		* mulWeights(overlap_ds(r(0), r(1), widthsB(), widthsSum(), gaussReduced()));
 }
 
 template <>
 double CGTOSpecPair<1, 0, 1, 0, 0, 0>::overlap() const
 {
-	return Constants::pi_sqrt_pi * f().weights().transpose()
-		* overlap_ds(r(0), r(2), widthsB(), widthsSum(), gaussReduced()).matrix()
-		* g().weights();
+	return Constants::pi_sqrt_pi
+		* mulWeights(overlap_ds(r(0), r(2), widthsB(), widthsSum(), gaussReduced()));
 }
 
 template <>
 double CGTOSpecPair<1, 0, 0, 1, 0, 0>::overlap() const
 {
-	return Constants::pi_sqrt_pi * f().weights().transpose()
-		* overlap_pp(r(0), widthsSum(), widthsReduced(), gaussReduced()).matrix()
-		* g().weights();
+	return Constants::pi_sqrt_pi
+		* mulWeights(overlap_pp(r(0), widthsSum(), widthsReduced(), gaussReduced()));
 }
 
 template <>
 double CGTOSpecPair<1, 0, 0, 0, 1, 0>::overlap() const
 {
-	return Constants::pi_sqrt_pi * f().weights().transpose()
-		* overlap_pp(r(0), r(1), widthsSum(), widthsReduced(), gaussReduced()).matrix()
-		* g().weights();
+	return Constants::pi_sqrt_pi
+		* mulWeights(overlap_pp(r(0), r(1), widthsSum(), widthsReduced(), gaussReduced()));
 }
 
 template <>
 double CGTOSpecPair<1, 0, 0, 0, 0, 1>::overlap() const
 {
-	return Constants::pi_sqrt_pi * f().weights().transpose()
-		* overlap_pp(r(0), r(2), widthsSum(), widthsReduced(), gaussReduced()).matrix()
-		* g().weights();
+	return Constants::pi_sqrt_pi
+		* mulWeights(overlap_pp(r(0), r(2), widthsSum(), widthsReduced(), gaussReduced()));
 }
 
 template <>
 double CGTOSpecPair<0, 2, 0, 0, 0, 0>::overlap() const
 {
-	return Constants::pi_sqrt_pi * f().weights().transpose()
-		* overlap_ds(r(1), widthsB(), widthsSum(), gaussReduced()).matrix()
-		* g().weights();
+	return Constants::pi_sqrt_pi
+		* mulWeights(overlap_ds(r(1), widthsB(), widthsSum(), gaussReduced()));
 }
 
 template <>
 double CGTOSpecPair<0, 1, 1, 0, 0, 0>::overlap() const
 {
-	return Constants::pi_sqrt_pi * f().weights().transpose()
-		* overlap_ds(r(1), r(2), widthsB(), widthsSum(), gaussReduced()).matrix()
-		* g().weights();
+	return Constants::pi_sqrt_pi
+		* mulWeights(overlap_ds(r(1), r(2), widthsB(), widthsSum(), gaussReduced()));
 }
 
 template <>
 double CGTOSpecPair<0, 1, 0, 1, 0, 0>::overlap() const
 {
-	return Constants::pi_sqrt_pi * f().weights().transpose()
-		* overlap_pp(r(1), r(0), widthsSum(), widthsReduced(), gaussReduced()).matrix()
-		* g().weights();
+	return Constants::pi_sqrt_pi
+		* mulWeights(overlap_pp(r(1), r(0), widthsSum(), widthsReduced(), gaussReduced()));
 }
 
 template <>
 double CGTOSpecPair<0, 1, 0, 0, 1, 0>::overlap() const
 {
-	return Constants::pi_sqrt_pi * f().weights().transpose()
-		* overlap_pp(r(1), widthsSum(), widthsReduced(), gaussReduced()).matrix()
-		* g().weights();
+	return Constants::pi_sqrt_pi
+		* mulWeights(overlap_pp(r(1), widthsSum(), widthsReduced(), gaussReduced()));
 }
 
 template <>
 double CGTOSpecPair<0, 1, 0, 0, 0, 1>::overlap() const
 {
-	return Constants::pi_sqrt_pi * f().weights().transpose()
-		* overlap_pp(r(1), r(2), widthsSum(), widthsReduced(), gaussReduced()).matrix()
-		* g().weights();
+	return Constants::pi_sqrt_pi
+		* mulWeights(overlap_pp(r(1), r(2), widthsSum(), widthsReduced(), gaussReduced()));
 }
 
 template <>
 double CGTOSpecPair<0, 0, 2, 0, 0, 0>::overlap() const
 {
-	return Constants::pi_sqrt_pi * f().weights().transpose()
-		* overlap_ds(r(2), widthsB(), widthsSum(), gaussReduced()).matrix()
-		* g().weights();
+	return Constants::pi_sqrt_pi
+		* mulWeights(overlap_ds(r(2), widthsB(), widthsSum(), gaussReduced()));
 }
 
 template <>
 double CGTOSpecPair<0, 0, 1, 1, 0, 0>::overlap() const
 {
-	return Constants::pi_sqrt_pi * f().weights().transpose()
-		* overlap_pp(r(2), r(0), widthsSum(), widthsReduced(), gaussReduced()).matrix()
-		* g().weights();
+	return Constants::pi_sqrt_pi
+		* mulWeights(overlap_pp(r(2), r(0), widthsSum(), widthsReduced(), gaussReduced()));
 }
 
 template <>
 double CGTOSpecPair<0, 0, 1, 0, 1, 0>::overlap() const
 {
-	return Constants::pi_sqrt_pi * f().weights().transpose()
-		* overlap_pp(r(2), r(1), widthsSum(), widthsReduced(), gaussReduced()).matrix()
-		* g().weights();
+	return Constants::pi_sqrt_pi
+		* mulWeights(overlap_pp(r(2), r(1), widthsSum(), widthsReduced(), gaussReduced()));
 }
 
 template <>
 double CGTOSpecPair<0, 0, 1, 0, 0, 1>::overlap() const
 {
-	return Constants::pi_sqrt_pi * f().weights().transpose()
-		* overlap_pp(r(2), widthsSum(), widthsReduced(), gaussReduced()).matrix()
-		* g().weights();
+	return Constants::pi_sqrt_pi
+		* mulWeights(overlap_pp(r(2), widthsSum(), widthsReduced(), gaussReduced()));
 }
 
 template <>
 double CGTOSpecPair<0, 0, 0, 2, 0, 0>::overlap() const
 {
-	return Constants::pi_sqrt_pi * f().weights().transpose()
-		* overlap_ds(r(0), widthsA(), widthsSum(), gaussReduced()).matrix()
-		* g().weights();
+	return Constants::pi_sqrt_pi
+		* mulWeights(overlap_ds(r(0), widthsA(), widthsSum(), gaussReduced()));
 }
 
 template <>
 double CGTOSpecPair<0, 0, 0, 1, 1, 0>::overlap() const
 {
-	return Constants::pi_sqrt_pi * f().weights().transpose()
-		* overlap_ds(r(0), r(1), widthsA(), widthsSum(), gaussReduced()).matrix()
-		* g().weights();
+	return Constants::pi_sqrt_pi
+		* mulWeights(overlap_ds(r(0), r(1), widthsA(), widthsSum(), gaussReduced()));
 }
 
 template <>
 double CGTOSpecPair<0, 0, 0, 1, 0, 1>::overlap() const
 {
-	return Constants::pi_sqrt_pi * f().weights().transpose()
-		* overlap_ds(r(0), r(2), widthsA(), widthsSum(), gaussReduced()).matrix()
-		* g().weights();
+	return Constants::pi_sqrt_pi
+		* mulWeights(overlap_ds(r(0), r(2), widthsA(), widthsSum(), gaussReduced()));
 }
 
 template <>
 double CGTOSpecPair<0, 0, 0, 0, 2, 0>::overlap() const
 {
-	return Constants::pi_sqrt_pi * f().weights().transpose()
-		* overlap_ds(r(1), widthsA(), widthsSum(), gaussReduced()).matrix()
-		* g().weights();
+	return Constants::pi_sqrt_pi
+		* mulWeights(overlap_ds(r(1), widthsA(), widthsSum(), gaussReduced()));
 }
 
 template <>
 double CGTOSpecPair<0, 0, 0, 0, 1, 1>::overlap() const
 {
-	return Constants::pi_sqrt_pi * f().weights().transpose()
-		* overlap_ds(r(1), r(2), widthsA(), widthsSum(), gaussReduced()).matrix()
-		* g().weights();
+	return Constants::pi_sqrt_pi
+		* mulWeights(overlap_ds(r(1), r(2), widthsA(), widthsSum(), gaussReduced()));
 }
 
 template <>
 double CGTOSpecPair<0, 0, 0, 0, 0, 2>::overlap() const
 {
-	return Constants::pi_sqrt_pi * f().weights().transpose()
-		* overlap_ds(r(2), widthsA(), widthsSum(), gaussReduced()).matrix()
-		* g().weights();
+	return Constants::pi_sqrt_pi
+		* mulWeights(overlap_ds(r(2), widthsA(), widthsSum(), gaussReduced()));
 }
 
 // S_00 = gred / (asum * asum.sqrt());
@@ -283,64 +255,57 @@ static Eigen::ArrayXXd kinetic_ps(double x, double rsq,
 template <>
 double CGTOSpecPair<0, 0, 0, 0, 0, 0>::kineticEnergy() const
 {
-	return Constants::pi_sqrt_pi * f().weights().transpose()
-		* (widthsReduced() * (3 - 2*r().squaredNorm()*widthsReduced())
-			* gaussReduced() / widthsSum().sqrt()).matrix()
-		* g().weights();
+	return Constants::pi_sqrt_pi * mulWeights(
+			(widthsReduced() * (3 - 2*r().squaredNorm()*widthsReduced())
+			* gaussReduced() / widthsSum().sqrt()));
 }
 
 template <>
 double CGTOSpecPair<1, 0, 0, 0, 0, 0>::kineticEnergy() const
 {
-	return Constants::pi_sqrt_pi * f().weights().transpose()
-		* kinetic_ps(r(0), r().squaredNorm(), widthsB(), widthsSum(),
-			widthsReduced(), gaussReduced()).matrix()
-		* g().weights();
+	return Constants::pi_sqrt_pi * mulWeights(
+		kinetic_ps(r(0), r().squaredNorm(), widthsB(), widthsSum(),
+			widthsReduced(), gaussReduced()));
 }
 
 template <>
 double CGTOSpecPair<0, 1, 0, 0, 0, 0>::kineticEnergy() const
 {
-	return Constants::pi_sqrt_pi * f().weights().transpose()
-		* kinetic_ps(r(1), r().squaredNorm(), widthsB(), widthsSum(),
-			widthsReduced(), gaussReduced()).matrix()
-		* g().weights();
+	return Constants::pi_sqrt_pi * mulWeights(
+		kinetic_ps(r(1), r().squaredNorm(), widthsB(), widthsSum(),
+			widthsReduced(), gaussReduced()));
 }
 
 template <>
 double CGTOSpecPair<0, 0, 1, 0, 0, 0>::kineticEnergy() const
 {
-	return Constants::pi_sqrt_pi * f().weights().transpose()
-		* kinetic_ps(r(2), r().squaredNorm(), widthsB(), widthsSum(),
-			widthsReduced(), gaussReduced()).matrix()
-		* g().weights();
+	return Constants::pi_sqrt_pi * mulWeights(
+		kinetic_ps(r(2), r().squaredNorm(), widthsB(), widthsSum(),
+			widthsReduced(), gaussReduced()));
 }
 
 template <>
 double CGTOSpecPair<0, 0, 0, 1, 0, 0>::kineticEnergy() const
 {
-	return Constants::pi_sqrt_pi * f().weights().transpose()
-		* kinetic_ps(-r(0), r().squaredNorm(), widthsA(), widthsSum(),
-			widthsReduced(), gaussReduced()).matrix()
-		* g().weights();
+	return Constants::pi_sqrt_pi * mulWeights(
+		kinetic_ps(-r(0), r().squaredNorm(), widthsA(), widthsSum(),
+			widthsReduced(), gaussReduced()));
 }
 
 template <>
 double CGTOSpecPair<0, 0, 0, 0, 1, 0>::kineticEnergy() const
 {
-	return Constants::pi_sqrt_pi * f().weights().transpose()
-		* kinetic_ps(-r(1), r().squaredNorm(), widthsA(), widthsSum(),
-			widthsReduced(), gaussReduced()).matrix()
-		* g().weights();
+	return Constants::pi_sqrt_pi * mulWeights(
+		kinetic_ps(-r(1), r().squaredNorm(), widthsA(), widthsSum(),
+			widthsReduced(), gaussReduced()));
 }
 
 template <>
 double CGTOSpecPair<0, 0, 0, 0, 0, 1>::kineticEnergy() const
 {
-	return Constants::pi_sqrt_pi * f().weights().transpose()
-		* kinetic_ps(-r(2), r().squaredNorm(), widthsA(), widthsSum(),
-			widthsReduced(), gaussReduced()).matrix()
-		* g().weights();
+	return Constants::pi_sqrt_pi * mulWeights(
+		kinetic_ps(-r(2), r().squaredNorm(), widthsA(), widthsSum(),
+			widthsReduced(), gaussReduced()));
 }
 
 template<>
@@ -365,8 +330,6 @@ double CGTOSpecPair<0, 0, 0, 0, 0, 0>::nuclearAttraction(
 	for (int iC = 0; iC < nr_nuc; ++iC)
 		A += -nuc_charge[iC] * Am.block(0, iC*nr_cols, nr_rows, nr_cols);
 
-	return 2 * M_PI * f().weights().transpose()
-		* (gaussReduced() * A).matrix()
-		* g().weights();
+	return 2 * M_PI * mulWeights(gaussReduced() * A);
 }
 

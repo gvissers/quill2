@@ -39,8 +39,8 @@ struct CGTOSpec: public CGTO
 	 * \param weights The weights of the primitives in the contraction
 	 * \param ishell  Index of this orbital's shell in the CGTOShellList
 	 */
-	CGTOSpec(const Eigen::VectorXd& weights, int ishell):
-		CGTO(cid, Eigen::Vector3i(tlx, tly, tlz), weights, ishell) {}
+	CGTOSpec(int ishell):
+		CGTO(cid, Eigen::Vector3i(tlx, tly, tlz), ishell) {}
 
 	/*!
 	 * \brief Print this orbital
@@ -64,10 +64,9 @@ std::ostream& CGTOSpec<tlx, tly, tlz>::print(std::ostream& os) const
 {
 	os << "CGTOSpec<" << tlx << ", " << tly << ", " << tlz << "> (\n" << indent;
 	os << "center: " << center().transpose() << "\n";
-	os << "primitives:\n" << indent;
-	for (int i = 0; i < size(); i++)
-		os << weight(i) << " " << width(i) << "\n";
-	os << dedent << dedent << ")";
+	os << "norm: " << norm() << "\n";
+	os << "shell:\n" << indent << shell() << "\n" << dedent;
+	os << dedent << ")";
 	return os;
 }
 
