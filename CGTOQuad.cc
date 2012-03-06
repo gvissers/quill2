@@ -15,6 +15,7 @@ static const CGTOPair& secondPair(const CGTOPair& pp, const CGTOPair& qq)
 
 CGTOQuad::CGTOQuad(const CGTOPair& pp, const CGTOPair& qq):
 	AbstractBFQuad(firstPair(pp, qq), secondPair(pp, qq)),
+	_norm(pp.norm() * qq.norm()),
 	_ishell_quad(CGTOShellList::pairIndex(p().ishellPair(), q().ishellPair())),
 	_shell_quad(CGTOShellList::singleton().quad(_ishell_quad)) {}
 
@@ -1164,6 +1165,11 @@ double CGTOQuad::electronRepulsion_abcd() const
 
 double CGTOQuad::electronRepulsion() const
 {
+	return _shell_quad.getEri(lA(0), lA(1), lA(2),
+		lB(0), lB(1), lB(2),
+		lC(0), lC(1), lC(2),
+		lD(0), lD(1), lD(2)) * _norm;
+	
 	switch (_shell_quad.positionSymmetry())
 	{
 		case CGTOShellQuad::POS_SYM_AAAA:

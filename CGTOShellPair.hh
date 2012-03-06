@@ -64,7 +64,9 @@ public:
 	//! Return the \a i coordinate of the first shell in this pair
 	double centerA(int i) const { return _shA.center(i); }
 	//! Return the \a i coordinate of the second shell in this pair
-	double centerB(int i) const { return _shA.center(i); }
+	double centerB(int i) const { return _shB.center(i); }
+	//! Return the distance between the two centers in the \a i dimension
+	double dAB(int i) const { return _shB.center(i) - _shA.center(i); }
 	
 	/*!
 	 * \brief Return the weighted average \a i coordinate, for each

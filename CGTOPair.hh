@@ -176,14 +176,6 @@ public:
 	{
 		return Constants::sqrt_2_pi_5_4 * gaussReduced();
 	}
-	/*!
-	 * \brief Return the products of the weights for each combination of
-	 *    primitives in the contraction
-	 */
-	const Eigen::ArrayXXd& weights() const
-	{
-		return _shell_pair.weights();
-	}
 
 	/*!
 	 * \brief Create a new CGTOPair

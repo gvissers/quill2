@@ -65,6 +65,12 @@ public:
 	{
 		return _C.block(0, idx*_q_size, _p_size, _q_size);
 	}
+	//! Read-only access to coefficients for \f$[i0,j0]^m\f$, for all \f$m\f$.
+	const Eigen::Block<const Eigen::ArrayXXd> allM(int i, int j) const
+	{
+		int idx = index(i,j,0);
+		return _C.block(0, idx*_q_size, _p_size, (i+j+1)*_q_size);
+	}
 
 	/*!
 	 * \brief Read-write access to the coefficients for auxiliary integrals

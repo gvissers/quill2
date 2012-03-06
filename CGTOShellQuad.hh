@@ -8,6 +8,7 @@
 
 #include <memory>
 #include "CGTOShellPair.hh"
+#include "EriCoefs.hh"
 #include "constants.hh"
 
 class CGTOShellQuad
@@ -259,7 +260,35 @@ public:
 	const Eigen::ArrayXXd& T() const { return _T; }
 	const Eigen::ArrayXXd& expmT() const { return _expmT; }
 	Eigen::ArrayXXd Fm(int m) const;
-	
+	double getEri(int lx1, int ly1, int lz1, int lx2, int ly2, int lz2) const
+	{
+		if (!_have_eri)
+			setEri();
+		return eri(lx1, ly1, lz1, lx2, ly2, lz2);
+	}
+	double getEri(int lxA, int lyA, int lzA,
+		int lxB, int lyB, int lzB,
+		int lxC, int lyC, int lzC,
+		int lxD, int lyD, int lzD) const
+	{
+		if (!_have_eri)
+			setEri();
+		return eri(lxA, lyA, lzA, lxB, lyB, lzB, lxC, lyC, lzC, lxD, lyD, lzD);
+	}
+
+	/*!
+	 * Multiply the contributions to an integral \a C of each primitive pair
+	 * with the weights of the primitives, and sum the results to compute
+	 * the integral over the contraction.
+	 * \param C the primitve integrals
+	 */
+	template <typename Derived>
+	double mulWeights(const Eigen::ArrayBase<Derived>& C) const
+	{
+		return ((C.colwise() * ColArray::MapAligned(_pAB.weights().data(), _pAB.size())).colwise().sum()
+			* RowArray::MapAligned(_pCD.weights().data(), _pCD.size())).sum();
+	}
+
 private:
 	//! The first pair of shells in this quartet
 	const CGTOShellPair& _pAB;
@@ -271,11 +300,39 @@ private:
 	Eigen::ArrayXXd _dPQ;
 	//! The symmetry in positions of the four orbitals
 	PositionSymmetry _pos_sym;
+	//! The total angular momentum of the four shells combined
+	int _lsum;
 
 	Eigen::ArrayXXd _T;
 	Eigen::ArrayXXd _expmT;
 	mutable int _m;
 	mutable Eigen::ArrayXXd _Fm;
+	mutable Eigen::ArrayXXd _ints;
+	//! Whether the electron repulsion integrals have been computed
+	mutable bool _have_eri;
+
+	void elecRepPrim1d_abcd(int i, EriCoefs& coefs) const;
+	double eri_xx(int lx1, int ly1, int lz1, int lx2, int ly2, int lz2,
+		const EriCoefs& Cx, const EriCoefs& Cy, const EriCoefs& Cz,
+		const Eigen::ArrayXXd& Fms) const;
+	double eri_10(const Eigen::Block<const Eigen::ArrayXXd>& Cxl,
+		const Eigen::ArrayXXd& Fms) const;
+	double eri_20(const Eigen::Block<const Eigen::ArrayXXd>& Cxl,
+		const Eigen::ArrayXXd& Fms) const;
+	double eri_11(const Eigen::Block<const Eigen::ArrayXXd>& Cxl,
+		const Eigen::Block<const Eigen::ArrayXXd>& Cyl,
+		const Eigen::ArrayXXd& Fms) const;
+	void setEri() const;
+
+	double& eri(int lx1, int ly1, int lz1, int lx2, int ly2, int lz2) const
+	{
+		return _ints(lx1*(_lsum+1)*(_lsum+1)+ly1*(_lsum+1)+lz1,
+			lx2*(_lsum+1)*(_lsum+1)+ly2*(_lsum+1)+lz2);
+	}
+	double eri(int lxA, int lyA, int lz1A,
+		int lxB, int lyB, int lzB,
+		int lxC, int lyC, int lzC,
+		int lxD, int lyD, int lzD) const;
 };
 
 #endif // CGTOSHELLQUAD_HH
