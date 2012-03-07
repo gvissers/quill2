@@ -249,22 +249,22 @@ double CGTOShellQuad::eri_xx(int lx1, int ly1, int lz1, int lx2, int ly2, int lz
 double CGTOShellQuad::eri_10(const EriCoefs::AllMBlock& Cxl,
 	const Fms& fms) const
 {
-	return mulWeights(Cxl(1) * fms(1) + Cxl(0) * fms(0));
+	return mulWeights(Cxl(1)*fms(1) + Cxl(0)*fms(0));
 }
 
 double CGTOShellQuad::eri_20(const EriCoefs::AllMBlock& Cxl,
 	const Fms& fms) const
 {
-	return mulWeights(Cxl(2) * fms(2) + Cxl(1) * fms(1) + Cxl(0) * fms(0));
+	return mulWeights(Cxl(2)*fms(2) + Cxl(1)*fms(1) + Cxl(0)*fms(0));
 }
 
 double CGTOShellQuad::eri_11(const EriCoefs::AllMBlock& Cxl,
 	const EriCoefs::AllMBlock& Cyl,
 	const Fms& fms) const
 {
-	Eigen::ArrayXXd C = Cxl(1) * Cyl(1) * fms(2)
-		+ (Cxl(1) * Cyl(0) + Cxl(0) * Cyl(1)) * fms(1)
-		+ Cxl(0) * Cyl(0) * fms(0);
+	Eigen::ArrayXXd C = Cxl(1)*Cyl(1)*fms(2)
+		+ (Cxl(1)*Cyl(0)+Cxl(0)*Cyl(1))*fms(1)
+		+ Cxl(0)*Cyl(0)*fms(0);
 	return mulWeights(C);
 }
 
@@ -356,32 +356,65 @@ void CGTOShellQuad::setEri() const
 	_have_eri = true;
 }
 
+inline double CGTOShellQuad::eri(int lx1, int ly1, int lz1,
+	int lx2, int ly2, int lzC, int lzD) const
+{
+	if (lzD == 0)
+		return eri(lx1, ly1, lz1, lx2, ly2, lzC);
+	return eri(lx1, ly1, lz1, lx2, ly2, lzC+1, lzD-1)
+		- _pCD.dAB(2) * eri(lx1, ly1, lz1, lx2, ly2, lzC, lzD-1);
+	
+}
+
+inline double CGTOShellQuad::eri(int lx1, int ly1, int lz1,
+	int lx2, int lyC, int lzC, int lyD, int lzD) const
+{
+	if (lyD == 0)
+		return eri(lx1, ly1, lz1, lx2, lyC, lzC, lzD);
+	return eri(lx1, ly1, lz1, lx2, lyC+1, lzC, lyD-1, lzD)
+		- _pCD.dAB(1) * eri(lx1, ly1, lz1, lx2, lyC, lzC, lyD-1, lzD);
+}
+
+inline double CGTOShellQuad::eri(int lx1, int ly1, int lz1,
+	int lxC, int lyC, int lzC, int lxD, int lyD, int lzD) const
+{
+	if (_pos_sym == POS_SYM_AACD || _pos_sym == POS_SYM_ABCD)
+	{
+		if (lxD == 0)
+			return eri(lx1, ly1, lz1, lxC, lyC, lzC, lyD, lzD);
+		return eri(lx1, ly1, lz1, lxC+1, lyC, lzC, lxD-1, lyD, lzD)
+			- _pCD.dAB(0) * eri(lx1, ly1, lz1, lxC, lyC, lzC, lxD-1, lyD, lzD);
+	}
+	return eri(lx1, ly1, lz1, lxC+lxD, lyC+lyD, lzC+lzD);
+}
+
+inline double CGTOShellQuad::eri(int lx1, int ly1, int lzA, int lzB,
+	int lxC, int lyC, int lzC, int lxD, int lyD, int lzD) const
+{
+	if (lzB == 0)
+		return eri(lx1, ly1, lzA, lxC, lyC, lzC, lxD, lyD, lzD);
+	return eri(lx1, ly1, lzA+1, lzB-1, lxC, lyC, lzC, lxD, lyD, lzD)
+		- _pAB.dAB(2) * eri(lx1, ly1, lzA, lzB-1, lxC, lyC, lzC, lxD, lyD, lzD);
+}
+
+inline double CGTOShellQuad::eri(int lx1, int lyA, int lzA, int lyB, int lzB,
+	int lxC, int lyC, int lzC, int lxD, int lyD, int lzD) const
+{
+	if (lyB == 0)
+		return eri(lx1, lyA, lzA, lzB, lxC, lyC, lzC, lxD, lyD, lzD);
+	return eri(lx1, lyA+1, lzA, lyB-1, lzB, lxC, lyC, lzC, lxD, lyD, lzD)
+		- _pAB.dAB(1) * eri(lx1, lyA, lzA, lyB-1, lzB, lxC, lyC, lzC, lxD, lyD, lzD);
+}
+
 double CGTOShellQuad::eri(int lxA, int lyA, int lzA, int lxB, int lyB, int lzB,
 	int lxC, int lyC, int lzC, int lxD, int lyD, int lzD) const
 {
 	if (_pos_sym == POS_SYM_ABCC || _pos_sym == POS_SYM_ABCD)
 	{
-		if (lxB > 0)
-			return eri(lxA+1, lyA, lzA, lxB-1, lyB, lzB, lxC, lyC, lzC, lxD, lyD, lzD)
-				- _pAB.dAB(0) * eri(lxA, lyA, lzA, lxB-1, lyB, lzB, lxC, lyC, lzC, lxD, lyD, lzD);
-		if (lyB > 0)
-			return eri(lxA, lyA+1, lzA, lxB, lyB-1, lzB, lxC, lyC, lzC, lxD, lyD, lzD)
-				- _pAB.dAB(1) * eri(lxA, lyA, lzA, lxB, lyB-1, lzB, lxC, lyC, lzC, lxD, lyD, lzD);
-		if (lzB > 0)
-			return eri(lxA, lyA, lzA+1, lxB, lyB, lzB-1, lxC, lyC, lzC, lxD, lyD, lzD)
-				- _pAB.dAB(2) * eri(lxA, lyA, lzA, lxB, lyB, lzB-1, lxC, lyC, lzC, lxD, lyD, lzD);
+		if (lxB == 0)
+			return eri(lxA+lxB, lyA, lzA, lyB, lzB, lxC, lyC, lzC, lxD, lyD, lzD);
+		return eri(lxA+1, lyA, lzA, lxB-1, lyB, lzB, lxC, lyC, lzC, lxD, lyD, lzD)
+			- _pAB.dAB(0) * eri(lxA, lyA, lzA, lxB-1, lyB, lzB, lxC, lyC, lzC, lxD, lyD, lzD);
 	}
-	if (_pos_sym == POS_SYM_AACD || _pos_sym == POS_SYM_ABCD)
-	{
-		if (lxD > 0)
-			return eri(lxA, lyA, lzA, lxB, lyB, lzB, lxC+1, lyC, lzC, lxD-1, lyD, lzD)
-				- _pCD.dAB(0) * eri(lxA, lyA, lzA, lxB, lyB, lzB, lxC, lyC, lzC, lxD-1, lyD, lzD);
-		if (lyD > 0)
-			return eri(lxA, lyA, lzA, lxB, lyB, lzB, lxC, lyC+1, lzC, lxD, lyD-1, lzD)
-				- _pCD.dAB(1) * eri(lxA, lyA, lzA, lxB, lyB, lzB, lxC, lyC, lzC, lxD, lyD-1, lzD);
-		if (lzD > 0)
-			return eri(lxA, lyA, lzA, lxB, lyB, lzB, lxC, lyC, lzC+1, lxD, lyD, lzD-1)
-				- _pCD.dAB(2) * eri(lxA, lyA, lzA, lxB, lyB, lzB, lxC, lyC, lzC, lxD, lyD, lzD-1);
-	}
-	return eri(lxA+lxB, lyA+lyB, lzA+lzB, lxC+lxD, lyC+lyD, lzC+lzD);
+	return eri(lxA+lxB, lyA+lyB, lzA+lzB, lxC, lyC, lzC, lxD, lyD, lzD);
 }

@@ -329,7 +329,24 @@ private:
 		return _ints(lx1*(_lsum+1)*(_lsum+1)+ly1*(_lsum+1)+lz1,
 			lx2*(_lsum+1)*(_lsum+1)+ly2*(_lsum+1)+lz2);
 	}
-	double eri(int lxA, int lyA, int lz1A,
+	double eri(int lx1, int ly1, int lz1,
+		int lx2, int ly2, int lzC,
+		int lzD) const;
+	double eri(int lx1, int ly1, int lz1,
+		int lx2, int lyC, int lzC,
+		int lyD, int lzD) const;
+	double eri(int lx1, int ly1, int lz1,
+		int lxC, int lyC, int lzC,
+		int lxD, int lyD, int lzD) const;
+	double eri(int lx1, int ly1, int lzA,
+		int lzB,
+		int lxC, int lyC, int lzC,
+		int lxD, int lyD, int lzD) const;
+	double eri(int lx1, int lyA, int lzA,
+		int lyB, int lzB,
+		int lxC, int lyC, int lzC,
+		int lxD, int lyD, int lzD) const;
+	double eri(int lxA, int lyA, int lzA,
 		int lxB, int lyB, int lzB,
 		int lxC, int lyC, int lzC,
 		int lxD, int lyD, int lzD) const;
