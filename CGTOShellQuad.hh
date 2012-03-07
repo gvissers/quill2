@@ -11,6 +11,9 @@
 #include "EriCoefs.hh"
 #include "constants.hh"
 
+// Forward declaration
+class Fms;
+
 class CGTOShellQuad
 {
 public:
@@ -314,14 +317,11 @@ private:
 	void elecRepPrim1d_abcd(int i, EriCoefs& coefs) const;
 	double eri_xx(int lx1, int ly1, int lz1, int lx2, int ly2, int lz2,
 		const EriCoefs& Cx, const EriCoefs& Cy, const EriCoefs& Cz,
-		const Eigen::ArrayXXd& Fms) const;
-	double eri_10(const EriCoefs::AllMBlock& Cxl,
-		const Eigen::ArrayXXd& Fms) const;
-	double eri_20(const EriCoefs::AllMBlock& Cxl,
-		const Eigen::ArrayXXd& Fms) const;
+		const Fms& fms) const;
+	double eri_10(const EriCoefs::AllMBlock& Cxl, const Fms& fms) const;
+	double eri_20(const EriCoefs::AllMBlock& Cxl, const Fms& fms) const;
 	double eri_11(const EriCoefs::AllMBlock& Cxl,
-		const EriCoefs::AllMBlock& Cyl,
-		const Eigen::ArrayXXd& Fms) const;
+		const EriCoefs::AllMBlock& Cyl, const Fms& fms) const;
 	void setEri() const;
 
 	double& eri(int lx1, int ly1, int lz1, int lx2, int ly2, int lz2) const

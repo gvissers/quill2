@@ -2,6 +2,43 @@
 #include "CGTOShellQuad.hh"
 #include "boys.hh"
 
+class Fms
+{
+	static const int pkt_size = Eigen::internal::packet_traits<double>::size;
+
+public:
+	typedef Eigen::ArrayXXd::AlignedMapType Block;
+	typedef Eigen::ArrayXXd::ConstAlignedMapType ConstBlock;
+
+	Fms(int maxm, const Eigen::ArrayXXd& T, const Eigen::ArrayXXd& expmT,
+		const Eigen::ArrayXXd& KKW):
+		_n1(T.rows()), _n2(T.cols()),
+		_nn(pkt_size * ((_n1*_n2+pkt_size-1) / pkt_size)),
+		_F(_nn, maxm+1)
+	{
+		(*this)(maxm) = T.boys(maxm, expmT);
+		for (int m = maxm-1; m >= 0; --m)
+			(*this)(m) = (expmT + 2*T*(*this)(m+1)) / (2*m+1);
+		for (int m = maxm; m >= 0; --m)
+			(*this)(m) *= KKW;
+	}
+
+	Block operator()(int m)
+	{
+		return Eigen::ArrayXXd::MapAligned(_F.data()+m*_nn, _n1, _n2);
+	}
+	ConstBlock operator()(int m) const
+	{
+		return Eigen::ArrayXXd::MapAligned(_F.data()+m*_nn, _n1, _n2);
+	}
+
+private:
+	int _n1;
+	int _n2;
+	int _nn;
+	Eigen::ArrayXXd _F;
+};
+
 CGTOShellQuad::CGTOShellQuad(const CGTOShellPair& pAB, const CGTOShellPair& pCD):
 	_pAB(pAB), _pCD(pCD),
 	_inv_widths_sum((widthsAB().replicate(1, pCD.size()).rowwise()
@@ -173,7 +210,7 @@ Eigen::ArrayXXd CGTOShellQuad::Fm(int m) const
 
 double CGTOShellQuad::eri_xx(int lx1, int ly1, int lz1, int lx2, int ly2, int lz2,
 	const EriCoefs& Cx, const EriCoefs& Cy, const EriCoefs& Cz,
-	const Eigen::ArrayXXd& Fms) const
+	const Fms& fms) const
 {
 	int lx = lx1 + lx2, ly = ly1 + ly2, lz = lz1 + lz2;
 	int m = lx + ly + lz;
@@ -186,7 +223,7 @@ double CGTOShellQuad::eri_xx(int lx1, int ly1, int lz1, int lx2, int ly2, int lz
 	EriCoefs::AllMBlock Cxl = Cx.allM(lx1, lx2);
 	EriCoefs::AllMBlock Cyl = Cy.allM(ly1, ly2);
 	EriCoefs::AllMBlock Czl = Cz.allM(lz1, lz2);
-	Eigen::ArrayXXd C = Cxl(lx) * Cyl(ly) * Czl(lz) * Fms.block(0, m*n2, n1, n2);
+	Eigen::ArrayXXd C = Cxl(lx) * Cyl(ly) * Czl(lz) * fms(m);
 	Eigen::ArrayXXd Cm(n1, n2);
 	for (--m; m > 0; --m)
 	{
@@ -202,40 +239,32 @@ double CGTOShellQuad::eri_xx(int lx1, int ly1, int lz1, int lx2, int ly2, int lz
 				Cm += Cxl(mx) * Cyl(my) * Czl(mz);
 			}
 		}
-		C += Cm * Fms.block(0, m*n2, n1, n2);
+		C += Cm * fms(m);
 	}
-	C += Cxl(0) * Cyl(0) * Czl(0) * Fms.block(0, 0, n1, n2);
+	C += Cxl(0) * Cyl(0) * Czl(0) * fms(0);
 
 	return mulWeights(C);
 }
 
 double CGTOShellQuad::eri_10(const EriCoefs::AllMBlock& Cxl,
-	const Eigen::ArrayXXd& Fms) const
+	const Fms& fms) const
 {
-	int n1 = _pAB.size(), n2 = _pCD.size();
-	auto C = Cxl(1) * Fms.block(0, n2, n1, n2)
-		+ Cxl(0) * Fms.block(0, 0, n1, n2);
-	return mulWeights(C);
+	return mulWeights(Cxl(1) * fms(1) + Cxl(0) * fms(0));
 }
 
 double CGTOShellQuad::eri_20(const EriCoefs::AllMBlock& Cxl,
-	const Eigen::ArrayXXd& Fms) const
+	const Fms& fms) const
 {
-	int n1 = _pAB.size(), n2 = _pCD.size();
-	auto C = Cxl(2) * Fms.block(0, 2*n2, n1, n2)
-		+ Cxl(1) * Fms.block(0, n2, n1, n2)
-		+ Cxl(0) * Fms.block(0, 0, n1, n2);
-	return mulWeights(C);
+	return mulWeights(Cxl(2) * fms(2) + Cxl(1) * fms(1) + Cxl(0) * fms(0));
 }
 
 double CGTOShellQuad::eri_11(const EriCoefs::AllMBlock& Cxl,
 	const EriCoefs::AllMBlock& Cyl,
-	const Eigen::ArrayXXd& Fms) const
+	const Fms& fms) const
 {
-	int n1 = _pAB.size(), n2 = _pCD.size();
-	Eigen::ArrayXXd C = Cxl(1) * Cyl(1) * Fms.block(0, 2*n2, n1, n2)
-		+ (Cxl(1) * Cyl(0) + Cxl(0) * Cyl(1)) * Fms.block(0, n2, n1, n2)
-		+ Cxl(0) * Cyl(0) * Fms.block(0, 0, n1, n2);
+	Eigen::ArrayXXd C = Cxl(1) * Cyl(1) * fms(2)
+		+ (Cxl(1) * Cyl(0) + Cxl(0) * Cyl(1)) * fms(1)
+		+ Cxl(0) * Cyl(0) * fms(0);
 	return mulWeights(C);
 }
 
@@ -251,15 +280,7 @@ void CGTOShellQuad::setEri() const
 	elecRepPrim1d_abcd(1, Cy);
 	elecRepPrim1d_abcd(2, Cz);
 
-	Eigen::ArrayXXd Fms(n1, (_lsum+1)*n2);
-	Fms.block(0, _lsum*n2, n1, n2) = _T.boys(_lsum, _expmT);
-	for (int l = _lsum-1; l >= 0; --l)
-	{
-		Fms.block(0, l*n2, n1, n2)
-			= (_expmT + 2*_T*Fms.block(0, (l+1)*n2, n1, n2)) / (2*l+1);
-	}
-	Fms *= KKW().replicate(1, _lsum+1);
-
+	Fms fms(_lsum, _T, _expmT, KKW());
 	for (int l = _lsum; l > 2; --l)
 	{
 		for (int l1 = lsum1; l1 >= std::max(l-lsum2, 0); --l1)
@@ -275,7 +296,7 @@ void CGTOShellQuad::setEri() const
 						for (int ly2 = l2-lx2; ly2 >= 0; --ly2)
 						{
 							int lz2 = l2-lx2-ly2;
-							eri(lx1, ly1, lz1, lx2, ly2, lz2) = eri_xx(lx1, ly1, lz1, lx2, ly2, lz2, Cx, Cy, Cz, Fms);
+							eri(lx1, ly1, lz1, lx2, ly2, lz2) = eri_xx(lx1, ly1, lz1, lx2, ly2, lz2, Cx, Cy, Cz, fms);
 						}
 					}
 				}
@@ -286,51 +307,51 @@ void CGTOShellQuad::setEri() const
 	{
 		if (lsum1 > 1)
 		{
-			eri(2, 0, 0, 0, 0, 0) = eri_20(Cx.allM(2, 0), Fms);
-			eri(1, 1, 0, 0, 0, 0) = eri_11(Cx.allM(1, 0), Cy.allM(1, 0), Fms);
-			eri(1, 0, 1, 0, 0, 0) = eri_11(Cx.allM(1, 0), Cz.allM(1, 0), Fms);
-			eri(0, 2, 0, 0, 0, 0) = eri_20(Cy.allM(2, 0), Fms);
-			eri(0, 1, 1, 0, 0, 0) = eri_11(Cy.allM(1, 0), Cz.allM(1, 0), Fms);
-			eri(0, 0, 2, 0, 0, 0) = eri_20(Cz.allM(2, 0), Fms);
+			eri(2, 0, 0, 0, 0, 0) = eri_20(Cx.allM(2, 0), fms);
+			eri(1, 1, 0, 0, 0, 0) = eri_11(Cx.allM(1, 0), Cy.allM(1, 0), fms);
+			eri(1, 0, 1, 0, 0, 0) = eri_11(Cx.allM(1, 0), Cz.allM(1, 0), fms);
+			eri(0, 2, 0, 0, 0, 0) = eri_20(Cy.allM(2, 0), fms);
+			eri(0, 1, 1, 0, 0, 0) = eri_11(Cy.allM(1, 0), Cz.allM(1, 0), fms);
+			eri(0, 0, 2, 0, 0, 0) = eri_20(Cz.allM(2, 0), fms);
 		}
 		if (lsum1 > 0 && lsum2 > 0)
 		{
-			eri(1, 0, 0, 1, 0, 0) = eri_20(Cx.allM(1, 1), Fms);
-			eri(1, 0, 0, 0, 1, 0) = eri_11(Cx.allM(1, 0), Cy.allM(0, 1), Fms);
-			eri(1, 0, 0, 0, 0, 1) = eri_11(Cx.allM(1, 0), Cz.allM(0, 1), Fms);
-			eri(0, 1, 0, 1, 0, 0) = eri_11(Cy.allM(1, 0), Cx.allM(0, 1), Fms);
-			eri(0, 1, 0, 0, 1, 0) = eri_20(Cy.allM(1, 1), Fms);
-			eri(0, 1, 0, 0, 0, 1) = eri_11(Cy.allM(1, 0), Cz.allM(0, 1), Fms);
-			eri(0, 0, 1, 1, 0, 0) = eri_11(Cz.allM(1, 0), Cx.allM(0, 1), Fms);
-			eri(0, 0, 1, 0, 1, 0) = eri_11(Cz.allM(1, 0), Cy.allM(0, 1), Fms);
-			eri(0, 0, 1, 0, 0, 1) = eri_20(Cz.allM(1, 1), Fms);
+			eri(1, 0, 0, 1, 0, 0) = eri_20(Cx.allM(1, 1), fms);
+			eri(1, 0, 0, 0, 1, 0) = eri_11(Cx.allM(1, 0), Cy.allM(0, 1), fms);
+			eri(1, 0, 0, 0, 0, 1) = eri_11(Cx.allM(1, 0), Cz.allM(0, 1), fms);
+			eri(0, 1, 0, 1, 0, 0) = eri_11(Cy.allM(1, 0), Cx.allM(0, 1), fms);
+			eri(0, 1, 0, 0, 1, 0) = eri_20(Cy.allM(1, 1), fms);
+			eri(0, 1, 0, 0, 0, 1) = eri_11(Cy.allM(1, 0), Cz.allM(0, 1), fms);
+			eri(0, 0, 1, 1, 0, 0) = eri_11(Cz.allM(1, 0), Cx.allM(0, 1), fms);
+			eri(0, 0, 1, 0, 1, 0) = eri_11(Cz.allM(1, 0), Cy.allM(0, 1), fms);
+			eri(0, 0, 1, 0, 0, 1) = eri_20(Cz.allM(1, 1), fms);
 		}
 		if (lsum2 > 1)
 		{
-			eri(0, 0, 0, 2, 0, 0) = eri_20(Cx.allM(0, 2), Fms);
-			eri(0, 0, 0, 1, 1, 0) = eri_11(Cx.allM(0, 1), Cy.allM(0, 1), Fms);
-			eri(0, 0, 0, 1, 0, 1) = eri_11(Cx.allM(0, 1), Cz.allM(0, 1), Fms);
-			eri(0, 0, 0, 0, 2, 0) = eri_20(Cy.allM(0, 2), Fms);
-			eri(0, 0, 0, 0, 1, 1) = eri_11(Cy.allM(0, 1), Cz.allM(0, 1), Fms);
-			eri(0, 0, 0, 0, 0, 2) = eri_20(Cz.allM(0, 2), Fms);
+			eri(0, 0, 0, 2, 0, 0) = eri_20(Cx.allM(0, 2), fms);
+			eri(0, 0, 0, 1, 1, 0) = eri_11(Cx.allM(0, 1), Cy.allM(0, 1), fms);
+			eri(0, 0, 0, 1, 0, 1) = eri_11(Cx.allM(0, 1), Cz.allM(0, 1), fms);
+			eri(0, 0, 0, 0, 2, 0) = eri_20(Cy.allM(0, 2), fms);
+			eri(0, 0, 0, 0, 1, 1) = eri_11(Cy.allM(0, 1), Cz.allM(0, 1), fms);
+			eri(0, 0, 0, 0, 0, 2) = eri_20(Cz.allM(0, 2), fms);
 		}
 	}
 	if (_lsum > 0)
 	{
 		if (lsum1 > 0)
 		{
-			eri(1, 0, 0, 0, 0, 0) = eri_10(Cx.allM(1, 0), Fms);
-			eri(0, 1, 0, 0, 0, 0) = eri_10(Cy.allM(1, 0), Fms);
-			eri(0, 0, 1, 0, 0, 0) = eri_10(Cz.allM(1, 0), Fms);
+			eri(1, 0, 0, 0, 0, 0) = eri_10(Cx.allM(1, 0), fms);
+			eri(0, 1, 0, 0, 0, 0) = eri_10(Cy.allM(1, 0), fms);
+			eri(0, 0, 1, 0, 0, 0) = eri_10(Cz.allM(1, 0), fms);
 		}
 		if (lsum2 > 0)
 		{
-			eri(0, 0, 0, 1, 0, 0) = eri_10(Cx.allM(0, 1), Fms);
-			eri(0, 0, 0, 0, 1, 0) = eri_10(Cy.allM(0, 1), Fms);
-			eri(0, 0, 0, 0, 0, 1) = eri_10(Cz.allM(0, 1), Fms);
+			eri(0, 0, 0, 1, 0, 0) = eri_10(Cx.allM(0, 1), fms);
+			eri(0, 0, 0, 0, 1, 0) = eri_10(Cy.allM(0, 1), fms);
+			eri(0, 0, 0, 0, 0, 1) = eri_10(Cz.allM(0, 1), fms);
 		}
 	}
-	eri(0, 0, 0, 0, 0, 0) = mulWeights(Fms.block(0, 0, n1, n2));
+	eri(0, 0, 0, 0, 0, 0) = mulWeights(fms(0));
 
 	_have_eri = true;
 }
