@@ -51,6 +51,7 @@ int main()
 		std::cout << basis.size() << " basis functions\n";
 		std::cout << Dispatcher::singleton().nrPairs() << " bf pairs\n";
 		std::cout << Dispatcher::singleton().nrQuads() << " bf quartets\n";
+		os << "diagonal of S: " << basis.overlap().diagonal() << "\n\n";
 		os << basis.overlap() << "\n\n" << basis.kineticEnergy() << "\n\n"
 			<< basis.nuclearAttraction(geom.positions(), geom.charges())
 			<< "\n";

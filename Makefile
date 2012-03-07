@@ -2,7 +2,7 @@ FEATURES =
 
 CXX = ccache g++
 #OPT = -std=c++0x -Wall -W -ggdb -DDEBUG
-OPT = -std=c++0x -Wall -W -O2 -DNDEBUG
+OPT = -std=c++0x -Wall -W -O2 -ggdb -DNDEBUG
 #OPT = -std=c++0x -Wall -W -O3 -ffast-math -DNDEBUG
 
 #CXX = ccache clang++

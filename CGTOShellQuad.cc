@@ -183,12 +183,10 @@ double CGTOShellQuad::eri_xx(int lx1, int ly1, int lz1, int lx2, int ly2, int lz
 		throw Li::Exception("Total angular momentum must be greater than 0");
 #endif
 
-	const Eigen::Block<const Eigen::ArrayXXd> Cxl = Cx.allM(lx1, lx2);
-	const Eigen::Block<const Eigen::ArrayXXd> Cyl = Cy.allM(ly1, ly2);
-	const Eigen::Block<const Eigen::ArrayXXd> Czl = Cz.allM(lz1, lz2);
-	Eigen::ArrayXXd C = Cxl.block(0, lx*n2, n1, n2)
-		* Cyl.block(0, ly*n2, n1, n2)
-		* Czl.block(0, lz*n2, n1, n2) * Fms.block(0, m*n2, n1, n2);
+	EriCoefs::AllMBlock Cxl = Cx.allM(lx1, lx2);
+	EriCoefs::AllMBlock Cyl = Cy.allM(ly1, ly2);
+	EriCoefs::AllMBlock Czl = Cz.allM(lz1, lz2);
+	Eigen::ArrayXXd C = Cxl(lx) * Cyl(ly) * Czl(lz) * Fms.block(0, m*n2, n1, n2);
 	Eigen::ArrayXXd Cm(n1, n2);
 	for (--m; m > 0; --m)
 	{
@@ -201,48 +199,43 @@ double CGTOShellQuad::eri_xx(int lx1, int ly1, int lz1, int lx2, int ly2, int lz
 			for (int my = mymax; my >= mymin; --my)
 			{
 				int mz = m-mx-my;
-				Cm += Cxl.block(0, mx*n2, n1, n2)
-					* Cyl.block(0, my*n2, n1, n2)
-					* Czl.block(0, mz*n2, n1, n2);
+				Cm += Cxl(mx) * Cyl(my) * Czl(mz);
 			}
 		}
 		C += Cm * Fms.block(0, m*n2, n1, n2);
 	}
-	C += Cxl.block(0, 0, n1, n2)
-		* Cyl.block(0, 0, n1, n2)
-		* Czl.block(0, 0, n1, n2) * Fms.block(0, 0, n1, n2);
+	C += Cxl(0) * Cyl(0) * Czl(0) * Fms.block(0, 0, n1, n2);
 
 	return mulWeights(C);
 }
 
-double CGTOShellQuad::eri_10(const Eigen::Block<const Eigen::ArrayXXd>& Cxl,
+double CGTOShellQuad::eri_10(const EriCoefs::AllMBlock& Cxl,
 	const Eigen::ArrayXXd& Fms) const
 {
 	int n1 = _pAB.size(), n2 = _pCD.size();
-	auto C = Cxl.block(0, n2, n1, n2) * Fms.block(0, n2, n1, n2)
-		+ Cxl.block(0, 0, n1, n2) * Fms.block(0, 0, n1, n2);
+	auto C = Cxl(1) * Fms.block(0, n2, n1, n2)
+		+ Cxl(0) * Fms.block(0, 0, n1, n2);
 	return mulWeights(C);
 }
 
-double CGTOShellQuad::eri_20(const Eigen::Block<const Eigen::ArrayXXd>& Cxl,
+double CGTOShellQuad::eri_20(const EriCoefs::AllMBlock& Cxl,
 	const Eigen::ArrayXXd& Fms) const
 {
 	int n1 = _pAB.size(), n2 = _pCD.size();
-	auto C = Cxl.block(0, 2*n2, n1, n2) * Fms.block(0, 2*n2, n1, n2)
-		+ Cxl.block(0, n2, n1, n2) * Fms.block(0, n2, n1, n2)
-		+ Cxl.block(0, 0, n1, n2) * Fms.block(0, 0, n1, n2);
+	auto C = Cxl(2) * Fms.block(0, 2*n2, n1, n2)
+		+ Cxl(1) * Fms.block(0, n2, n1, n2)
+		+ Cxl(0) * Fms.block(0, 0, n1, n2);
 	return mulWeights(C);
 }
 
-double CGTOShellQuad::eri_11(const Eigen::Block<const Eigen::ArrayXXd>& Cxl,
-	const Eigen::Block<const Eigen::ArrayXXd>& Cyl,
+double CGTOShellQuad::eri_11(const EriCoefs::AllMBlock& Cxl,
+	const EriCoefs::AllMBlock& Cyl,
 	const Eigen::ArrayXXd& Fms) const
 {
 	int n1 = _pAB.size(), n2 = _pCD.size();
-	Eigen::ArrayXXd C = Cxl.block(0, n2, n1, n2) * Cyl.block(0, n2, n1, n2) * Fms.block(0, 2*n2, n1, n2)
-		+ (Cxl.block(0, n2, n1, n2) * Cyl.block(0, 0, n1, n2)
-			+ Cxl.block(0, 0, n1, n2) * Cyl.block(0, n2, n1, n2)) * Fms.block(0, n2, n1, n2)
-		+ Cxl.block(0, 0, n1, n2) * Cyl.block(0, 0, n1, n2) * Fms.block(0, 0, n1, n2);
+	Eigen::ArrayXXd C = Cxl(1) * Cyl(1) * Fms.block(0, 2*n2, n1, n2)
+		+ (Cxl(1) * Cyl(0) + Cxl(0) * Cyl(1)) * Fms.block(0, n2, n1, n2)
+		+ Cxl(0) * Cyl(0) * Fms.block(0, 0, n1, n2);
 	return mulWeights(C);
 }
 

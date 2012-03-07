@@ -17,7 +17,32 @@
  */
 class EriCoefs
 {
+	//! Local definition of the number of elements in a (SSE) packet
+	static const int pkt_size = Eigen::internal::packet_traits<double>::size;
+
 public:
+	//! Type for the set of coefficients for a single \f$[i0,j0]^m\f$ integral
+	typedef Eigen::ArrayXXd::AlignedMapType Block;
+	//! Constant type for the set of coefficients for a single \f$[i0,j0]^m\f$ integral
+	typedef Eigen::ArrayXXd::ConstAlignedMapType ConstBlock;
+	//! Type for the set of coefficients for \f$[i0,j0]^m\f$ integrals, for all values of \f$m\f$
+	class AllMBlock
+	{
+	public:
+		//! Constructor
+		AllMBlock(const EriCoefs& coefs, int i, int j):
+			_coefs(coefs), _off(coefs.index(i, j, 0)) {}
+
+		//! Retrieve the coefficients for the \f$[i0,j0]^m\f$ integral
+		ConstBlock operator()(int m) const { return _coefs(_off+m); }
+
+	private:
+		//! Coefficients we refer to
+		const EriCoefs& _coefs;
+		//! Column offset in the coefficients matrix
+		int _off;
+	};
+
 	/*!
 	 * \brief Constructor
 	 *
@@ -33,7 +58,8 @@ public:
 	 */
 	EriCoefs(int l1, int l2, int p_size, int q_size):
 		_nrl1(l1+1), _nrl2(l2+1), _p_size(p_size), _q_size(q_size),
-		_C(p_size, (_nrl1*_nrl2*(_nrl1+_nrl2)*q_size)/2) {}
+		_block_size(pkt_size * ((_p_size*_q_size+pkt_size-1) / pkt_size)),
+		_C(_block_size, (_nrl1*_nrl2*(_nrl1+_nrl2))/2) {}
 
 	/*!
 	 * \brief Return the index where the coefficients for auxiliary integral
@@ -45,51 +71,31 @@ public:
 	}
 
 	//! Read-write access to the coefficients for auxiliary integral \f$[i0,j0]^m\f$.
-	Eigen::Block<Eigen::ArrayXXd> operator()(int i, int j, int m)
+	Block operator()(int i, int j, int m)
 	{
 		return (*this)(index(i,j,m));
 	}
 	//! Read-only access to the coefficients for auxiliary integral \f$[i0,j0]^m\f$.
-	const Eigen::Block<const Eigen::ArrayXXd> operator()(int i, int j,
-		int m) const
+	ConstBlock operator()(int i, int j, int m) const
 	{
 		return (*this)(index(i,j,m));
 	}
 	//! Read-write access to the coefficients at block \a idx.
-	Eigen::Block<Eigen::ArrayXXd> operator()(int idx)
+	Block operator()(int idx)
 	{
-		return _C.block(0, idx*_q_size, _p_size, _q_size);
+		return Eigen::ArrayXXd::MapAligned(_C.data()+idx*_block_size,
+			_p_size, _q_size);
 	}
 	//! Read-only access to the coefficients at block \a idx.
-	const Eigen::Block<const Eigen::ArrayXXd> operator()(int idx) const
+	ConstBlock operator()(int idx) const
 	{
-		return _C.block(0, idx*_q_size, _p_size, _q_size);
+		return Eigen::ArrayXXd::MapAligned(_C.data()+idx*_block_size,
+			_p_size, _q_size);
 	}
 	//! Read-only access to coefficients for \f$[i0,j0]^m\f$, for all \f$m\f$.
-	const Eigen::Block<const Eigen::ArrayXXd> allM(int i, int j) const
+	AllMBlock allM(int i, int j) const
 	{
-		int idx = index(i,j,0);
-		return _C.block(0, idx*_q_size, _p_size, (i+j+1)*_q_size);
-	}
-
-	/*!
-	 * \brief Read-write access to the coefficients for auxiliary integrals
-	 *    \f$[i0,j0]^m\f$ up to \f$[i0,j0]^{m+n}\f$.
-	 */
-	Eigen::Block<Eigen::ArrayXXd> operator()(int i, int j, int m, int n)
-	{
-		return _C.block(0, (index(i,j,m))*_q_size, _p_size,
-			n*_q_size);
-	}
-	/*!
-	 * \brief Read-only access to the coefficients for auxiliary integrals
-	 *    \f$[i0,j0]^m\f$ up to \f$[i0,j0]^{m+n}\f$.
-	 */
-	const Eigen::Block<const Eigen::ArrayXXd> operator()(int i, int j,
-		int m, int count) const
-	{
-		return _C.block(0, (index(i,j,m))*_q_size, _p_size,
-			count*_q_size);
+		return AllMBlock(*this, i, j);
 	}
 
 private:
@@ -101,6 +107,8 @@ private:
 	int _p_size;
 	//! The number of primitive combinations in the second shell pair
 	int _q_size;
+	//! The size of a single coefficients block
+	int _block_size;
 	//! The coefficient matrix
 	Eigen::ArrayXXd _C;
 };

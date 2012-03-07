@@ -222,14 +222,21 @@ public:
 		const AbstractBFPair& q, BFQuadPool& pool);
 
 protected:
+	/*!
+	 * Multiply the contributions to an integral \a C of each primitive pair
+	 * with the weights of the primitives, and sum the results to compute
+	 * the integral over the contraction.
+	 * \param C the primitve integrals
+	 */
 	template <typename Derived>
 	double mulWeights(const Eigen::ArrayBase<Derived>& C) const
 	{
-		return ((C.colwise() * ColArray::MapAligned(p().weights().data(), p().size())).colwise().sum()
-			* RowArray::MapAligned(q().weights().data(), q().size())).sum() * p().norm() * q().norm();
+		return _shell_quad.mulWeights(C) * _norm;
 	}
 
 private:
+	//! Normalization factor for two-electron integrals
+	double _norm;
 	int _ishell_quad;
 	const CGTOShellQuad& _shell_quad;
 

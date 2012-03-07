@@ -315,12 +315,12 @@ private:
 	double eri_xx(int lx1, int ly1, int lz1, int lx2, int ly2, int lz2,
 		const EriCoefs& Cx, const EriCoefs& Cy, const EriCoefs& Cz,
 		const Eigen::ArrayXXd& Fms) const;
-	double eri_10(const Eigen::Block<const Eigen::ArrayXXd>& Cxl,
+	double eri_10(const EriCoefs::AllMBlock& Cxl,
 		const Eigen::ArrayXXd& Fms) const;
-	double eri_20(const Eigen::Block<const Eigen::ArrayXXd>& Cxl,
+	double eri_20(const EriCoefs::AllMBlock& Cxl,
 		const Eigen::ArrayXXd& Fms) const;
-	double eri_11(const Eigen::Block<const Eigen::ArrayXXd>& Cxl,
-		const Eigen::Block<const Eigen::ArrayXXd>& Cyl,
+	double eri_11(const EriCoefs::AllMBlock& Cxl,
+		const EriCoefs::AllMBlock& Cyl,
 		const Eigen::ArrayXXd& Fms) const;
 	void setEri() const;
 
