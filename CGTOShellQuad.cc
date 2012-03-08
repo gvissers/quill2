@@ -1,49 +1,27 @@
 #include <Exception.hh>
 #include "CGTOShellQuad.hh"
+#include "MultiArray.hh"
 #include "boys.hh"
 
-class Fms
+struct Fms: public MultiArray
 {
-	static const int pkt_size = Eigen::internal::packet_traits<double>::size;
-
-public:
-	typedef Eigen::ArrayXXd::AlignedMapType Block;
-	typedef Eigen::ArrayXXd::ConstAlignedMapType ConstBlock;
-
 	Fms(int maxm, const Eigen::ArrayXXd& T, const Eigen::ArrayXXd& expmT,
 		const Eigen::ArrayXXd& KKW):
-		_n1(T.rows()), _n2(T.cols()),
-		_nn(pkt_size * ((_n1*_n2+pkt_size-1) / pkt_size)),
-		_F(_nn, maxm+1)
+		MultiArray(T.rows(), T.cols(), maxm+1)
 	{
-		(*this)(maxm) = T.boys(maxm, expmT);
+		(*this)[maxm] = T.boys(maxm, expmT);
 		for (int m = maxm-1; m >= 0; --m)
-			(*this)(m) = (expmT + 2*T*(*this)(m+1)) / (2*m+1);
+			(*this)[m] = (expmT + 2*T*(*this)[m+1]) / (2*m+1);
 		for (int m = maxm; m >= 0; --m)
-			(*this)(m) *= KKW;
+			(*this)[m] *= KKW;
 	}
-
-	Block operator()(int m)
-	{
-		return Eigen::ArrayXXd::MapAligned(_F.data()+m*_nn, _n1, _n2);
-	}
-	ConstBlock operator()(int m) const
-	{
-		return Eigen::ArrayXXd::MapAligned(_F.data()+m*_nn, _n1, _n2);
-	}
-
-private:
-	int _n1;
-	int _n2;
-	int _nn;
-	Eigen::ArrayXXd _F;
 };
 
 CGTOShellQuad::CGTOShellQuad(const CGTOShellPair& pAB, const CGTOShellPair& pCD):
 	_pAB(pAB), _pCD(pCD),
 	_inv_widths_sum((widthsAB().replicate(1, pCD.size()).rowwise()
 		+ widthsCD()).inverse()),
-	_dPQ(_pAB.size(), 3*_pCD.size()),
+	_dPQ(_pAB.size(), _pCD.size(), 3),
 	_lAB(pAB.lsum()), _lCD(pCD.lsum()), _lsum(_lAB+_lCD),
 	_ints((_lAB+1)*(_lAB+1)*(_lAB+1), (_lCD+1)*(_lCD+1)*(_lCD+1)),
 	_have_eri(false)
@@ -69,12 +47,9 @@ CGTOShellQuad::CGTOShellQuad(const CGTOShellPair& pAB, const CGTOShellPair& pCD)
 		_pos_sym = POS_SYM_ABCD;
 	}
 
-	_dPQ.block(0, 0, _pAB.size(), _pCD.size())
-		= Q(0).replicate(_pAB.size(), 1).colwise() - P(0);
-	_dPQ.block(0, _pCD.size(), _pAB.size(), _pCD.size())
-		= Q(1).replicate(_pAB.size(), 1).colwise() - P(1);
-	_dPQ.block(0, 2*_pCD.size(), _pAB.size(), _pCD.size())
-		= Q(2).replicate(_pAB.size(), 1).colwise() - P(2);
+	_dPQ[0] = Q(0).replicate(_pAB.size(), 1).colwise() - P(0);
+	_dPQ[1] = Q(1).replicate(_pAB.size(), 1).colwise() - P(1);
+	_dPQ[2] = Q(2).replicate(_pAB.size(), 1).colwise() - P(2);
 	
 	_T = widthsReduced() * (dPQ(0).square() + dPQ(1).square() + dPQ(2).square());
 	_expmT = (-_T).exp();
@@ -86,20 +61,20 @@ void CGTOShellQuad::elecRepPrim1d_abcd(int i, EriCoefs& coefs) const
 
 	int idx = 0;
 	// C_0,0,0,0
-	coefs(idx++).setOnes();
+	coefs[idx++].setOnes();
 	if (_lsum == 1)
 	{
 		if (l2 == 1)
 		{
 			// C_0,0,1,0
-			coefs(idx++).rowwise() = dxQ(i, _pCD.centerA(i));
-			coefs(idx) = dQW(i);
+			coefs[idx++].rowwise() = dxQ(i, _pCD.centerA(i));
+			coefs[idx] = dQW(i);
 		}
 		else
 		{
 			// C_1,0,0,0
-			coefs(idx++).colwise() = dxP(i, _pAB.centerA(i));
-			coefs(idx) = dPW(i);
+			coefs[idx++].colwise() = dxP(i, _pAB.centerA(i));
+			coefs[idx] = dPW(i);
 		}
 		return;
 	}
@@ -111,12 +86,12 @@ void CGTOShellQuad::elecRepPrim1d_abcd(int i, EriCoefs& coefs) const
 			auto dQWi = dQW(i);
 
 			// C_0,0,1,0
-			coefs(idx++).rowwise() = dCQi;
-			coefs(idx++) = dQWi;
+			coefs[idx++].rowwise() = dCQi;
+			coefs[idx++] = dQWi;
 			// C_0,0,2,0
-			coefs(idx++).rowwise() = dCQi.square() + hInvWidthsCD();
-			coefs(idx++) = dQWi.rowwise()*dCQi*2 - rho2();
-			coefs(idx) = dQWi.square();
+			coefs[idx++].rowwise() = dCQi.square() + hInvWidthsCD();
+			coefs[idx++] = dQWi.rowwise()*dCQi*2 - rho2();
+			coefs[idx] = dQWi.square();
 		}
 		else if (l2 == 1)
 		{
@@ -126,16 +101,16 @@ void CGTOShellQuad::elecRepPrim1d_abcd(int i, EriCoefs& coefs) const
 			auto dPWi = dPW(i);
 
 			// C_0,0,1,0
-			coefs(idx++).rowwise() = dCQi;
-			coefs(idx++) = dQWi;
+			coefs[idx++].rowwise() = dCQi;
+			coefs[idx++] = dQWi;
 			// C_1,0,0,0
-			coefs(idx++).colwise() = dAPi;
-			coefs(idx++) = dPWi;
+			coefs[idx++].colwise() = dAPi;
+			coefs[idx++] = dPWi;
 			// C_1,0,1,0
-			coefs(idx++) = dCQi.replicate(_pAB.size(), 1).colwise()*dAPi;
-			coefs(idx++) = dQWi.colwise()*dAPi + dPWi.rowwise()*dCQi
+			coefs[idx++] = dCQi.replicate(_pAB.size(), 1).colwise()*dAPi;
+			coefs[idx++] = dQWi.colwise()*dAPi + dPWi.rowwise()*dCQi
 				+ 0.5*invWidthsSum();
-			coefs(idx) = dPWi*dQWi;
+			coefs[idx] = dPWi*dQWi;
 		}
 		else
 		{
@@ -143,12 +118,12 @@ void CGTOShellQuad::elecRepPrim1d_abcd(int i, EriCoefs& coefs) const
 			auto dPWi = dPW(i);
 
 			// C_1,0,0,0
-			coefs(idx++).colwise() = dAPi;
-			coefs(idx++) = dPWi;
+			coefs[idx++].colwise() = dAPi;
+			coefs[idx++] = dPWi;
 			// C_2,0,0,0
-			coefs(idx++).colwise() = dAPi.square() + hInvWidthsAB();
-			coefs(idx++) = dPWi.colwise()*dAPi*2 - rho1();
-			coefs(idx) = dPWi.square();
+			coefs[idx++].colwise() = dAPi.square() + hInvWidthsAB();
+			coefs[idx++] = dPWi.colwise()*dAPi*2 - rho1();
+			coefs[idx] = dPWi.square();
 		}
 		return;
 	}
@@ -161,27 +136,27 @@ void CGTOShellQuad::elecRepPrim1d_abcd(int i, EriCoefs& coefs) const
 		auto rho2 = this->rho2();
 
 		// C_0,0,1,0
-		coefs(idx++).rowwise() = dCQi;
-		coefs(idx++) = dQWi;
+		coefs[idx++].rowwise() = dCQi;
+		coefs[idx++] = dQWi;
 
 		// C_0,0,c,0
 		for (int iC = 1; iC < l2; ++iC)
 		{
-			coefs(idx).rowwise() = coefs(idx-iC-1).row(0)*dCQi
-				+ coefs(idx-2*iC-1).row(0)*(iC*inv_eta);
+			coefs[idx].rowwise() = coefs[idx-iC-1].row(0)*dCQi
+				+ coefs[idx-2*iC-1].row(0)*(iC*inv_eta);
 			++idx;
 			for (int m = 1; m < iC; ++m, ++idx)
 			{
-				coefs(idx) = coefs(idx-iC-1).rowwise()*dCQi
-					+ coefs(idx-2*iC-1).rowwise()*(iC*inv_eta)
-					+ dQWi*coefs(idx-iC-2)
-					- iC*rho2*coefs(idx-2*iC-2);
+				coefs[idx] = coefs[idx-iC-1].rowwise()*dCQi
+					+ coefs[idx-2*iC-1].rowwise()*(iC*inv_eta)
+					+ dQWi*coefs[idx-iC-2]
+					- iC*rho2*coefs[idx-2*iC-2];
 			}
-			coefs(idx) = coefs(idx-iC-1).rowwise()*dCQi
-				+ dQWi*coefs(idx-iC-2)
-				- iC*rho2*coefs(idx-2*iC-2);
+			coefs[idx] = coefs[idx-iC-1].rowwise()*dCQi
+				+ dQWi*coefs[idx-iC-2]
+				- iC*rho2*coefs[idx-2*iC-2];
 			++idx;
-			coefs(idx) = dQWi*coefs(idx-iC-2);
+			coefs[idx] = dQWi*coefs[idx-iC-2];
 			++idx;
 		}
 	}
@@ -198,58 +173,58 @@ void CGTOShellQuad::elecRepPrim1d_abcd(int i, EriCoefs& coefs) const
 		// C_1,0,c,0
 		for (int iC = 0; iC <= l2; ++iC, ++n2)
 		{
-			coefs(idx) = coefs(idx-n2).colwise()*dAPi;
+			coefs[idx] = coefs[idx-n2].colwise()*dAPi;
 			++idx;
 			for (int m = 1; m <= iC; ++m, ++idx)
 			{
-				coefs(idx) = coefs(idx-n2).colwise()*dAPi
-					+ dPWi*coefs(idx-n2-1)
-					+ iC*inv_sum*coefs(idx-n2-iC-1);
+				coefs[idx] = coefs[idx-n2].colwise()*dAPi
+					+ dPWi*coefs[idx-n2-1]
+					+ iC*inv_sum*coefs[idx-n2-iC-1];
 			}
-			coefs(idx) = dPWi*coefs(idx-n2-1);
+			coefs[idx] = dPWi*coefs[idx-n2-1];
 			++idx;
 		}
 
 		// C_a,0,c,0
 		for (int iA = 1; iA < l1; ++iA)
 		{
-			coefs(idx) = coefs(idx-n2).colwise()*dAPi
-				+ coefs(idx-2*n2+l2+1).colwise()*(iA*inv_zeta);
+			coefs[idx] = coefs[idx-n2].colwise()*dAPi
+				+ coefs[idx-2*n2+l2+1].colwise()*(iA*inv_zeta);
 			++idx;
 			for (int m = 1; m < iA; ++m, ++idx)
 			{
-				coefs(idx) = coefs(idx-n2).colwise()*dAPi
-					+ coefs(idx-2*n2+l2+1).colwise()*(iA*inv_zeta)
-					+ dPWi*coefs(idx-n2-1)
-					- iA*rho1*coefs(idx-2*n2+l2);
+				coefs[idx] = coefs[idx-n2].colwise()*dAPi
+					+ coefs[idx-2*n2+l2+1].colwise()*(iA*inv_zeta)
+					+ dPWi*coefs[idx-n2-1]
+					- iA*rho1*coefs[idx-2*n2+l2];
 			}
-			coefs(idx) = coefs(idx-n2).colwise()*dAPi
-				+ dPWi*coefs(idx-n2-1)
-				- iA*rho1*coefs(idx-2*n2+l2);
+			coefs[idx] = coefs[idx-n2].colwise()*dAPi
+				+ dPWi*coefs[idx-n2-1]
+				- iA*rho1*coefs[idx-2*n2+l2];
 			++idx;
-			coefs(idx) = dPWi*coefs(idx-n2-1);
+			coefs[idx] = dPWi*coefs[idx-n2-1];
 			++idx;
 			++n2;
 
 			for (int iC = 1; iC <= l2; ++iC, ++n2)
 			{
-				coefs(idx) = coefs(idx-n2).colwise()*dAPi
-					+ coefs(idx-2*n2+l2+1).colwise()*(iA*inv_zeta);
+				coefs[idx] = coefs[idx-n2].colwise()*dAPi
+					+ coefs[idx-2*n2+l2+1].colwise()*(iA*inv_zeta);
 				++idx;
 				for (int m = 1; m < iA+iC; ++m, ++idx)
 				{
-					coefs(idx) = coefs(idx-n2).colwise()*dAPi
-						+ coefs(idx-2*n2+l2+1).colwise()*(iA*inv_zeta)
-						+ dPWi*coefs(idx-n2-1)
-						- iA*rho1*coefs(idx-2*n2+l2)
-						+ iC*inv_sum*coefs(idx-n2-iC-iA-1);
+					coefs[idx] = coefs[idx-n2].colwise()*dAPi
+						+ coefs[idx-2*n2+l2+1].colwise()*(iA*inv_zeta)
+						+ dPWi*coefs[idx-n2-1]
+						- iA*rho1*coefs[idx-2*n2+l2]
+						+ iC*inv_sum*coefs[idx-n2-iC-iA-1];
 				}
-				coefs(idx) = coefs(idx-n2).colwise()*dAPi
-					+ dPWi*coefs(idx-n2-1)
-					- iA*rho1*coefs(idx-2*n2+l2)
-					+ iC*inv_sum*coefs(idx-n2-iC-iA-1);
+				coefs[idx] = coefs[idx-n2].colwise()*dAPi
+					+ dPWi*coefs[idx-n2-1]
+					- iA*rho1*coefs[idx-2*n2+l2]
+					+ iC*inv_sum*coefs[idx-n2-iC-iA-1];
 				++idx;
-				coefs(idx) = dPWi*coefs(idx-n2-1);
+				coefs[idx] = dPWi*coefs[idx-n2-1];
 				++idx;
 			}
 		}
@@ -266,9 +241,9 @@ double CGTOShellQuad::eri_xx(int lx1, int lx2, const EriCoefs& Cx, const Fms& fm
 #endif
 
 	EriCoefs::AllMBlock Cxl = Cx.allM(lx1, lx2);
-	Ctot = Cxl(m) * fms(m);
+	Ctot = Cxl[m] * fms[m];
 	for (--m; m >= 0; --m)
-		Ctot += Cxl(m) * fms(m);
+		Ctot += Cxl[m] * fms[m];
 
 	return mulWeights(Ctot);
 }
@@ -287,7 +262,7 @@ double CGTOShellQuad::eri_xx(int lx1, int ly1, int lx2, int ly2,
 	int m = lx + ly;
 	EriCoefs::AllMBlock Cxl = Cx.allM(lx1, lx2);
 	EriCoefs::AllMBlock Cyl = Cy.allM(ly1, ly2);
-	Ctot = Cxl(lx) * Cyl(ly) * fms(m);
+	Ctot = Cxl[lx] * Cyl[ly] * fms[m];
 	for (--m; m > 1; --m)
 	{
 		Cm.setZero();
@@ -296,12 +271,12 @@ double CGTOShellQuad::eri_xx(int lx1, int ly1, int lx2, int ly2,
 		for (int mx = mxmax; mx >= mxmin; --mx)
 		{
 			int my = m-mx;
-			Cm += Cxl(mx) * Cyl(my);
+			Cm += Cxl[mx] * Cyl[my];
 		}
-		Ctot += Cm * fms(m);
+		Ctot += Cm * fms[m];
 	}
-	Ctot += (Cxl(1) * Cyl(0) + Cxl(0) * Cyl(1)) * fms(1);
-	Ctot += Cxl(0) * Cyl(0) * fms(0);
+	Ctot += (Cxl[1] * Cyl[0] + Cxl[0] * Cyl[1]) * fms[1];
+	Ctot += Cxl[0] * Cyl[0] * fms[0];
 
 	return mulWeights(Ctot);
 }
@@ -322,7 +297,7 @@ double CGTOShellQuad::eri_xx(int lx1, int ly1, int lz1, int lx2, int ly2, int lz
 	EriCoefs::AllMBlock Cxl = Cx.allM(lx1, lx2);
 	EriCoefs::AllMBlock Cyl = Cy.allM(ly1, ly2);
 	EriCoefs::AllMBlock Czl = Cz.allM(lz1, lz2);
-	Ctot = Cxl(lx) * Cyl(ly) * Czl(lz) * fms(m);
+	Ctot = Cxl[lx] * Cyl[ly] * Czl[lz] * fms[m];
 	for (--m; m > 1; --m)
 	{
 		Cm.setZero();
@@ -334,15 +309,15 @@ double CGTOShellQuad::eri_xx(int lx1, int ly1, int lz1, int lx2, int ly2, int lz
 			for (int my = mymax; my >= mymin; --my)
 			{
 				int mz = m-mx-my;
-				Cm += Cxl(mx) * Cyl(my) * Czl(mz);
+				Cm += Cxl[mx] * Cyl[my] * Czl[mz];
 			}
 		}
-		Ctot += Cm * fms(m);
+		Ctot += Cm * fms[m];
 	}
-	Ctot += (Cxl(1) * Cyl(0) * Czl(0)
-		+ Cxl(0) * Cyl(1) * Czl(0)
-		+ Cxl(0) * Cyl(0) * Czl(1)) * fms(1);
-	Ctot += Cxl(0) * Cyl(0) * Czl(0) * fms(0);
+	Ctot += (Cxl[1] * Cyl[0] * Czl[0]
+		+ Cxl[0] * Cyl[1] * Czl[0]
+		+ Cxl[0] * Cyl[0] * Czl[1]) * fms[1];
+	Ctot += Cxl[0] * Cyl[0] * Czl[0] * fms[0];
 
 	return mulWeights(Ctot);
 }
@@ -350,22 +325,22 @@ double CGTOShellQuad::eri_xx(int lx1, int ly1, int lz1, int lx2, int ly2, int lz
 double CGTOShellQuad::eri_10(const EriCoefs::AllMBlock& Cxl,
 	const Fms& fms) const
 {
-	return mulWeights(Cxl(1)*fms(1) + Cxl(0)*fms(0));
+	return mulWeights(Cxl[1]*fms[1] + Cxl[0]*fms[0]);
 }
 
 double CGTOShellQuad::eri_20(const EriCoefs::AllMBlock& Cxl,
 	const Fms& fms) const
 {
-	return mulWeights(Cxl(2)*fms(2) + Cxl(1)*fms(1) + Cxl(0)*fms(0));
+	return mulWeights(Cxl[2]*fms[2] + Cxl[1]*fms[1] + Cxl[0]*fms[0]);
 }
 
 double CGTOShellQuad::eri_11(const EriCoefs::AllMBlock& Cxl,
 	const EriCoefs::AllMBlock& Cyl,
 	const Fms& fms, Eigen::ArrayXXd& Ctot) const
 {
-	Ctot = Cxl(1)*Cyl(1)*fms(2)
-		+ (Cxl(1)*Cyl(0)+Cxl(0)*Cyl(1))*fms(1)
-		+ Cxl(0)*Cyl(0)*fms(0);
+	Ctot = Cxl[1]*Cyl[1]*fms[2]
+		+ (Cxl[1]*Cyl[0]+Cxl[0]*Cyl[1])*fms[1]
+		+ Cxl[0]*Cyl[0]*fms[0];
 	return mulWeights(Ctot);
 }
 
@@ -373,7 +348,7 @@ void CGTOShellQuad::setEri() const
 {
 	Fms fms(_lsum, _T, _expmT, KKW());
 	
-	eri(0, 0, 0, 0, 0, 0) = mulWeights(fms(0));
+	eri(0, 0, 0, 0, 0, 0) = mulWeights(fms[0]);
 	if (_lsum == 0)
 	{
 		_have_eri = true;

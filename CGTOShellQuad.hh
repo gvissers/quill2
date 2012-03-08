@@ -12,7 +12,7 @@
 #include "constants.hh"
 
 // Forward declaration
-class Fms;
+struct Fms;
 
 class CGTOShellQuad
 {
@@ -57,7 +57,7 @@ public:
 				Eigen::Stride<0, 0> >,
 			Eigen::Dynamic,
 			1> > WidthsReducedExpression;
-	typedef const Eigen::Block<const Eigen::ArrayXXd> DPQExpression;
+	typedef MultiArray::ConstBlock DPQExpression;
 	typedef Eigen::CwiseUnaryOp<
 		Eigen::internal::scalar_add_op<double>,
 		ColArrayMap > DXPExpression;
@@ -239,7 +239,7 @@ public:
 	 */
 	DPQExpression dPQ(int i) const
 	{
-		return _dPQ.block(0, i*_pCD.size(), _pAB.size(), _pCD.size());
+		return _dPQ[i];
 	}
 	Rho1Expression rho1() const
 	{
@@ -299,7 +299,7 @@ private:
 	//! Inverse of the sums of widths, for all primitive combinations
 	Eigen::ArrayXXd _inv_widths_sum;
 	//! Distance between weighted centers of the two pairs
-	Eigen::ArrayXXd _dPQ;
+	MultiArray _dPQ;
 	//! The symmetry in positions of the four orbitals
 	PositionSymmetry _pos_sym;
 	//! The total angular momentum of the first pair

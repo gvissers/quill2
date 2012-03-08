@@ -360,7 +360,7 @@ void CGTOQuad::elecRepPrim1d_aaaa(int i, FmCoefs& Cm) const
 
 	EriCoefs coefs(l1, l2, p().size(), q().size());
 	// C_0,0,0,0
-	coefs(0).setOnes();
+	coefs[0].setOnes();
 
 	// C_0,0,c,0
 	if (l2 > 1)
@@ -628,7 +628,7 @@ void CGTOQuad::elecRepPrim1d_abcc(int i, FmCoefs& Cm) const
 	EriCoefs coefs(l1, l2, p().size(), q().size());
 	int idx = 0;
 	// C_0,0,0,0
-	coefs(idx++).setOnes();
+	coefs[idx++].setOnes();
 	if (l2 > 0)
 	{
 		auto inv_eta = hInvWidthsCD();
@@ -636,24 +636,24 @@ void CGTOQuad::elecRepPrim1d_abcc(int i, FmCoefs& Cm) const
 		auto rho2 = this->rho2();
 
 		// C_0,0,1,0
-		coefs(idx++).setZero();
-		coefs(idx++) = dQWi;
+		coefs[idx++].setZero();
+		coefs[idx++] = dQWi;
 
 		// C_0,0,c,0
 		for (int iC = 1; iC < l2; ++iC)
 		{
-			coefs(idx) = coefs(idx-2*iC-1).rowwise()*(iC*inv_eta);
+			coefs[idx] = coefs[idx-2*iC-1].rowwise()*(iC*inv_eta);
 			++idx;
 			for (int m = 1; m < iC; ++m, ++idx)
 			{
-				coefs(idx) = coefs(idx-2*iC-1).rowwise()*(iC*inv_eta)
-					+ dQWi*coefs(idx-iC-2)
-					- iC*rho2*coefs(idx-2*iC-2);
+				coefs[idx] = coefs[idx-2*iC-1].rowwise()*(iC*inv_eta)
+					+ dQWi*coefs[idx-iC-2]
+					- iC*rho2*coefs[idx-2*iC-2];
 			}
-			coefs(idx) = dQWi*coefs(idx-iC-2)
-				- iC*rho2*coefs(idx-2*iC-2);
+			coefs[idx] = dQWi*coefs[idx-iC-2]
+				- iC*rho2*coefs[idx-2*iC-2];
 			++idx;
-			coefs(idx) = dQWi*coefs(idx-iC-2);
+			coefs[idx] = dQWi*coefs[idx-iC-2];
 			++idx;
 		}
 	}
@@ -670,58 +670,58 @@ void CGTOQuad::elecRepPrim1d_abcc(int i, FmCoefs& Cm) const
 		// C_1,0,c,0
 		for (int iC = 0; iC <= l2; ++iC, ++n2)
 		{
-			coefs(idx) = coefs(idx-n2).colwise()*dAPi;
+			coefs[idx] = coefs[idx-n2].colwise()*dAPi;
 			++idx;
 			for (int m = 1; m <= iC; ++m, ++idx)
 			{
-				coefs(idx) = coefs(idx-n2).colwise()*dAPi
-					+ dPWi*coefs(idx-n2-1)
-					+ iC*inv_sum*coefs(idx-n2-iC-1);
+				coefs[idx] = coefs[idx-n2].colwise()*dAPi
+					+ dPWi*coefs[idx-n2-1]
+					+ iC*inv_sum*coefs[idx-n2-iC-1];
 			}
-			coefs(idx) = dPWi*coefs(idx-n2-1);
+			coefs[idx] = dPWi*coefs[idx-n2-1];
 			++idx;
 		}
 
 		// C_a,0,c,0
 		for (int iA = 1; iA < l1; ++iA)
 		{
-			coefs(idx) = coefs(idx-n2).colwise()*dAPi
-				+ coefs(idx-2*n2+l2+1).colwise()*(iA*inv_zeta);
+			coefs[idx] = coefs[idx-n2].colwise()*dAPi
+				+ coefs[idx-2*n2+l2+1].colwise()*(iA*inv_zeta);
 			++idx;
 			for (int m = 1; m < iA; ++m, ++idx)
 			{
-				coefs(idx) = coefs(idx-n2).colwise()*dAPi
-					+ coefs(idx-2*n2+l2+1).colwise()*(iA*inv_zeta)
-					+ dPWi*coefs(idx-n2-1)
-					- iA*rho1*coefs(idx-2*n2+l2);
+				coefs[idx] = coefs[idx-n2].colwise()*dAPi
+					+ coefs[idx-2*n2+l2+1].colwise()*(iA*inv_zeta)
+					+ dPWi*coefs[idx-n2-1]
+					- iA*rho1*coefs[idx-2*n2+l2];
 			}
-			coefs(idx) = coefs(idx-n2).colwise()*dAPi
-				+ dPWi*coefs(idx-n2-1)
-				- iA*rho1*coefs(idx-2*n2+l2);
+			coefs[idx] = coefs[idx-n2].colwise()*dAPi
+				+ dPWi*coefs[idx-n2-1]
+				- iA*rho1*coefs[idx-2*n2+l2];
 			++idx;
-			coefs(idx) = dPWi*coefs(idx-n2-1);
+			coefs[idx] = dPWi*coefs[idx-n2-1];
 			++idx;
 			++n2;
 
 			for (int iC = 1; iC <= l2; ++iC, ++n2)
 			{
-				coefs(idx) = coefs(idx-n2).colwise()*dAPi
-					+ coefs(idx-2*n2+l2+1).colwise()*(iA*inv_zeta);
+				coefs[idx] = coefs[idx-n2].colwise()*dAPi
+					+ coefs[idx-2*n2+l2+1].colwise()*(iA*inv_zeta);
 				++idx;
 				for (int m = 1; m < iA+iC; ++m, ++idx)
 				{
-					coefs(idx) = coefs(idx-n2).colwise()*dAPi
-						+ coefs(idx-2*n2+l2+1).colwise()*(iA*inv_zeta)
-						+ dPWi*coefs(idx-n2-1)
-						- iA*rho1*coefs(idx-2*n2+l2)
-						+ iC*inv_sum*coefs(idx-n2-iC-iA-1);
+					coefs[idx] = coefs[idx-n2].colwise()*dAPi
+						+ coefs[idx-2*n2+l2+1].colwise()*(iA*inv_zeta)
+						+ dPWi*coefs[idx-n2-1]
+						- iA*rho1*coefs[idx-2*n2+l2]
+						+ iC*inv_sum*coefs[idx-n2-iC-iA-1];
 				}
-				coefs(idx) = coefs(idx-n2).colwise()*dAPi
-					+ dPWi*coefs(idx-n2-1)
-					- iA*rho1*coefs(idx-2*n2+l2)
-					+ iC*inv_sum*coefs(idx-n2-iC-iA-1);
+				coefs[idx] = coefs[idx-n2].colwise()*dAPi
+					+ dPWi*coefs[idx-n2-1]
+					- iA*rho1*coefs[idx-2*n2+l2]
+					+ iC*inv_sum*coefs[idx-n2-iC-iA-1];
 				++idx;
-				coefs(idx) = dPWi*coefs(idx-n2-1);
+				coefs[idx] = dPWi*coefs[idx-n2-1];
 				++idx;
 			}
 		}
@@ -778,7 +778,7 @@ void CGTOQuad::elecRepPrim1d_aacd(int i, FmCoefs& Cm) const
 	EriCoefs coefs(l1, l2, p().size(), q().size());
 	int idx = 0;
 	// C_0,0,0,0
-	coefs(idx++).setOnes();
+	coefs[idx++].setOnes();
 	if (l2 > 0)
 	{
 		auto dCQi = dxQ(i, xC);
@@ -787,27 +787,27 @@ void CGTOQuad::elecRepPrim1d_aacd(int i, FmCoefs& Cm) const
 		auto rho2 = this->rho2();
 
 		// C_0,0,1,0
-		coefs(idx++).rowwise() = dCQi;
-		coefs(idx++) = dQWi;
+		coefs[idx++].rowwise() = dCQi;
+		coefs[idx++] = dQWi;
 		
 		// C_0,0,c,0
 		for (int iC = 1; iC < l2; ++iC)
 		{
-			coefs(idx) = coefs(idx-iC-1).rowwise()*dCQi
-				+ coefs(idx-2*iC-1).rowwise()*(iC*inv_eta);
+			coefs[idx] = coefs[idx-iC-1].rowwise()*dCQi
+				+ coefs[idx-2*iC-1].rowwise()*(iC*inv_eta);
 			++idx;
 			for (int m = 1; m < iC; ++m, ++idx)
 			{
-				coefs(idx) = coefs(idx-iC-1).rowwise()*dCQi
-					+ coefs(idx-2*iC-1).rowwise()*(iC*inv_eta)
-					+ dQWi*coefs(idx-iC-2)
-					- iC*rho2*coefs(idx-2*iC-2);
+				coefs[idx] = coefs[idx-iC-1].rowwise()*dCQi
+					+ coefs[idx-2*iC-1].rowwise()*(iC*inv_eta)
+					+ dQWi*coefs[idx-iC-2]
+					- iC*rho2*coefs[idx-2*iC-2];
 			}
-			coefs(idx) = coefs(idx-iC-1).rowwise()*dCQi
-				+ dQWi*coefs(idx-iC-2)
-				- iC*rho2*coefs(idx-2*iC-2);
+			coefs[idx] = coefs[idx-iC-1].rowwise()*dCQi
+				+ dQWi*coefs[idx-iC-2]
+				- iC*rho2*coefs[idx-2*iC-2];
 			++idx;
-			coefs(idx) = dQWi*coefs(idx-iC-2);
+			coefs[idx] = dQWi*coefs[idx-iC-2];
 			++idx;
 		}
 	}
@@ -823,50 +823,50 @@ void CGTOQuad::elecRepPrim1d_aacd(int i, FmCoefs& Cm) const
 		// C_1,0,c,0
 		for (int iC = 0; iC <= l2; ++iC, ++n2)
 		{
-			coefs(idx++).setZero();
+			coefs[idx++].setZero();
 			for (int m = 1; m <= iC; ++m, ++idx)
 			{
-				coefs(idx) = dPWi*coefs(idx-n2-1)
-					+ iC*inv_sum*coefs(idx-n2-iC-1);
+				coefs[idx] = dPWi*coefs[idx-n2-1]
+					+ iC*inv_sum*coefs[idx-n2-iC-1];
 			}
-			coefs(idx) = dPWi*coefs(idx-n2-1);
+			coefs[idx] = dPWi*coefs[idx-n2-1];
 			++idx;
 		}
 
 		// C_a,0,c,0
 		for (int iA = 1; iA < l1; ++iA)
 		{
-			coefs(idx) = coefs(idx-2*n2+l2+1).colwise()*(iA*inv_zeta);
+			coefs[idx] = coefs[idx-2*n2+l2+1].colwise()*(iA*inv_zeta);
 			++idx;
 			for (int m = 1; m < iA; ++m, ++idx)
 			{
-				coefs(idx) = coefs(idx-2*n2+l2+1).colwise()*(iA*inv_zeta)
-					+ dPWi*coefs(idx-n2-1)
-					- iA*rho1*coefs(idx-2*n2+l2);
+				coefs[idx] = coefs[idx-2*n2+l2+1].colwise()*(iA*inv_zeta)
+					+ dPWi*coefs[idx-n2-1]
+					- iA*rho1*coefs[idx-2*n2+l2];
 			}
-			coefs(idx) = dPWi*coefs(idx-n2-1)
-				- iA*rho1*coefs(idx-2*n2+l2);
+			coefs[idx] = dPWi*coefs[idx-n2-1]
+				- iA*rho1*coefs[idx-2*n2+l2];
 			++idx;
-			coefs(idx) = dPWi*coefs(idx-n2-1);
+			coefs[idx] = dPWi*coefs[idx-n2-1];
 			++idx;
 			++n2;
 
 			for (int iC = 1; iC <= l2; ++iC, ++n2)
 			{
-				coefs(idx) = coefs(idx-2*n2+l2+1).colwise()*(iA*inv_zeta);
+				coefs[idx] = coefs[idx-2*n2+l2+1].colwise()*(iA*inv_zeta);
 				++idx;
 				for (int m = 1; m < iA+iC; ++m, ++idx)
 				{
-					coefs(idx) = coefs(idx-2*n2+l2+1).colwise()*(iA*inv_zeta)
-						+ dPWi*coefs(idx-n2-1)
-						- iA*rho1*coefs(idx-2*n2+l2)
-						+ iC*inv_sum*coefs(idx-n2-iC-iA-1);
+					coefs[idx] = coefs[idx-2*n2+l2+1].colwise()*(iA*inv_zeta)
+						+ dPWi*coefs[idx-n2-1]
+						- iA*rho1*coefs[idx-2*n2+l2]
+						+ iC*inv_sum*coefs[idx-n2-iC-iA-1];
 				}
-				coefs(idx) = dPWi*coefs(idx-n2-1)
-					- iA*rho1*coefs(idx-2*n2+l2)
-					+ iC*inv_sum*coefs(idx-n2-iC-iA-1);
+				coefs[idx] = dPWi*coefs[idx-n2-1]
+					- iA*rho1*coefs[idx-2*n2+l2]
+					+ iC*inv_sum*coefs[idx-n2-iC-iA-1];
 				++idx;
-				coefs(idx) = dPWi*coefs(idx-n2-1);
+				coefs[idx] = dPWi*coefs[idx-n2-1];
 				++idx;
 			}
 		}
@@ -929,7 +929,7 @@ void CGTOQuad::elecRepPrim1d_abcd(int i, FmCoefs& Cm) const
 	EriCoefs coefs(l1, l2, p().size(), q().size());
 	int idx = 0;
 	// C_0,0,0,0
-	coefs(idx++).setOnes();
+	coefs[idx++].setOnes();
 	if (l2 > 0)
 	{
 		auto dCQi = dxQ(i, xC);
@@ -938,27 +938,27 @@ void CGTOQuad::elecRepPrim1d_abcd(int i, FmCoefs& Cm) const
 		auto rho2 = this->rho2();
 
 		// C_0,0,1,0
-		coefs(idx++).rowwise() = dCQi;
-		coefs(idx++) = dQWi;
+		coefs[idx++].rowwise() = dCQi;
+		coefs[idx++] = dQWi;
 
 		// C_0,0,c,0
 		for (int iC = 1; iC < l2; ++iC)
 		{
-			coefs(idx).rowwise() = coefs(idx-iC-1).row(0)*dCQi
-				+ coefs(idx-2*iC-1).row(0)*(iC*inv_eta);
+			coefs[idx].rowwise() = coefs[idx-iC-1].row(0)*dCQi
+				+ coefs[idx-2*iC-1].row(0)*(iC*inv_eta);
 			++idx;
 			for (int m = 1; m < iC; ++m, ++idx)
 			{
-				coefs(idx) = coefs(idx-iC-1).rowwise()*dCQi
-					+ coefs(idx-2*iC-1).rowwise()*(iC*inv_eta)
-					+ dQWi*coefs(idx-iC-2)
-					- iC*rho2*coefs(idx-2*iC-2);
+				coefs[idx] = coefs[idx-iC-1].rowwise()*dCQi
+					+ coefs[idx-2*iC-1].rowwise()*(iC*inv_eta)
+					+ dQWi*coefs[idx-iC-2]
+					- iC*rho2*coefs[idx-2*iC-2];
 			}
-			coefs(idx) = coefs(idx-iC-1).rowwise()*dCQi
-				+ dQWi*coefs(idx-iC-2)
-				- iC*rho2*coefs(idx-2*iC-2);
+			coefs[idx] = coefs[idx-iC-1].rowwise()*dCQi
+				+ dQWi*coefs[idx-iC-2]
+				- iC*rho2*coefs[idx-2*iC-2];
 			++idx;
-			coefs(idx) = dQWi*coefs(idx-iC-2);
+			coefs[idx] = dQWi*coefs[idx-iC-2];
 			++idx;
 		}
 	}
@@ -975,58 +975,58 @@ void CGTOQuad::elecRepPrim1d_abcd(int i, FmCoefs& Cm) const
 		// C_1,0,c,0
 		for (int iC = 0; iC <= l2; ++iC, ++n2)
 		{
-			coefs(idx) = coefs(idx-n2).colwise()*dAPi;
+			coefs[idx] = coefs[idx-n2].colwise()*dAPi;
 			++idx;
 			for (int m = 1; m <= iC; ++m, ++idx)
 			{
-				coefs(idx) = coefs(idx-n2).colwise()*dAPi
-					+ dPWi*coefs(idx-n2-1)
-					+ iC*inv_sum*coefs(idx-n2-iC-1);
+				coefs[idx] = coefs[idx-n2].colwise()*dAPi
+					+ dPWi*coefs[idx-n2-1]
+					+ iC*inv_sum*coefs[idx-n2-iC-1];
 			}
-			coefs(idx) = dPWi*coefs(idx-n2-1);
+			coefs[idx] = dPWi*coefs[idx-n2-1];
 			++idx;
 		}
 
 		// C_a,0,c,0
 		for (int iA = 1; iA < l1; ++iA)
 		{
-			coefs(idx) = coefs(idx-n2).colwise()*dAPi
-				+ coefs(idx-2*n2+l2+1).colwise()*(iA*inv_zeta);
+			coefs[idx] = coefs[idx-n2].colwise()*dAPi
+				+ coefs[idx-2*n2+l2+1].colwise()*(iA*inv_zeta);
 			++idx;
 			for (int m = 1; m < iA; ++m, ++idx)
 			{
-				coefs(idx) = coefs(idx-n2).colwise()*dAPi
-					+ coefs(idx-2*n2+l2+1).colwise()*(iA*inv_zeta)
-					+ dPWi*coefs(idx-n2-1)
-					- iA*rho1*coefs(idx-2*n2+l2);
+				coefs[idx] = coefs[idx-n2].colwise()*dAPi
+					+ coefs[idx-2*n2+l2+1].colwise()*(iA*inv_zeta)
+					+ dPWi*coefs[idx-n2-1]
+					- iA*rho1*coefs[idx-2*n2+l2];
 			}
-			coefs(idx) = coefs(idx-n2).colwise()*dAPi
-				+ dPWi*coefs(idx-n2-1)
-				- iA*rho1*coefs(idx-2*n2+l2);
+			coefs[idx] = coefs[idx-n2].colwise()*dAPi
+				+ dPWi*coefs[idx-n2-1]
+				- iA*rho1*coefs[idx-2*n2+l2];
 			++idx;
-			coefs(idx) = dPWi*coefs(idx-n2-1);
+			coefs[idx] = dPWi*coefs[idx-n2-1];
 			++idx;
 			++n2;
 
 			for (int iC = 1; iC <= l2; ++iC, ++n2)
 			{
-				coefs(idx) = coefs(idx-n2).colwise()*dAPi
-					+ coefs(idx-2*n2+l2+1).colwise()*(iA*inv_zeta);
+				coefs[idx] = coefs[idx-n2].colwise()*dAPi
+					+ coefs[idx-2*n2+l2+1].colwise()*(iA*inv_zeta);
 				++idx;
 				for (int m = 1; m < iA+iC; ++m, ++idx)
 				{
-					coefs(idx) = coefs(idx-n2).colwise()*dAPi
-						+ coefs(idx-2*n2+l2+1).colwise()*(iA*inv_zeta)
-						+ dPWi*coefs(idx-n2-1)
-						- iA*rho1*coefs(idx-2*n2+l2)
-						+ iC*inv_sum*coefs(idx-n2-iC-iA-1);
+					coefs[idx] = coefs[idx-n2].colwise()*dAPi
+						+ coefs[idx-2*n2+l2+1].colwise()*(iA*inv_zeta)
+						+ dPWi*coefs[idx-n2-1]
+						- iA*rho1*coefs[idx-2*n2+l2]
+						+ iC*inv_sum*coefs[idx-n2-iC-iA-1];
 				}
-				coefs(idx) = coefs(idx-n2).colwise()*dAPi
-					+ dPWi*coefs(idx-n2-1)
-					- iA*rho1*coefs(idx-2*n2+l2)
-					+ iC*inv_sum*coefs(idx-n2-iC-iA-1);
+				coefs[idx] = coefs[idx-n2].colwise()*dAPi
+					+ dPWi*coefs[idx-n2-1]
+					- iA*rho1*coefs[idx-2*n2+l2]
+					+ iC*inv_sum*coefs[idx-n2-iC-iA-1];
 				++idx;
-				coefs(idx) = dPWi*coefs(idx-n2-1);
+				coefs[idx] = dPWi*coefs[idx-n2-1];
 				++idx;
 			}
 		}
