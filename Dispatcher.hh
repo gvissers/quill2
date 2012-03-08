@@ -10,7 +10,7 @@
 #include <memory>
 #include <unordered_map>
 #include <Singleton.hh>
-#include "BFQuadPool.hh"
+#include "CGTOSpecQuadcreate.hh"
 #include "support.hh"
 
 // Forward declarations
