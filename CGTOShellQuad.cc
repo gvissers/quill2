@@ -44,9 +44,9 @@ CGTOShellQuad::CGTOShellQuad(const CGTOShellPair& pAB, const CGTOShellPair& pCD)
 	_inv_widths_sum((widthsAB().replicate(1, pCD.size()).rowwise()
 		+ widthsCD()).inverse()),
 	_dPQ(_pAB.size(), 3*_pCD.size()),
-	_lsum(pAB.lsum() + pCD.lsum()),
+	_lAB(pAB.lsum()), _lCD(pCD.lsum()), _lsum(_lAB+_lCD),
 	_m(-1), _Fm(),
-	_ints((_lsum+1)*(_lsum+1)*(_lsum+1), (_lsum+1)*(_lsum+1)*(_lsum+1)),
+	_ints((_lAB+1)*(_lAB+1)*(_lAB+1), (_lCD+1)*(_lCD+1)*(_lCD+1)),
 	_have_eri(false)
 {
 	if (_pAB.samePositionId())

@@ -303,6 +303,10 @@ private:
 	Eigen::ArrayXXd _dPQ;
 	//! The symmetry in positions of the four orbitals
 	PositionSymmetry _pos_sym;
+	//! The total angular momentum of the first pair
+	int _lAB;
+	//! The total angular momentum of the second pair
+	int _lCD;
 	//! The total angular momentum of the four shells combined
 	int _lsum;
 
@@ -327,8 +331,8 @@ private:
 
 	double& eri(int lx1, int ly1, int lz1, int lx2, int ly2, int lz2) const
 	{
-		return _ints(lx1*(_lsum+1)*(_lsum+1)+ly1*(_lsum+1)+lz1,
-			lx2*(_lsum+1)*(_lsum+1)+ly2*(_lsum+1)+lz2);
+		return _ints((lx1*(_lAB+1) + ly1)*(_lAB+1) + lz1,
+			(lx2*(_lCD+1) + ly2)*(_lCD+1) + lz2);
 	}
 	double eri(int lx1, int ly1, int lz1,
 		int lx2, int ly2, int lzC,
