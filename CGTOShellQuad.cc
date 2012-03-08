@@ -279,33 +279,32 @@ void CGTOShellQuad::setEri() const
 	elecRepPrim1d_abcd(2, Cz);
 
 	Fms fms(_lsum, _T, _expmT, KKW());
-	if (_lsum > 2)
+
+	eri(0, 0, 0, 0, 0, 0) = mulWeights(fms(0));
+	if (_lsum == 0)
 	{
-		Eigen::ArrayXXd Cm(n1, n2);
-		Eigen::ArrayXXd Ctot(n1, n2);
-		for (int l = _lsum; l > 2; --l)
-		{
-			for (int l1 = lsum1; l1 >= std::max(l-lsum2, 0); --l1)
-			{
-				int l2 = l - l1;
-				for (int lx1 = l1; lx1 >= 0; --lx1)
-				{
-					for (int lx2 = l2; lx2 >= 0; --lx2)
-					{
-						for (int ly1 = l1-lx1; ly1 >= 0; --ly1)
-						{
-							int lz1 = l1-lx1-ly1;
-							for (int ly2 = l2-lx2; ly2 >= 0; --ly2)
-							{
-								int lz2 = l2-lx2-ly2;
-								eri(lx1, ly1, lz1, lx2, ly2, lz2) = eri_xx(lx1, ly1, lz1, lx2, ly2, lz2, Cx, Cy, Cz, fms, Cm, Ctot);
-							}
-						}
-					}
-				}
-			}
-		}
+		_have_eri = true;
+		return;
 	}
+
+	if (lsum1 >= 1)
+	{
+		eri(1, 0, 0, 0, 0, 0) = eri_10(Cx.allM(1, 0), fms);
+		eri(0, 1, 0, 0, 0, 0) = eri_10(Cy.allM(1, 0), fms);
+		eri(0, 0, 1, 0, 0, 0) = eri_10(Cz.allM(1, 0), fms);
+	}
+	if (lsum2 >= 1)
+	{
+		eri(0, 0, 0, 1, 0, 0) = eri_10(Cx.allM(0, 1), fms);
+		eri(0, 0, 0, 0, 1, 0) = eri_10(Cy.allM(0, 1), fms);
+		eri(0, 0, 0, 0, 0, 1) = eri_10(Cz.allM(0, 1), fms);
+	}
+	if (_lsum == 1)
+	{
+		_have_eri = true;
+		return;
+	}
+
 	if (lsum1 >= 2)
 	{
 		eri(2, 0, 0, 0, 0, 0) = eri_20(Cx.allM(2, 0), fms);
@@ -336,20 +335,36 @@ void CGTOShellQuad::setEri() const
 		eri(0, 0, 0, 0, 1, 1) = eri_11(Cy.allM(0, 1), Cz.allM(0, 1), fms);
 		eri(0, 0, 0, 0, 0, 2) = eri_20(Cz.allM(0, 2), fms);
 	}
-	if (lsum1 >= 1)
+	if (_lsum == 2)
 	{
-		eri(1, 0, 0, 0, 0, 0) = eri_10(Cx.allM(1, 0), fms);
-		eri(0, 1, 0, 0, 0, 0) = eri_10(Cy.allM(1, 0), fms);
-		eri(0, 0, 1, 0, 0, 0) = eri_10(Cz.allM(1, 0), fms);
+		_have_eri = true;
+		return;
 	}
-	if (lsum2 >= 1)
-	{
-		eri(0, 0, 0, 1, 0, 0) = eri_10(Cx.allM(0, 1), fms);
-		eri(0, 0, 0, 0, 1, 0) = eri_10(Cy.allM(0, 1), fms);
-		eri(0, 0, 0, 0, 0, 1) = eri_10(Cz.allM(0, 1), fms);
-	}
-	eri(0, 0, 0, 0, 0, 0) = mulWeights(fms(0));
 
+	Eigen::ArrayXXd Cm(n1, n2);
+	Eigen::ArrayXXd Ctot(n1, n2);
+	for (int l = 3; l <= _lsum; ++l)
+	{
+		for (int l1 = lsum1; l1 >= std::max(l-lsum2, 0); --l1)
+		{
+			int l2 = l - l1;
+			for (int lx1 = l1; lx1 >= 0; --lx1)
+			{
+				for (int lx2 = l2; lx2 >= 0; --lx2)
+				{
+					for (int ly1 = l1-lx1; ly1 >= 0; --ly1)
+					{
+						int lz1 = l1-lx1-ly1;
+						for (int ly2 = l2-lx2; ly2 >= 0; --ly2)
+						{
+							int lz2 = l2-lx2-ly2;
+							eri(lx1, ly1, lz1, lx2, ly2, lz2) = eri_xx(lx1, ly1, lz1, lx2, ly2, lz2, Cx, Cy, Cz, fms, Cm, Ctot);
+						}
+					}
+				}
+			}
+		}
+	}
 	_have_eri = true;
 }
 
