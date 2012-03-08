@@ -204,10 +204,6 @@ public:
 	{
 		return _shell_quad.expmT();
 	}
-	Eigen::ArrayXXd Fm(int m) const
-	{
-		return _shell_quad.Fm(m);
-	}
 
 	/*!
 	 * \brief Create a new CGTOQuad

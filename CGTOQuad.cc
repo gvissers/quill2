@@ -1089,7 +1089,7 @@ double CGTOQuad::electronRepulsion_aacc() const
 	int m = Cm.maxM();
 	const Eigen::ArrayXXd& T = this->T();
 	const Eigen::ArrayXXd& expmT = this->expmT();
- 	Eigen::ArrayXXd F = Fm(m);
+ 	Eigen::ArrayXXd F = T.boys(m, expmT);
 	Eigen::ArrayXXd A = Cm[m] * F;
 	for (--m; m >= Cm.minM(); --m)
 	{
@@ -1110,7 +1110,7 @@ double CGTOQuad::electronRepulsion_abcc() const
 	int m = Cm.maxM();
 	const Eigen::ArrayXXd& T = this->T();
 	const Eigen::ArrayXXd& expmT = this->expmT();
- 	Eigen::ArrayXXd F = Fm(m);
+ 	Eigen::ArrayXXd F = T.boys(m, expmT);
 	Cm[m] *= F;
 	for (--m; m >= Cm.minM(); --m)
 	{
@@ -1131,7 +1131,7 @@ double CGTOQuad::electronRepulsion_aacd() const
 	int m = Cm.maxM();
 	const Eigen::ArrayXXd& T = this->T();
 	const Eigen::ArrayXXd& expmT = this->expmT();
- 	Eigen::ArrayXXd F = Fm(m);
+ 	Eigen::ArrayXXd F = T.boys(m, expmT);
 	Cm[m] *= F;
 	for (--m; m >= Cm.minM(); --m)
 	{
@@ -1152,7 +1152,7 @@ double CGTOQuad::electronRepulsion_abcd() const
 	int m = Cm.maxM();
 	const Eigen::ArrayXXd& T = this->T();
 	const Eigen::ArrayXXd& expmT = this->expmT();
- 	Eigen::ArrayXXd F = Fm(m);
+ 	Eigen::ArrayXXd F = T.boys(m, expmT);
 	Cm[m] *= F;
 	for (--m; m >= Cm.minM(); --m)
 	{

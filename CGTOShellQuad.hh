@@ -262,7 +262,6 @@ public:
 
 	const Eigen::ArrayXXd& T() const { return _T; }
 	const Eigen::ArrayXXd& expmT() const { return _expmT; }
-	Eigen::ArrayXXd Fm(int m) const;
 	double getEri(int lx1, int ly1, int lz1, int lx2, int ly2, int lz2) const
 	{
 		if (!_have_eri)
@@ -312,8 +311,6 @@ private:
 
 	Eigen::ArrayXXd _T;
 	Eigen::ArrayXXd _expmT;
-	mutable int _m;
-	mutable Eigen::ArrayXXd _Fm;
 	mutable Eigen::ArrayXXd _ints;
 	//! Whether the electron repulsion integrals have been computed
 	mutable bool _have_eri;

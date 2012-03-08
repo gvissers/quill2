@@ -45,7 +45,6 @@ CGTOShellQuad::CGTOShellQuad(const CGTOShellPair& pAB, const CGTOShellPair& pCD)
 		+ widthsCD()).inverse()),
 	_dPQ(_pAB.size(), 3*_pCD.size()),
 	_lAB(pAB.lsum()), _lCD(pCD.lsum()), _lsum(_lAB+_lCD),
-	_m(-1), _Fm(),
 	_ints((_lAB+1)*(_lAB+1)*(_lAB+1), (_lCD+1)*(_lCD+1)*(_lCD+1)),
 	_have_eri(false)
 {
@@ -189,23 +188,6 @@ void CGTOShellQuad::elecRepPrim1d_abcd(int i, EriCoefs& coefs) const
 			}
 		}
 	}
-}
-
-Eigen::ArrayXXd CGTOShellQuad::Fm(int m) const
-{
-	if (m == _m)
-		return _Fm;
-	if (m > _m)
-	{
-		_Fm = _T.boys(m, _expmT);
-		_m = m;
-		return _Fm;
-	}
-
-	Eigen::ArrayXXd F = _Fm;
-	for (int n = _m-1; n >= m; --n)
-		F = (_expmT + 2*_T*F) / (2*n+1);
-	return F;
 }
 
 double CGTOShellQuad::eri_xx(int lx1, int lx2, const EriCoefs& Cx, const Fms& fms,
