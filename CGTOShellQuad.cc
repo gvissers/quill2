@@ -270,8 +270,8 @@ double CGTOShellQuad::eri_xx(int lx1, int ly1, int lx2, int ly2,
 		}
 		Ctot += Cm * fms[m];
 	}
-	Ctot += (Cxl[1] * Cyl[0] + Cxl[0] * Cyl[1]) * fms[1];
-	Ctot += Cxl[0] * Cyl[0] * fms[0];
+	Ctot += (Cxl[1] * Cyl[0] + Cxl[0] * Cyl[1]) * fms[1]
+		+ Cxl[0] * Cyl[0] * fms[0];
 
 	return mulWeights(Ctot);
 }
@@ -292,11 +292,11 @@ double CGTOShellQuad::eri_xx(int lx1, int ly1, int lz1, int lx2, int ly2, int lz
 	EriCoefs::AllMBlock Cxl = Cx.allM(lx1, lx2);
 	EriCoefs::AllMBlock Cyl = Cy.allM(ly1, ly2);
 	EriCoefs::AllMBlock Czl = Cz.allM(lz1, lz2);
-	Ctot = Cxl[lx] * Cyl[ly] * Czl[lz] * fms[m];
-	Ctot += (Cxl[lx-1]* Cyl[ly] * Czl[lz]
-		+ Cxl[lx]* Cyl[ly-1] * Czl[lz]
-		+ Cxl[lx]* Cyl[ly] * Czl[lz-1]) * fms[--m];
-	for (--m; m > 1; --m)
+	Ctot = Cxl[lx] * Cyl[ly] * Czl[lz] * fms[m]
+		+ (Cxl[lx-1]* Cyl[ly] * Czl[lz]
+			+ Cxl[lx]* Cyl[ly-1] * Czl[lz]
+			+ Cxl[lx]* Cyl[ly] * Czl[lz-1]) * fms[m-1];
+	for (m-=2; m > 1; --m)
 	{
 		Cm.setZero();
 		int mxmax = std::min(m, lx);
@@ -313,9 +313,9 @@ double CGTOShellQuad::eri_xx(int lx1, int ly1, int lz1, int lx2, int ly2, int lz
 		Ctot += Cm * fms[m];
 	}
 	Ctot += (Cxl[1] * Cyl[0] * Czl[0]
-		+ Cxl[0] * Cyl[1] * Czl[0]
-		+ Cxl[0] * Cyl[0] * Czl[1]) * fms[1];
-	Ctot += Cxl[0] * Cyl[0] * Czl[0] * fms[0];
+			+ Cxl[0] * Cyl[1] * Czl[0]
+			+ Cxl[0] * Cyl[0] * Czl[1]) * fms[1]
+		+ Cxl[0] * Cyl[0] * Czl[0] * fms[0];
 
 	return mulWeights(Ctot);
 }
