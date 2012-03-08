@@ -235,11 +235,6 @@ double CGTOShellQuad::eri_xx(int lx1, int lx2, const EriCoefs& Cx, const Fms& fm
 	Eigen::ArrayXXd& Ctot) const
 {
 	int m = lx1 + lx2;
-#ifdef DEBUG
-	if (m == 0)
-		throw Li::Exception("Total angular momentum must be greater than 0");
-#endif
-
 	EriCoefs::AllMBlock Cxl = Cx.allM(lx1, lx2);
 	Ctot = Cxl[m] * fms[m];
 	for (--m; m >= 0; --m)
@@ -298,6 +293,9 @@ double CGTOShellQuad::eri_xx(int lx1, int ly1, int lz1, int lx2, int ly2, int lz
 	EriCoefs::AllMBlock Cyl = Cy.allM(ly1, ly2);
 	EriCoefs::AllMBlock Czl = Cz.allM(lz1, lz2);
 	Ctot = Cxl[lx] * Cyl[ly] * Czl[lz] * fms[m];
+	Ctot += (Cxl[lx-1]* Cyl[ly] * Czl[lz]
+		+ Cxl[lx]* Cyl[ly-1] * Czl[lz]
+		+ Cxl[lx]* Cyl[ly] * Czl[lz-1]) * fms[--m];
 	for (--m; m > 1; --m)
 	{
 		Cm.setZero();
