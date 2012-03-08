@@ -330,8 +330,8 @@ private:
 		const Fms& fms, Eigen::ArrayXXd& Cm, Eigen::ArrayXXd& Ctot) const;
 	double eri_10(const EriCoefs::AllMBlock& Cxl, const Fms& fms) const;
 	double eri_20(const EriCoefs::AllMBlock& Cxl, const Fms& fms) const;
-	double eri_11(const EriCoefs::AllMBlock& Cxl,
-		const EriCoefs::AllMBlock& Cyl, const Fms& fms) const;
+	double eri_11(const EriCoefs::AllMBlock& Cxl, const EriCoefs::AllMBlock& Cyl,
+		const Fms& fms, Eigen::ArrayXXd& Ctot) const;
 	void setEri() const;
 
 	double& eri(int lx1, int ly1, int lz1, int lx2, int ly2, int lz2) const

@@ -313,12 +313,12 @@ double CGTOShellQuad::eri_20(const EriCoefs::AllMBlock& Cxl,
 
 double CGTOShellQuad::eri_11(const EriCoefs::AllMBlock& Cxl,
 	const EriCoefs::AllMBlock& Cyl,
-	const Fms& fms) const
+	const Fms& fms, Eigen::ArrayXXd& Ctot) const
 {
-	Eigen::ArrayXXd C = Cxl(1)*Cyl(1)*fms(2)
+	Ctot = Cxl(1)*Cyl(1)*fms(2)
 		+ (Cxl(1)*Cyl(0)+Cxl(0)*Cyl(1))*fms(1)
 		+ Cxl(0)*Cyl(0)*fms(0);
-	return mulWeights(C);
+	return mulWeights(Ctot);
 }
 
 void CGTOShellQuad::setEri() const
@@ -365,13 +365,15 @@ void CGTOShellQuad::setEri() const
 		}
 	}
 
+	Eigen::ArrayXXd Cm(n1, n2);
+	Eigen::ArrayXXd Ctot(n1, n2);
 	if (lsum1 >= 2)
 	{
 		eri(2, 0, 0, 0, 0, 0) = eri_20(Cx.allM(2, 0), fms);
-		eri(1, 1, 0, 0, 0, 0) = eri_11(Cx.allM(1, 0), Cy.allM(1, 0), fms);
-		eri(1, 0, 1, 0, 0, 0) = eri_11(Cx.allM(1, 0), Cz.allM(1, 0), fms);
+		eri(1, 1, 0, 0, 0, 0) = eri_11(Cx.allM(1, 0), Cy.allM(1, 0), fms, Ctot);
+		eri(1, 0, 1, 0, 0, 0) = eri_11(Cx.allM(1, 0), Cz.allM(1, 0), fms, Ctot);
 		eri(0, 2, 0, 0, 0, 0) = eri_20(Cy.allM(2, 0), fms);
-		eri(0, 1, 1, 0, 0, 0) = eri_11(Cy.allM(1, 0), Cz.allM(1, 0), fms);
+		eri(0, 1, 1, 0, 0, 0) = eri_11(Cy.allM(1, 0), Cz.allM(1, 0), fms, Ctot);
 		eri(0, 0, 2, 0, 0, 0) = eri_20(Cz.allM(2, 0), fms);
 		if (_lsum == 2)
 		{
@@ -382,13 +384,13 @@ void CGTOShellQuad::setEri() const
 	if (lsum1 >= 1 && lsum2 >= 1)
 	{
 		eri(1, 0, 0, 1, 0, 0) = eri_20(Cx.allM(1, 1), fms);
-		eri(1, 0, 0, 0, 1, 0) = eri_11(Cx.allM(1, 0), Cy.allM(0, 1), fms);
-		eri(1, 0, 0, 0, 0, 1) = eri_11(Cx.allM(1, 0), Cz.allM(0, 1), fms);
-		eri(0, 1, 0, 1, 0, 0) = eri_11(Cy.allM(1, 0), Cx.allM(0, 1), fms);
+		eri(1, 0, 0, 0, 1, 0) = eri_11(Cx.allM(1, 0), Cy.allM(0, 1), fms, Ctot);
+		eri(1, 0, 0, 0, 0, 1) = eri_11(Cx.allM(1, 0), Cz.allM(0, 1), fms, Ctot);
+		eri(0, 1, 0, 1, 0, 0) = eri_11(Cy.allM(1, 0), Cx.allM(0, 1), fms, Ctot);
 		eri(0, 1, 0, 0, 1, 0) = eri_20(Cy.allM(1, 1), fms);
-		eri(0, 1, 0, 0, 0, 1) = eri_11(Cy.allM(1, 0), Cz.allM(0, 1), fms);
-		eri(0, 0, 1, 1, 0, 0) = eri_11(Cz.allM(1, 0), Cx.allM(0, 1), fms);
-		eri(0, 0, 1, 0, 1, 0) = eri_11(Cz.allM(1, 0), Cy.allM(0, 1), fms);
+		eri(0, 1, 0, 0, 0, 1) = eri_11(Cy.allM(1, 0), Cz.allM(0, 1), fms, Ctot);
+		eri(0, 0, 1, 1, 0, 0) = eri_11(Cz.allM(1, 0), Cx.allM(0, 1), fms, Ctot);
+		eri(0, 0, 1, 0, 1, 0) = eri_11(Cz.allM(1, 0), Cy.allM(0, 1), fms, Ctot);
 		eri(0, 0, 1, 0, 0, 1) = eri_20(Cz.allM(1, 1), fms);
 		if (_lsum == 2)
 		{
@@ -399,10 +401,10 @@ void CGTOShellQuad::setEri() const
 	if (lsum2 >= 2)
 	{
 		eri(0, 0, 0, 2, 0, 0) = eri_20(Cx.allM(0, 2), fms);
-		eri(0, 0, 0, 1, 1, 0) = eri_11(Cx.allM(0, 1), Cy.allM(0, 1), fms);
-		eri(0, 0, 0, 1, 0, 1) = eri_11(Cx.allM(0, 1), Cz.allM(0, 1), fms);
+		eri(0, 0, 0, 1, 1, 0) = eri_11(Cx.allM(0, 1), Cy.allM(0, 1), fms, Ctot);
+		eri(0, 0, 0, 1, 0, 1) = eri_11(Cx.allM(0, 1), Cz.allM(0, 1), fms, Ctot);
 		eri(0, 0, 0, 0, 2, 0) = eri_20(Cy.allM(0, 2), fms);
-		eri(0, 0, 0, 0, 1, 1) = eri_11(Cy.allM(0, 1), Cz.allM(0, 1), fms);
+		eri(0, 0, 0, 0, 1, 1) = eri_11(Cy.allM(0, 1), Cz.allM(0, 1), fms, Ctot);
 		eri(0, 0, 0, 0, 0, 2) = eri_20(Cz.allM(0, 2), fms);
 		if (_lsum == 2)
 		{
@@ -411,8 +413,6 @@ void CGTOShellQuad::setEri() const
 		}
 	}
 
-	Eigen::ArrayXXd Cm(n1, n2);
-	Eigen::ArrayXXd Ctot(n1, n2);
 	for (int l = 3; l <= _lsum; ++l)
 	{
 		for (int l1 = lsum1; l1 >= std::max(l-lsum2, 0); --l1)
