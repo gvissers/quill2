@@ -365,7 +365,6 @@ void CGTOShellQuad::setEri() const
 		}
 	}
 
-	Eigen::ArrayXXd Cm(n1, n2);
 	Eigen::ArrayXXd Ctot(n1, n2);
 	if (lsum1 >= 2)
 	{
@@ -413,6 +412,7 @@ void CGTOShellQuad::setEri() const
 		}
 	}
 
+	Eigen::ArrayXXd Cm(n1, n2);
 	for (int l = 3; l <= _lsum; ++l)
 	{
 		for (int l1 = lsum1; l1 >= std::max(l-lsum2, 0); --l1)

@@ -27,24 +27,7 @@ AbstractBFQuad* createCGTOSpecQuad(const AbstractBFPair& p,
 		const CGTOPair& pp = static_cast< const CGTOPair& >(p);
 		const CGTOPair& qq = static_cast< const CGTOPair& >(q);
 #endif
-		int idx = CGTOShellList::pairIndex(pp.ishellPair(), qq.ishellPair());
-		switch (CGTOShellList::singleton().quad(idx).positionSymmetry())
-		{
-			case CGTOShellQuad::POS_SYM_AAAA:
-				return new(pool)
-					CGTOSpecQuad<CGTOShellQuad::POS_SYM_AAAA, l1, l2>(pp, qq);
-			case CGTOShellQuad::POS_SYM_AACC:
-				return new(pool)
-					CGTOSpecQuad<CGTOShellQuad::POS_SYM_AACC, l1, l2>(pp, qq);
-			case CGTOShellQuad::POS_SYM_AACD:
-				return new(pool)
-					CGTOSpecQuad<CGTOShellQuad::POS_SYM_AACD, l1, l2>(pp, qq);
-			case CGTOShellQuad::POS_SYM_ABCC:
-				return new(pool)
-					CGTOSpecQuad<CGTOShellQuad::POS_SYM_ABCC, l1, l2>(pp, qq);
-			default:
-				return new(pool) CGTOQuad(pp, qq);
-		}
+		return new(pool) CGTOQuad(pp, qq);
 	}
 	catch (const std::bad_cast&)
 	{
