@@ -87,6 +87,72 @@ void CGTOShellQuad::elecRepPrim1d_abcd(int i, EriCoefs& coefs) const
 	int idx = 0;
 	// C_0,0,0,0
 	coefs(idx++).setOnes();
+	if (_lsum == 1)
+	{
+		if (l2 == 1)
+		{
+			// C_0,0,1,0
+			coefs(idx++).rowwise() = dxQ(i, _pCD.centerA(i));
+			coefs(idx) = dQW(i);
+		}
+		else
+		{
+			// C_1,0,0,0
+			coefs(idx++).colwise() = dxP(i, _pAB.centerA(i));
+			coefs(idx) = dPW(i);
+		}
+		return;
+	}
+	if (_lsum == 2)
+	{
+		if (l2 == 2)
+		{
+			auto dCQi = dxQ(i, _pCD.centerA(i));
+			auto dQWi = dQW(i);
+
+			// C_0,0,1,0
+			coefs(idx++).rowwise() = dCQi;
+			coefs(idx++) = dQWi;
+			// C_0,0,2,0
+			coefs(idx++).rowwise() = dCQi.square() + hInvWidthsCD();
+			coefs(idx++) = dQWi.rowwise()*dCQi*2 - rho2();
+			coefs(idx) = dQWi.square();
+		}
+		else if (l2 == 1)
+		{
+			auto dCQi = dxQ(i, _pCD.centerA(i));
+			auto dQWi = dQW(i);
+			auto dAPi = dxP(i, _pAB.centerA(i));
+			auto dPWi = dPW(i);
+
+			// C_0,0,1,0
+			coefs(idx++).rowwise() = dCQi;
+			coefs(idx++) = dQWi;
+			// C_1,0,0,0
+			coefs(idx++).colwise() = dAPi;
+			coefs(idx++) = dPWi;
+			// C_1,0,1,0
+			coefs(idx++) = dCQi.replicate(_pAB.size(), 1).colwise()*dAPi;
+			coefs(idx++) = dQWi.colwise()*dAPi + dPWi.rowwise()*dCQi
+				+ 0.5*invWidthsSum();
+			coefs(idx) = dPWi*dQWi;
+		}
+		else
+		{
+			auto dAPi = dxP(i, _pAB.centerA(i));
+			auto dPWi = dPW(i);
+
+			// C_1,0,0,0
+			coefs(idx++).colwise() = dAPi;
+			coefs(idx++) = dPWi;
+			// C_2,0,0,0
+			coefs(idx++).colwise() = dAPi.square() + hInvWidthsAB();
+			coefs(idx++) = dPWi.colwise()*dAPi*2 - rho1();
+			coefs(idx) = dPWi.square();
+		}
+		return;
+	}
+
 	if (l2 > 0)
 	{
 		auto dCQi = dxQ(i, _pCD.centerA(i));
