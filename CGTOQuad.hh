@@ -239,31 +239,25 @@ private:
 	void elecRepPrim1d_aacc_psss(int i, FmCoefs& Cm) const;
 	void elecRepPrim1d_abcc_psss(int i, FmCoefs& Cm) const;
 	void elecRepPrim1d_aacd_psss(int i, FmCoefs& Cm) const;
-	void elecRepPrim1d_abcd_psss(int i, FmCoefs& Cm) const;
 
 	void elecRepPrim1d_abcc_ppss(int i, FmCoefs& Cm) const;
 	void elecRepPrim1d_aacd_ppss(int i, FmCoefs& Cm) const;
-	void elecRepPrim1d_abcd_ppss(int i, FmCoefs& Cm) const;
 
 	void elecRepPrim1d_abcc_psps(int i, FmCoefs& Cm) const;
 	void elecRepPrim1d_aacd_psps(int i, FmCoefs& Cm) const;
-	void elecRepPrim1d_abcd_psps(int i, FmCoefs& Cm) const;
 
 	void elecRepPrim1d_abcc_dsss(int i, FmCoefs& Cm) const;
 	void elecRepPrim1d_aacd_dsss(int i, FmCoefs& Cm) const;
-	void elecRepPrim1d_abcd_dsss(int i, FmCoefs& Cm) const;
 
 	void elecRepPrim1d_aaaa(int i, FmCoefs& Cm) const;
 	void elecRepPrim1d_aacc(int i, FmCoefs& Cm) const;
 	void elecRepPrim1d_abcc(int i, FmCoefs& Cm) const;
 	void elecRepPrim1d_aacd(int i, FmCoefs& Cm) const;
-	void elecRepPrim1d_abcd(int i, FmCoefs& Cm) const;
 
 	double electronRepulsion_aaaa() const;
 	double electronRepulsion_aacc() const;
 	double electronRepulsion_abcc() const;
 	double electronRepulsion_aacd() const;
-	double electronRepulsion_abcd() const;
 };
 
 #endif // CGTOQUAD_HH
