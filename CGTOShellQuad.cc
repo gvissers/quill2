@@ -208,21 +208,39 @@ Eigen::ArrayXXd CGTOShellQuad::Fm(int m) const
 	return F;
 }
 
-double CGTOShellQuad::eri_xx(int lx1, int ly1, int lx2, int ly2,
-	const EriCoefs& Cx, const EriCoefs& Cy,
-	const Fms& fms, Eigen::ArrayXXd& Cm, Eigen::ArrayXXd& Ctot) const
+double CGTOShellQuad::eri_xx(int lx1, int lx2, const EriCoefs& Cx, const Fms& fms,
+	Eigen::ArrayXXd& Ctot) const
 {
-	int lx = lx1 + lx2, ly = ly1 + ly2;
-	int m = lx + ly;
+	int m = lx1 + lx2;
 #ifdef DEBUG
 	if (m == 0)
 		throw Li::Exception("Total angular momentum must be greater than 0");
 #endif
 
 	EriCoefs::AllMBlock Cxl = Cx.allM(lx1, lx2);
+	Ctot = Cxl(m) * fms(m);
+	for (--m; m >= 0; --m)
+		Ctot += Cxl(m) * fms(m);
+
+	return mulWeights(Ctot);
+}
+
+double CGTOShellQuad::eri_xx(int lx1, int ly1, int lx2, int ly2,
+	const EriCoefs& Cx, const EriCoefs& Cy,
+	const Fms& fms, Eigen::ArrayXXd& Cm, Eigen::ArrayXXd& Ctot) const
+{
+	int lx = lx1 + lx2, ly = ly1 + ly2;
+
+	if (lx == 0)
+		return eri_xx(ly1, ly2, Cy, fms, Ctot);
+	if (ly == 0)
+		return eri_xx(lx1, lx2, Cx, fms, Ctot);
+
+	int m = lx + ly;
+	EriCoefs::AllMBlock Cxl = Cx.allM(lx1, lx2);
 	EriCoefs::AllMBlock Cyl = Cy.allM(ly1, ly2);
 	Ctot = Cxl(lx) * Cyl(ly) * fms(m);
-	for (--m; m > 0; --m)
+	for (--m; m > 1; --m)
 	{
 		Cm.setZero();
 		int mxmax = std::min(m, lx);
@@ -234,6 +252,7 @@ double CGTOShellQuad::eri_xx(int lx1, int ly1, int lx2, int ly2,
 		}
 		Ctot += Cm * fms(m);
 	}
+	Ctot += (Cxl(1) * Cyl(0) + Cxl(0) * Cyl(1)) * fms(1);
 	Ctot += Cxl(0) * Cyl(0) * fms(0);
 
 	return mulWeights(Ctot);
