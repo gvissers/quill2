@@ -43,8 +43,6 @@ AbstractBFQuad* createCGTOSpecQuad(const AbstractBFPair& p,
 				return new(pool)
 					CGTOSpecQuad<CGTOShellQuad::POS_SYM_ABCC, l1, l2>(pp, qq);
 			default:
-				//return new(pool)
-				//	CGTOSpecQuad<CGTOShellQuad::POS_SYM_ABCD, l1, l2>(pp, qq);
 				return new(pool) CGTOQuad(pp, qq);
 		}
 	}

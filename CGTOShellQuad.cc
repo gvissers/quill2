@@ -208,12 +208,12 @@ Eigen::ArrayXXd CGTOShellQuad::Fm(int m) const
 	return F;
 }
 
-double CGTOShellQuad::eri_xx(int lx1, int ly1, int lz1, int lx2, int ly2, int lz2,
-	const EriCoefs& Cx, const EriCoefs& Cy, const EriCoefs& Cz,
+double CGTOShellQuad::eri_xx(int lx1, int ly1, int lx2, int ly2,
+	const EriCoefs& Cx, const EriCoefs& Cy,
 	const Fms& fms, Eigen::ArrayXXd& Cm, Eigen::ArrayXXd& Ctot) const
 {
-	int lx = lx1 + lx2, ly = ly1 + ly2, lz = lz1 + lz2;
-	int m = lx + ly + lz;
+	int lx = lx1 + lx2, ly = ly1 + ly2;
+	int m = lx + ly;
 #ifdef DEBUG
 	if (m == 0)
 		throw Li::Exception("Total angular momentum must be greater than 0");
@@ -221,9 +221,42 @@ double CGTOShellQuad::eri_xx(int lx1, int ly1, int lz1, int lx2, int ly2, int lz
 
 	EriCoefs::AllMBlock Cxl = Cx.allM(lx1, lx2);
 	EriCoefs::AllMBlock Cyl = Cy.allM(ly1, ly2);
+	Ctot = Cxl(lx) * Cyl(ly) * fms(m);
+	for (--m; m > 0; --m)
+	{
+		Cm.setZero();
+		int mxmax = std::min(m, lx);
+		int mxmin = std::max(m-ly, 0);
+		for (int mx = mxmax; mx >= mxmin; --mx)
+		{
+			int my = m-mx;
+			Cm += Cxl(mx) * Cyl(my);
+		}
+		Ctot += Cm * fms(m);
+	}
+	Ctot += Cxl(0) * Cyl(0) * fms(0);
+
+	return mulWeights(Ctot);
+}
+
+double CGTOShellQuad::eri_xx(int lx1, int ly1, int lz1, int lx2, int ly2, int lz2,
+	const EriCoefs& Cx, const EriCoefs& Cy, const EriCoefs& Cz,
+	const Fms& fms, Eigen::ArrayXXd& Cm, Eigen::ArrayXXd& Ctot) const
+{
+	int lx = lx1 + lx2, ly = ly1 + ly2, lz = lz1 + lz2;
+	if (lx == 0)
+		return eri_xx(ly1, lz1, ly2, lz2, Cy, Cz, fms, Cm, Ctot);
+	if (ly == 0)
+		return eri_xx(lx1, lz1, lx2, lz2, Cx, Cz, fms, Cm, Ctot);
+	if (lz == 0)
+		return eri_xx(lx1, ly1, lx2, ly2, Cx, Cy, fms, Cm, Ctot);
+	
+	int m = lx + ly + lz;
+	EriCoefs::AllMBlock Cxl = Cx.allM(lx1, lx2);
+	EriCoefs::AllMBlock Cyl = Cy.allM(ly1, ly2);
 	EriCoefs::AllMBlock Czl = Cz.allM(lz1, lz2);
 	Ctot = Cxl(lx) * Cyl(ly) * Czl(lz) * fms(m);
-	for (--m; m > 0; --m)
+	for (--m; m > 1; --m)
 	{
 		Cm.setZero();
 		int mxmax = std::min(m, lx);
@@ -239,6 +272,9 @@ double CGTOShellQuad::eri_xx(int lx1, int ly1, int lz1, int lx2, int ly2, int lz
 		}
 		Ctot += Cm * fms(m);
 	}
+	Ctot += (Cxl(1) * Cyl(0) * Czl(0)
+		+ Cxl(0) * Cyl(1) * Czl(0)
+		+ Cxl(0) * Cyl(0) * Czl(1)) * fms(1);
 	Ctot += Cxl(0) * Cyl(0) * Czl(0) * fms(0);
 
 	return mulWeights(Ctot);

@@ -320,6 +320,9 @@ private:
 
 	void elecRepPrim1d_abcd(int i, EriCoefs& coefs) const;
 	
+	double eri_xx(int lx1, int ly1, int lx2, int ly2,
+		const EriCoefs& Cx, const EriCoefs& Cy,
+		const Fms& fms, Eigen::ArrayXXd& Cm, Eigen::ArrayXXd& Ctot) const;
 	double eri_xx(int lx1, int ly1, int lz1, int lx2, int ly2, int lz2,
 		const EriCoefs& Cx, const EriCoefs& Cy, const EriCoefs& Cz,
 		const Fms& fms, Eigen::ArrayXXd& Cm, Eigen::ArrayXXd& Ctot) const;
