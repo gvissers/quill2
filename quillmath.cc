@@ -162,6 +162,22 @@ double qerf(double x)
 }
 
 #ifdef __SSE2__
+static inline __m128d evalPoly(__m128d x, const double *C, int n)
+{
+	__m128d p = _mm_set1_pd(*C);
+	for (++C; n > 0; --n, ++C)
+		p = _mm_add_pd(_mm_mul_pd(x, p), _mm_set1_pd(*C));
+	return p;
+}
+
+static inline __m128d evalPoly1(__m128d x, const double *C, int n)
+{
+	__m128d p = _mm_add_pd(x, _mm_set1_pd(*C));
+	for (--n, ++C; n > 0; --n, ++C)
+		p = _mm_add_pd(_mm_mul_pd(x, p), _mm_set1_pd(*C));
+	return p;
+}
+
 __m128d qexp(__m128d x)
 {
 	__m128d fx, xx, p, q;
@@ -188,13 +204,8 @@ __m128d qexp(__m128d x)
 	* e**x = 1 + 2x P(x**2)/( Q(x**2) - P(x**2) )
 	*/
 	xx = _mm_mul_pd(x, x);
-	p = _mm_mul_pd(xx, _mm_set1_pd(EXP_P[0]));
-	p = _mm_mul_pd(xx, _mm_add_pd(p, _mm_set1_pd(EXP_P[1])));
-	p = _mm_mul_pd(x, _mm_add_pd(p, _mm_set1_pd(EXP_P[2])));
-	q = _mm_mul_pd(xx, _mm_set1_pd(EXP_Q[0]));
-	q = _mm_mul_pd(xx, _mm_add_pd(q, _mm_set1_pd(EXP_Q[1])));
-	q = _mm_mul_pd(xx, _mm_add_pd(q, _mm_set1_pd(EXP_Q[2])));
-	q = _mm_add_pd(q, _mm_set1_pd(EXP_Q[3]));
+	p = _mm_mul_pd(x, evalPoly(xx, EXP_P, 2));
+	q = evalPoly(xx, EXP_Q, 3);
 	x = _mm_div_pd(p, _mm_sub_pd(q, p));
 	x = _mm_add_pd(x, _mm_add_pd(x, _mm_set1_pd(1)));
 
