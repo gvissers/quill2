@@ -81,7 +81,7 @@ double Fm(int m, double t, double expmt)
 	else if (m == 0)
 	{
 		double st = std::sqrt(t);
-		return std::erf(st) / (M_2_SQRTPI * st);
+		return qerf(st) / (M_2_SQRTPI * st);
 	}
 	else if (t < 20 || t < 0.5*a)
 	{
