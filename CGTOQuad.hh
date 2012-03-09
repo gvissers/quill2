@@ -15,6 +15,7 @@ public:
 	typedef CGTOShellQuad::RowArray RowArray;
 	typedef CGTOShellQuad::ColArrayMap ColArrayMap;
 	typedef CGTOShellQuad::RowArrayMap RowArrayMap;
+	typedef CGTOShellQuad::InvWidthsSumExpression InvWidthsSumExpression;
 	typedef CGTOShellQuad::WidthsReducedExpression WidthsReducedExpression;
 	typedef CGTOShellQuad::DPQExpression DPQExpression;
 	typedef CGTOShellQuad::DXPExpression DXPExpression;
@@ -105,7 +106,7 @@ public:
 		return _shell_quad.widthsCD();
 	}
 	//! Sums of primitive widths, for all combinations of primitives GTOs
-	const Eigen::ArrayXXd& invWidthsSum() const
+	InvWidthsSumExpression invWidthsSum() const
 	{
 		return _shell_quad.invWidthsSum();
 	}
@@ -196,13 +197,13 @@ public:
 		return _shell_quad.KKW();
 	}
 
-	const Eigen::ArrayXXd& T() const
+	const Eigen::ArrayXXd T() const
 	{
-		return _shell_quad.T();
+		return widthsReduced() * (dPQ(0).square() + dPQ(1).square() + dPQ(2).square());
 	}
-	const Eigen::ArrayXXd& expmT() const
+	const Eigen::ArrayXXd expmT() const
 	{
-		return _shell_quad.expmT();
+		return (-T()).exp();
 	}
 
 	/*!

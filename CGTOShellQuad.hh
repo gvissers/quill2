@@ -38,11 +38,12 @@ public:
 	typedef Eigen::Array<double, 1, Eigen::Dynamic> RowArray;
 	typedef ColArray::ConstAlignedMapType ColArrayMap;
 	typedef RowArray::ConstAlignedMapType RowArrayMap;
+	typedef MultiArray::ConstBlock InvWidthsSumExpression;
 	typedef Eigen::CwiseBinaryOp<
 		Eigen::internal::scalar_product_op<double, double>,
 		const Eigen::CwiseBinaryOp<
 			Eigen::internal::scalar_product_op<double, double>,
-			const Eigen::ArrayXXd,
+			InvWidthsSumExpression,
 			const Eigen::Replicate<
 				Eigen::Map<
 					const ColArray,
@@ -64,12 +65,12 @@ public:
 	typedef Eigen::CwiseUnaryOp<
 		Eigen::internal::scalar_add_op<double>,
 		RowArrayMap > DXQExpression;
-		typedef Eigen::CwiseBinaryOp<
+	typedef Eigen::CwiseBinaryOp<
 		Eigen::internal::scalar_product_op<double, double>,
 		const Eigen::CwiseBinaryOp<
 			Eigen::internal::scalar_product_op<double, double>,
 			DPQExpression,
-			const Eigen::ArrayXXd>,
+			InvWidthsSumExpression>,
 		const Eigen::Replicate<
 			// RowArrayMap doesn't work???
 			Eigen::Map<
@@ -83,18 +84,18 @@ public:
 		const Eigen::CwiseBinaryOp<
 			Eigen::internal::scalar_product_op<double, double>,
 			DPQExpression,
-			const Eigen::ArrayXXd >,
+			InvWidthsSumExpression>,
 		const Eigen::Replicate<
 			Eigen::CwiseUnaryOp<
 				Eigen::internal::scalar_opposite_op<double>,
 				ColArrayMap>,
 			1,
 			Eigen::Dynamic> > DQWExpression;
-		typedef Eigen::CwiseBinaryOp<
+	typedef Eigen::CwiseBinaryOp<
 		Eigen::internal::scalar_product_op<double, double>,
 		const Eigen::CwiseBinaryOp<
 			Eigen::internal::scalar_product_op<double, double>,
-				const Eigen::ArrayXXd,
+				InvWidthsSumExpression,
 				const Eigen::Replicate<
 					// HInvWidthsABExpression doesn't work?
 					Eigen::Map<
@@ -115,7 +116,7 @@ public:
 		Eigen::internal::scalar_product_op<double, double>,
 		const Eigen::CwiseBinaryOp<
 			Eigen::internal::scalar_product_op<double, double>,
-			const Eigen::ArrayXXd,
+			InvWidthsSumExpression,
 			const Eigen::Replicate<
 				// ColArrayMap doesn't work???
 				Eigen::Map<
@@ -142,7 +143,7 @@ public:
 					Eigen::internal::scalar_product_op<double, double>,
 					const Eigen::CwiseUnaryOp<
 						Eigen::internal::scalar_sqrt_op<double>,
-						const Eigen::ArrayXXd >,
+						InvWidthsSumExpression>,
 					const Eigen::Replicate<
 						// ColArrayMap doesn't work???
 						Eigen::Map<
@@ -161,8 +162,8 @@ public:
 
 	CGTOShellQuad(const CGTOShellPair& pAB, const CGTOShellPair& pCD);
 
-	//! Return the total number of primitive combinations in this qu
-	int size() const { return _inv_widths_sum.size(); }
+	//! Return the total number of primitive combinations in this quartet
+	int size() const { return _pAB.size() * _pCD.size(); }
 	//! Return the symmetry in positions of the four centers
 	PositionSymmetry positionSymmetry() const { return _pos_sym; }
 
@@ -187,9 +188,9 @@ public:
 		return RowArray::MapAligned(_pCD.hInvWidths().data(), _pCD.size());
 	}
 	//! Sums of primitive widths, for all combinations of primitives GTOs
-	const Eigen::ArrayXXd& invWidthsSum() const
+	InvWidthsSumExpression invWidthsSum() const
 	{
-		return _inv_widths_sum;
+		return _data[3];
 	}
 	//! Reduced widths \f$\rho = \frac{\zeta\eta}{\zeta+\eta}\f$
 	WidthsReducedExpression widthsReduced() const
@@ -239,7 +240,7 @@ public:
 	 */
 	DPQExpression dPQ(int i) const
 	{
-		return _dPQ[i];
+		return _data[i];
 	}
 	Rho1Expression rho1() const
 	{
@@ -260,8 +261,6 @@ public:
 			* Constants::sqrt_2_pi_5_4 * Constants::sqrt_2_pi_5_4;
 	}
 
-	const Eigen::ArrayXXd& T() const { return _T; }
-	const Eigen::ArrayXXd& expmT() const { return _expmT; }
 	double getEri(int lx1, int ly1, int lz1, int lx2, int ly2, int lz2) const
 	{
 		if (!_have_eri)
@@ -296,10 +295,6 @@ private:
 	const CGTOShellPair& _pAB;
 	//! The second pair of shells in this quartet
 	const CGTOShellPair& _pCD;
-	//! Inverse of the sums of widths, for all primitive combinations
-	Eigen::ArrayXXd _inv_widths_sum;
-	//! Distance between weighted centers of the two pairs
-	MultiArray _dPQ;
 	//! The symmetry in positions of the four orbitals
 	PositionSymmetry _pos_sym;
 	//! The total angular momentum of the first pair
@@ -308,9 +303,15 @@ private:
 	int _lCD;
 	//! The total angular momentum of the four shells combined
 	int _lsum;
-
-	Eigen::ArrayXXd _T;
-	Eigen::ArrayXXd _expmT;
+	/*!
+	 * \brief Data for this shell quad
+	 *
+	 * Data for this shell quartet. In order
+	 * 1-3: Distance between weighted centers of the pairs
+	 * 4:   Inverse sums of widths
+	 */
+	MultiArray _data;
+	//! The electron repulsion integrals themselves
 	mutable Eigen::ArrayXXd _ints;
 	//! Whether the electron repulsion integrals have been computed
 	mutable bool _have_eri;

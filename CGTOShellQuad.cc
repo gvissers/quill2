@@ -5,10 +5,10 @@
 
 struct Fms: public MultiArray
 {
-	Fms(int maxm, const Eigen::ArrayXXd& T, const Eigen::ArrayXXd& expmT,
-		const Eigen::ArrayXXd& KKW):
+	Fms(int maxm, const Eigen::ArrayXXd& T, const Eigen::ArrayXXd& KKW):
 		MultiArray(T.rows(), T.cols(), maxm+1)
 	{
+		Eigen::ArrayXXd expmT = (-T).exp();
 		(*this)[maxm] = T.boys(maxm, expmT);
 		for (int m = maxm-1; m >= 0; --m)
 			(*this)[m] = (expmT + 2*T*(*this)[m+1]) / (2*m+1);
@@ -19,10 +19,8 @@ struct Fms: public MultiArray
 
 CGTOShellQuad::CGTOShellQuad(const CGTOShellPair& pAB, const CGTOShellPair& pCD):
 	_pAB(pAB), _pCD(pCD),
-	_inv_widths_sum((widthsAB().replicate(1, pCD.size()).rowwise()
-		+ widthsCD()).inverse()),
-	_dPQ(_pAB.size(), _pCD.size(), 3),
 	_lAB(pAB.lsum()), _lCD(pCD.lsum()), _lsum(_lAB+_lCD),
+	_data(_pAB.size(), _pCD.size(), 4),
 	_ints((_lAB+1)*(_lAB+1)*(_lAB+1), (_lCD+1)*(_lCD+1)*(_lCD+1)),
 	_have_eri(false)
 {
@@ -47,12 +45,11 @@ CGTOShellQuad::CGTOShellQuad(const CGTOShellPair& pAB, const CGTOShellPair& pCD)
 		_pos_sym = POS_SYM_ABCD;
 	}
 
-	_dPQ[0] = Q(0).replicate(_pAB.size(), 1).colwise() - P(0);
-	_dPQ[1] = Q(1).replicate(_pAB.size(), 1).colwise() - P(1);
-	_dPQ[2] = Q(2).replicate(_pAB.size(), 1).colwise() - P(2);
-	
-	_T = widthsReduced() * (dPQ(0).square() + dPQ(1).square() + dPQ(2).square());
-	_expmT = (-_T).exp();
+	_data[0] = Q(0).replicate(_pAB.size(), 1).colwise() - P(0);
+	_data[1] = Q(1).replicate(_pAB.size(), 1).colwise() - P(1);
+	_data[2] = Q(2).replicate(_pAB.size(), 1).colwise() - P(2);
+	_data[3] = (widthsAB().replicate(1, pCD.size()).rowwise()
+		+ widthsCD()).inverse();
 }
 
 void CGTOShellQuad::elecRepPrim1d_abcd(int i, EriCoefs& coefs) const
@@ -344,7 +341,9 @@ double CGTOShellQuad::eri_11(const EriCoefs::AllMBlock& Cxl,
 
 void CGTOShellQuad::setEri() const
 {
-	Fms fms(_lsum, _T, _expmT, KKW());
+	Eigen::ArrayXXd T = widthsReduced()
+		* (dPQ(0).square() + dPQ(1).square() + dPQ(2).square());
+	Fms fms(_lsum, T, KKW());
 	
 	eri(0, 0, 0, 0, 0, 0) = mulWeights(fms[0]);
 	if (_lsum == 0)
