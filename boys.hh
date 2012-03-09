@@ -6,6 +6,8 @@
  * \brief Functions to evaluate the Boys function
  */
 
+#include "quillmath.hh"
+
 /*!
  * \brief Evaluate the Boys function
  *
@@ -37,7 +39,7 @@ namespace
  */
 double Fm(int m, double t)
 {
-	return ::Fm(m, t, std::exp(-t));
+	return ::Fm(m, t, qexp(-t));
 }
 
 } // namespace

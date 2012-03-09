@@ -1,6 +1,36 @@
 #ifndef QUILL_FUNCTORS_HH
 #define QUILL_FUNCTORS_HH
 
+template <typename Scalar>
+struct scalar_qexp_op
+{
+	scalar_qexp_op() {}
+	const Scalar operator()(const Scalar& a) const
+	{
+		return qexp(a);
+	}
+#ifdef __SSE2__
+	template <typename Packet>
+	const Packet packetOp(const Packet& a) const
+	{
+		return qexp(a);
+	}
+#endif
+};
+template <typename Scalar>
+struct functor_traits< scalar_qexp_op<Scalar> >
+{
+	enum
+	{
+		Cost = 15 * NumTraits<Scalar>::MulCost,
+#ifdef __SSE2__
+		PacketAccess = true
+#else
+		PacketAccess = false
+#endif
+	};
+};
+
 /*!
  * \brief Functor for computing the Boys functions
  *

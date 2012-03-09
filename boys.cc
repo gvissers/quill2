@@ -55,7 +55,7 @@ static double Fm_Q_cf(double a, double t, double expmt)
 		del = d * c;
 		h *= del;
 		if (std::abs(del - 1.0) < depsilon)
-			return 0.5 * std::exp(std::lgamma(a) - a*std::log(t))
+			return 0.5 * qexp(std::lgamma(a) - a*std::log(t))
 				- h * expmt;
 	}
 
