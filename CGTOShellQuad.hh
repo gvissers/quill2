@@ -63,32 +63,8 @@ public:
 	typedef Eigen::CwiseUnaryOp<
 		Eigen::internal::scalar_add_op<double>,
 		RowArrayMap > DXQExpression;
-	typedef Eigen::CwiseBinaryOp<
-		Eigen::internal::scalar_product_op<double, double>,
-		const Eigen::CwiseBinaryOp<
-			Eigen::internal::scalar_product_op<double, double>,
-			DPQExpression,
-			InvWidthsSumExpression>,
-		const Eigen::Replicate<
-			// RowArrayMap doesn't work???
-			Eigen::Map<
-				const RowArray,
-				Eigen::Aligned,
-				Eigen::Stride<0, 0> >,
-			Eigen::Dynamic,
-			1> > DPWExpression;
-	typedef Eigen::CwiseBinaryOp<
-		Eigen::internal::scalar_product_op<double, double>,
-		const Eigen::CwiseBinaryOp<
-			Eigen::internal::scalar_product_op<double, double>,
-			DPQExpression,
-			InvWidthsSumExpression>,
-		const Eigen::Replicate<
-			Eigen::CwiseUnaryOp<
-				Eigen::internal::scalar_opposite_op<double>,
-				ColArrayMap>,
-			1,
-			Eigen::Dynamic> > DQWExpression;
+	typedef MultiArray::ConstBlock DPWExpression;
+	typedef MultiArray::ConstBlock DQWExpression;
 	typedef Eigen::CwiseBinaryOp<
 		Eigen::internal::scalar_product_op<double, double>,
 		const Eigen::CwiseBinaryOp<
@@ -189,7 +165,7 @@ public:
 	//! Sums of primitive widths, for all combinations of primitives GTOs
 	InvWidthsSumExpression invWidthsSum() const
 	{
-		return _data[3];
+		return _data[0];
 	}
 	//! Reduced widths \f$\rho = \frac{\zeta\eta}{\zeta+\eta}\f$
 	WidthsReducedExpression widthsReduced() const
@@ -216,7 +192,7 @@ public:
 	 */
 	DPWExpression dPW(int i) const
 	{
-		return (dPQ(i) * invWidthsSum()).rowwise() * widthsCD();
+		return _data[4+i];
 	}
 	//! Return the weighted \a i coordinate of the second pair
 	RowArrayMap Q(int i) const
@@ -237,7 +213,7 @@ public:
 	 */
 	DQWExpression dQW(int i) const
 	{
-		return (dPQ(i) * invWidthsSum()).colwise() * (-widthsAB());
+		return _data[7+i];
 	}
 	/*!
 	 * \brief Return the distance in the \a i dimension between the weighted
@@ -245,7 +221,7 @@ public:
 	 */
 	DPQExpression dPQ(int i) const
 	{
-		return _data[i];
+		return _data[1+i];
 	}
 	Rho1Expression rho1() const
 	{
@@ -319,8 +295,10 @@ private:
 	 * \brief Data for this shell quad
 	 *
 	 * Data for this shell quartet. In order
+	 * 0 :  Inverse sums of widths
 	 * 1-3: Distance between weighted centers of the pairs
-	 * 4:   Inverse sums of widths
+	 * 4-6: dPW
+	 * 7-9: dQW
 	 */
 	MultiArray _data;
 	//! The electron repulsion integrals themselves

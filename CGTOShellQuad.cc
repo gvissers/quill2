@@ -6,56 +6,66 @@ CGTOShellQuad::CGTOShellQuad(const CGTOShellPair& pAB, const CGTOShellPair& pCD)
 	_pAB(pAB), _pCD(pCD),
 	_pos_sym(symmetry(pAB, pCD)),
 	_lAB(pAB.lsum()), _lCD(pCD.lsum()), _lsum(_lAB+_lCD),
-	_data(_pAB.size(), _pCD.size(), 4),
+	_data(_pAB.size(), _pCD.size(), 10),
 	_ints((_lAB+1)*(_lAB+1)*(_lAB+1), (_lCD+1)*(_lCD+1)*(_lCD+1)),
 	_have_eri(false)
 {
-	_data[0] = Q(0).replicate(_pAB.size(), 1).colwise() - P(0);
-	_data[1] = Q(1).replicate(_pAB.size(), 1).colwise() - P(1);
-	_data[2] = Q(2).replicate(_pAB.size(), 1).colwise() - P(2);
-	_data[3] = (widthsAB().replicate(1, pCD.size()).rowwise()
+	_data[0] = (widthsAB().replicate(1, pCD.size()).rowwise()
 		+ widthsCD()).inverse();
+	_data[1] = Q(0).replicate(_pAB.size(), 1).colwise() - P(0);
+	_data[2] = Q(1).replicate(_pAB.size(), 1).colwise() - P(1);
+	_data[3] = Q(2).replicate(_pAB.size(), 1).colwise() - P(2);
+	if (_lAB > 0)
+	{
+		_data[4] = (dPQ(0) * invWidthsSum()).rowwise() * widthsCD();
+		_data[5] = (dPQ(1) * invWidthsSum()).rowwise() * widthsCD();
+		_data[6] = (dPQ(2) * invWidthsSum()).rowwise() * widthsCD();
+	}
+	if (_lCD > 0)
+	{
+		_data[7] = (dPQ(0) * invWidthsSum()).colwise() * (-widthsAB());
+		_data[8] = (dPQ(1) * invWidthsSum()).colwise() * (-widthsAB());
+		_data[9] = (dPQ(2) * invWidthsSum()).colwise() * (-widthsAB());
+	}
 }
 
 void CGTOShellQuad::elecRepPrim1d_abcd(int i, EriCoefs& coefs) const
 {
-	int l1 = _pAB.lsum(), l2 = _pCD.lsum();
-
 	int idx = 0;
 	// C_0,0,0,0
 	coefs[idx++].setOnes();
 	if (_lsum == 1)
 	{
-		if (l2 == 1)
-		{
-			// C_0,0,1,0
-			coefs[idx++].rowwise() = dCQ(i);
-			coefs[idx] = dQW(i);
-		}
-		else
+		if (_lAB == 1)
 		{
 			// C_1,0,0,0
 			coefs[idx++].colwise() = dAP(i);
 			coefs[idx] = dPW(i);
 		}
+		else
+		{
+			// C_0,0,1,0
+			coefs[idx++].rowwise() = dCQ(i);
+			coefs[idx] = dQW(i);
+		}
 		return;
 	}
 	if (_lsum == 2)
 	{
-		if (l2 == 2)
+		if (_lAB == 2)
 		{
-			auto dCQi = dCQ(i);
-			auto dQWi = dQW(i);
+			auto dAPi = dAP(i);
+			auto dPWi = dPW(i);
 
-			// C_0,0,1,0
-			coefs[idx++].rowwise() = dCQi;
-			coefs[idx++] = dQWi;
-			// C_0,0,2,0
-			coefs[idx++].rowwise() = dCQi.square() + hInvWidthsCD();
-			coefs[idx++] = dQWi.rowwise()*dCQi*2 - rho2();
-			coefs[idx] = dQWi.square();
+			// C_1,0,0,0
+			coefs[idx++].colwise() = dAPi;
+			coefs[idx++] = dPWi;
+			// C_2,0,0,0
+			coefs[idx++].colwise() = dAPi.square() + hInvWidthsAB();
+			coefs[idx++] = dPWi.colwise()*dAPi*2 - rho1();
+			coefs[idx] = dPWi.square();
 		}
-		else if (l2 == 1)
+		else if (_lAB == 1)
 		{
 			auto dCQi = dCQ(i);
 			auto dQWi = dQW(i);
@@ -76,21 +86,21 @@ void CGTOShellQuad::elecRepPrim1d_abcd(int i, EriCoefs& coefs) const
 		}
 		else
 		{
-			auto dAPi = dAP(i);
-			auto dPWi = dPW(i);
+			auto dCQi = dCQ(i);
+			auto dQWi = dQW(i);
 
-			// C_1,0,0,0
-			coefs[idx++].colwise() = dAPi;
-			coefs[idx++] = dPWi;
-			// C_2,0,0,0
-			coefs[idx++].colwise() = dAPi.square() + hInvWidthsAB();
-			coefs[idx++] = dPWi.colwise()*dAPi*2 - rho1();
-			coefs[idx] = dPWi.square();
+			// C_0,0,1,0
+			coefs[idx++].rowwise() = dCQi;
+			coefs[idx++] = dQWi;
+			// C_0,0,2,0
+			coefs[idx++].rowwise() = dCQi.square() + hInvWidthsCD();
+			coefs[idx++] = dQWi.rowwise()*dCQi*2 - rho2();
+			coefs[idx] = dQWi.square();
 		}
 		return;
 	}
 
-	if (l2 > 0)
+	if (_lCD > 0)
 	{
 		auto dCQi = dCQ(i);
 		auto inv_eta = hInvWidthsCD();
@@ -102,7 +112,7 @@ void CGTOShellQuad::elecRepPrim1d_abcd(int i, EriCoefs& coefs) const
 		coefs[idx++] = dQWi;
 
 		// C_0,0,c,0
-		for (int iC = 1; iC < l2; ++iC)
+		for (int iC = 1; iC < _lCD; ++iC)
 		{
 			coefs[idx].rowwise() = coefs[idx-iC-1].row(0)*dCQi
 				+ coefs[idx-2*iC-1].row(0)*(iC*inv_eta);
@@ -123,17 +133,17 @@ void CGTOShellQuad::elecRepPrim1d_abcd(int i, EriCoefs& coefs) const
 		}
 	}
 
-	if (l1 > 0)
+	if (_lAB > 0)
 	{
 		auto dAPi = dAP(i);
 		auto inv_zeta = hInvWidthsAB();
-		Eigen::ArrayXXd dPWi = dPW(i);
+		auto dPWi = dPW(i);
 		auto rho1 = this->rho1();
 		auto inv_sum = 0.5 * invWidthsSum();
 
-		int n2 = (l2+1)*(l2+2)/2;
+		int n2 = (_lCD+1)*(_lCD+2)/2;
 		// C_1,0,c,0
-		for (int iC = 0; iC <= l2; ++iC, ++n2)
+		for (int iC = 0; iC <= _lCD; ++iC, ++n2)
 		{
 			coefs[idx] = coefs[idx-n2].colwise()*dAPi;
 			++idx;
@@ -148,42 +158,42 @@ void CGTOShellQuad::elecRepPrim1d_abcd(int i, EriCoefs& coefs) const
 		}
 
 		// C_a,0,c,0
-		for (int iA = 1; iA < l1; ++iA)
+		for (int iA = 1; iA < _lAB; ++iA)
 		{
 			coefs[idx] = coefs[idx-n2].colwise()*dAPi
-				+ coefs[idx-2*n2+l2+1].colwise()*(iA*inv_zeta);
+				+ coefs[idx-2*n2+_lCD+1].colwise()*(iA*inv_zeta);
 			++idx;
 			for (int m = 1; m < iA; ++m, ++idx)
 			{
 				coefs[idx] = coefs[idx-n2].colwise()*dAPi
-					+ coefs[idx-2*n2+l2+1].colwise()*(iA*inv_zeta)
+					+ coefs[idx-2*n2+_lCD+1].colwise()*(iA*inv_zeta)
 					+ dPWi*coefs[idx-n2-1]
-					- iA*rho1*coefs[idx-2*n2+l2];
+					- iA*rho1*coefs[idx-2*n2+_lCD];
 			}
 			coefs[idx] = coefs[idx-n2].colwise()*dAPi
 				+ dPWi*coefs[idx-n2-1]
-				- iA*rho1*coefs[idx-2*n2+l2];
+				- iA*rho1*coefs[idx-2*n2+_lCD];
 			++idx;
 			coefs[idx] = dPWi*coefs[idx-n2-1];
 			++idx;
 			++n2;
 
-			for (int iC = 1; iC <= l2; ++iC, ++n2)
+			for (int iC = 1; iC <= _lCD; ++iC, ++n2)
 			{
 				coefs[idx] = coefs[idx-n2].colwise()*dAPi
-					+ coefs[idx-2*n2+l2+1].colwise()*(iA*inv_zeta);
+					+ coefs[idx-2*n2+_lCD+1].colwise()*(iA*inv_zeta);
 				++idx;
 				for (int m = 1; m < iA+iC; ++m, ++idx)
 				{
 					coefs[idx] = coefs[idx-n2].colwise()*dAPi
-						+ coefs[idx-2*n2+l2+1].colwise()*(iA*inv_zeta)
+						+ coefs[idx-2*n2+_lCD+1].colwise()*(iA*inv_zeta)
 						+ dPWi*coefs[idx-n2-1]
-						- iA*rho1*coefs[idx-2*n2+l2]
+						- iA*rho1*coefs[idx-2*n2+_lCD]
 						+ iC*inv_sum*coefs[idx-n2-iC-iA-1];
 				}
 				coefs[idx] = coefs[idx-n2].colwise()*dAPi
 					+ dPWi*coefs[idx-n2-1]
-					- iA*rho1*coefs[idx-2*n2+l2]
+					- iA*rho1*coefs[idx-2*n2+_lCD]
 					+ iC*inv_sum*coefs[idx-n2-iC-iA-1];
 				++idx;
 				coefs[idx] = dPWi*coefs[idx-n2-1];
@@ -254,10 +264,9 @@ double CGTOShellQuad::eri_xx(int lx1, int ly1, int lz1, int lx2, int ly2, int lz
 	EriCoefs::AllMBlock Cxl = Cx.allM(lx1, lx2);
 	EriCoefs::AllMBlock Cyl = Cy.allM(ly1, ly2);
 	EriCoefs::AllMBlock Czl = Cz.allM(lz1, lz2);
-	Ctot = Cxl[lx] * Cyl[ly] * Czl[lz] * fms[m]
-		+ (Cxl[lx-1]* Cyl[ly] * Czl[lz]
-			+ Cxl[lx]* Cyl[ly-1] * Czl[lz]
-			+ Cxl[lx]* Cyl[ly] * Czl[lz-1]) * fms[m-1];
+	Ctot = fms[m] * Cxl[lx] * Cyl[ly] * Czl[lz]
+		+ fms[m-1] * (Cxl[lx-1] * Cyl[ly] * Czl[lz]
+			+ Cxl[lx] * (Cyl[ly-1] * Czl[lz] + Cyl[ly] * Czl[lz-1]));
 	for (m-=2; m > 1; --m)
 	{
 		Cm.setZero();
@@ -272,12 +281,11 @@ double CGTOShellQuad::eri_xx(int lx1, int ly1, int lz1, int lx2, int ly2, int lz
 				Cm += Cxl[mx] * Cyl[my] * Czl[mz];
 			}
 		}
-		Ctot += Cm * fms[m];
+		Ctot += fms[m] * Cm;
 	}
-	Ctot += (Cxl[1] * Cyl[0] * Czl[0]
-			+ Cxl[0] * Cyl[1] * Czl[0]
-			+ Cxl[0] * Cyl[0] * Czl[1]) * fms[1]
-		+ Cxl[0] * Cyl[0] * Czl[0] * fms[0];
+	Ctot += fms[1] * (Cxl[1] * Cyl[0] * Czl[0]
+			+ Cxl[0] * (Cyl[1] * Czl[0] + Cyl[0] * Czl[1]))
+		+ fms[0] * Cxl[0] * Cyl[0] * Czl[0];
 
 	return mulWeights(Ctot);
 }
