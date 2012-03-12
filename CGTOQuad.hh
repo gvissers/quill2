@@ -5,30 +5,11 @@
 #include "CGTOPair.hh"
 
 // Forward declarations
-class FmCoefs;
 class BFQuadPool;
 
 class CGTOQuad: public AbstractBFQuad
 {
 public:
-	typedef CGTOShellQuad::ColArray ColArray;
-	typedef CGTOShellQuad::RowArray RowArray;
-	typedef CGTOShellQuad::ColArrayMap ColArrayMap;
-	typedef CGTOShellQuad::RowArrayMap RowArrayMap;
-	typedef CGTOShellQuad::InvWidthsSumExpression InvWidthsSumExpression;
-	typedef CGTOShellQuad::WidthsReducedExpression WidthsReducedExpression;
-	typedef CGTOShellQuad::DPQExpression DPQExpression;
-	typedef CGTOShellQuad::DXPExpression DXPExpression;
-	typedef CGTOShellQuad::DXQExpression DXQExpression;
-	typedef Eigen::VectorXd::ConstAlignedMapType VectorMap;
-	typedef CGTOShellQuad::DPWExpression DPWExpression;
-	typedef CGTOShellQuad::DQWExpression DQWExpression;
-	typedef CGTOShellQuad::Rho1Expression Rho1Expression;
-	typedef CGTOShellQuad::Rho2Expression Rho2Expression;
-	typedef ColArrayMap HInvWidthsABExpression;
-	typedef RowArrayMap HInvWidthsCDExpression;
-	typedef CGTOShellQuad::KKWExpression KKWExpression;
-
 	/*!
 	 * \brief Constructor
 	 *
@@ -57,7 +38,13 @@ public:
 	 * and \f$b\f$ are stored in the first orbital pair of this quartet, and 
 	 * \f$c\f$ and \f$d\f$ are stored in the second pair.
 	 */
-	virtual double electronRepulsion() const;
+	double electronRepulsion() const
+	{
+		return _shell_quad.getEri(lA(0), lA(1), lA(2),
+			lB(0), lB(1), lB(2),
+			lC(0), lC(1), lC(2),
+			lD(0), lD(1), lD(2)) * _norm;
+	}
 
 	//! Return the angular momentum in the \a i direction for the first orbital
 	int lA(int i) const
@@ -69,11 +56,6 @@ public:
 	{
 		return p().lB(i);
 	}
-	//! Return the sum of angular momenta for the orbitals in the first pair
-	int lAB(int i) const
-	{
-		return p().lsum(i);
-	}
 	//! Return the angular momentum in the \a i direction for the third orbital
 	int lC(int i) const
 	{
@@ -83,127 +65,6 @@ public:
 	int lD(int i) const
 	{
 		return q().lB(i);
-	}
-	//! Return the sum of angular momenta for the orbitals in the first pair
-	int lCD(int i) const
-	{
-		return q().lsum(i);
-	}
-	//! Return the sum of all for angular momenta in direction \a i.
-	int lsum(int i) const
-	{
-		return lAB(i) + lCD(i);
-	}
-
-	//! Sums of primitive widths for the first pair
-	ColArrayMap widthsAB() const
-	{
-		return _shell_quad.widthsAB();
-	}
-	//! Sums of primitive widths for the second pair
-	RowArrayMap widthsCD() const
-	{
-		return _shell_quad.widthsCD();
-	}
-	//! Sums of primitive widths, for all combinations of primitives GTOs
-	InvWidthsSumExpression invWidthsSum() const
-	{
-		return _shell_quad.invWidthsSum();
-	}
-	//! Reduced widths \f$\rho = \frac{\zeta\eta}{\zeta+\eta}\f$
-	WidthsReducedExpression widthsReduced() const
-	{
-		return _shell_quad.widthsReduced();
-	}
-
-	//! Return the \a i coordinate of the first orbital center
-	double centerA(int i) const
-	{
-		return p().centerA(i);
-	}
-	//! Return the \a i coordinate of the second orbital center
-	double centerB(int i) const
-	{
-		return p().centerB(i);
-	}
-	//! Return the \a i coordinate of the third orbital center
-	double centerC(int i) const
-	{
-		return q().centerA(i);
-	}
-	//! Return the \a i coordinate of the fourth orbital center
-	double centerD(int i) const
-	{
-		return q().centerB(i);
-	}
-	//! Return the distance in the \a i direction between the first two orbital centers
-	double rAB(int i) const
-	{
-		return p().r(i);
-	}
-	//! Return the distance in the \a i direction between the second two orbital centers
-	double rCD(int i) const
-	{
-		return q().r(i);
-	}
-
-	ColArrayMap P(int i) const
-	{
-		return _shell_quad.P(i);
-	}
-	DXPExpression dxP(int i, double x) const
-	{
-		return _shell_quad.dxP(i, x);
-	}
-	DPWExpression dPW(int i) const
-	{
-		return _shell_quad.dPW(i);
-	}
-	RowArrayMap Q(int i) const
-	{
-		return _shell_quad.Q(i);
-	}
-	DXQExpression dxQ(int i, double x) const
-	{
-		return _shell_quad.dxQ(i, x);
-	}
-	DQWExpression dQW(int i) const
-	{
-		return _shell_quad.dQW(i);
-	}
-	DPQExpression dPQ(int i) const
-	{
-		return _shell_quad.dPQ(i);
-	}
-	HInvWidthsABExpression hInvWidthsAB() const
-	{
-		return _shell_quad.hInvWidthsAB();
-	}
-	HInvWidthsCDExpression hInvWidthsCD() const
-	{
-		return _shell_quad.hInvWidthsCD();
-	}
-	Rho1Expression rho1() const
-	{
-		return _shell_quad.rho1();
-	}
-	Rho2Expression rho2() const
-	{
-		return _shell_quad.rho2();
-	}
-
-	KKWExpression KKW() const
-	{
-		return _shell_quad.KKW();
-	}
-
-	const Eigen::ArrayXXd T() const
-	{
-		return widthsReduced() * (dPQ(0).square() + dPQ(1).square() + dPQ(2).square());
-	}
-	const Eigen::ArrayXXd expmT() const
-	{
-		return (-T()).exp();
 	}
 
 	/*!
@@ -234,31 +95,10 @@ protected:
 private:
 	//! Normalization factor for two-electron integrals
 	double _norm;
+	//! The combined index of this quartet's shells in the CGTOShellList
 	int _ishell_quad;
+	//! The shells for this quartet of orbitals
 	const CGTOShellQuad& _shell_quad;
-
-	void elecRepPrim1d_aacc_psss(int i, FmCoefs& Cm) const;
-	void elecRepPrim1d_abcc_psss(int i, FmCoefs& Cm) const;
-	void elecRepPrim1d_aacd_psss(int i, FmCoefs& Cm) const;
-
-	void elecRepPrim1d_abcc_ppss(int i, FmCoefs& Cm) const;
-	void elecRepPrim1d_aacd_ppss(int i, FmCoefs& Cm) const;
-
-	void elecRepPrim1d_abcc_psps(int i, FmCoefs& Cm) const;
-	void elecRepPrim1d_aacd_psps(int i, FmCoefs& Cm) const;
-
-	void elecRepPrim1d_abcc_dsss(int i, FmCoefs& Cm) const;
-	void elecRepPrim1d_aacd_dsss(int i, FmCoefs& Cm) const;
-
-	void elecRepPrim1d_aaaa(int i, FmCoefs& Cm) const;
-	void elecRepPrim1d_aacc(int i, FmCoefs& Cm) const;
-	void elecRepPrim1d_abcc(int i, FmCoefs& Cm) const;
-	void elecRepPrim1d_aacd(int i, FmCoefs& Cm) const;
-
-	double electronRepulsion_aaaa() const;
-	double electronRepulsion_aacc() const;
-	double electronRepulsion_abcc() const;
-	double electronRepulsion_aacd() const;
 };
 
 #endif // CGTOQUAD_HH
