@@ -136,9 +136,9 @@ static double qerfc_xgt1(double x)
 	if (mxx < MINLOG)
 		return x < 0 ? 2 : 0;
 
-	double ax = std::abs(x);
 	double p, q;
-	if (std::abs(x) < 8)
+	double ax = std::abs(x);
+	if (ax < 8)
 	{
 		p = evalPoly(ax, ERFC_P, 8);
 		q = evalPoly1(ax, ERFC_Q, 8);
@@ -180,17 +180,17 @@ static inline __m128d evalPoly1(__m128d x, const double *C, int n)
 
 __m128d qexp(__m128d x)
 {
-	__m128d fx, xx, p, q;
+	__m128d maxmask, minmask, fx, xx, p, q;
 	__m128i n;
 	unsigned int round_mode = _MM_GET_ROUNDING_MODE();
-	
+
+	maxmask = _mm_cmple_pd(x, _mm_set1_pd(MAXLOG));
+	minmask = _mm_cmpge_pd(x, _mm_set1_pd(MINLOG));
+
 	/* Express e**x = e**g 2**n
 	*   = e**g e**( n loge(2) )
 	*   = e**( g + n loge(2) )
 	*/
-	x = _mm_min_pd(x, _mm_set1_pd(MAXLOG));
-	x = _mm_max_pd(x, _mm_set1_pd(MINLOG));
-
 	fx = _mm_mul_pd(x, _mm_set1_pd(M_LOG2E));
 	_MM_SET_ROUNDING_MODE(_MM_ROUND_NEAREST);
 	n = _mm_cvtpd_epi32(fx);
@@ -215,6 +215,70 @@ __m128d qexp(__m128d x)
 	n = _mm_sll_epi64(n, _mm_cvtsi32_si128(52));
 	x = _mm_mul_pd(x, _mm_castsi128_pd(n));
 
-	return x;
+	// Set result for too high values of x to positive infinity
+	x = _mm_or_pd(_mm_and_pd(maxmask, x),
+		_mm_andnot_pd(maxmask, _mm_set1_pd(std::numeric_limits<double>::infinity())));
+	// Set result for too low values of x to zero
+	return _mm_and_pd(minmask, x);
+}
+
+static __m128d qerfc_xgt1(__m128d x)
+{
+	__m128d p, q;
+	__m128d ax = _mm_andnot_pd(_mm_set1_pd(-0.0), x);
+	__m128d mask = _mm_cmplt_pd(x, _mm_set1_pd(8));
+	int mbits = _mm_movemask_pd(mask);
+	if (mbits == 0)
+	{
+		p = evalPoly(ax, ERFC_R, 5);
+		q = evalPoly1(ax, ERFC_S, 6);
+	}
+	else if (mbits == 3)
+	{
+		p = evalPoly(ax, ERFC_P, 8);
+		q = evalPoly1(ax, ERFC_Q, 8);
+	}
+	else
+	{
+		__m128d p1 = evalPoly(ax, ERFC_R, 5);
+		__m128d q1 = evalPoly1(ax, ERFC_S, 6);
+		__m128d p2 = evalPoly(ax, ERFC_P, 8);
+		__m128d q2 = evalPoly1(ax, ERFC_Q, 8);
+		p = _mm_or_pd(_mm_andnot_pd(mask, p1), _mm_and_pd(mask, p2));
+		q = _mm_or_pd(_mm_andnot_pd(mask, q1), _mm_and_pd(mask, q2));
+	}
+
+	__m128d mxx = _mm_xor_pd(_mm_set1_pd(-0.0), _mm_mul_pd(x, x));
+	__m128d y = _mm_div_pd(_mm_mul_pd(qexp(mxx), p), q);
+	__m128d ty = _mm_sub_pd(_mm_set1_pd(2), y);
+	mask = _mm_cmpge_pd(x, _mm_setzero_pd());
+	y = _mm_or_pd(_mm_and_pd(mask, y), _mm_andnot_pd(mask, ty));
+	return y;
+}
+
+__m128d qerf(__m128d x)
+{
+	__m128d ax = _mm_andnot_pd(_mm_set1_pd(-0.0), x);
+	__m128d one = _mm_set1_pd(1);
+	__m128d mask = _mm_cmpgt_pd(ax, one);
+	int mbits = _mm_movemask_pd(mask);
+	if (mbits == 0)
+	{
+		__m128d xx = _mm_mul_pd(x, x);
+		return _mm_div_pd(_mm_mul_pd(x, evalPoly(xx, ERF_T, 4)),
+			evalPoly1(xx, ERF_U, 5));
+	}
+	else if (mbits == 3)
+	{
+		return _mm_sub_pd(one, qerfc_xgt1(x));
+	}
+	else
+	{
+		__m128d xx = _mm_mul_pd(x, x);
+		__m128d el = _mm_div_pd(_mm_mul_pd(x, evalPoly(xx, ERF_T, 4)),
+			evalPoly1(xx, ERF_U, 5));
+		__m128d eg = _mm_sub_pd(one, qerfc_xgt1(x));
+		return _mm_or_pd(_mm_and_pd(mask, eg), _mm_andnot_pd(mask, el));
+	}
 }
 #endif

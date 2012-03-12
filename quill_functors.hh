@@ -31,6 +31,36 @@ struct functor_traits< scalar_qexp_op<Scalar> >
 	};
 };
 
+template <typename Scalar>
+struct scalar_qerf_op
+{
+	scalar_qerf_op() {}
+	const Scalar operator()(const Scalar& a) const
+	{
+		return qerf(a);
+	}
+#ifdef __SSE2__
+	template <typename Packet>
+	const Packet packetOp(const Packet& a) const
+	{
+		return qerf(a);
+	}
+#endif
+};
+template <typename Scalar>
+struct functor_traits< scalar_qerf_op<Scalar> >
+{
+	enum
+	{
+		Cost = 60 * NumTraits<Scalar>::MulCost,
+#ifdef __SSE2__
+		PacketAccess = true
+#else
+		PacketAccess = false
+#endif
+	};
+};
+
 /*!
  * \brief Functor for computing the Boys functions
  *

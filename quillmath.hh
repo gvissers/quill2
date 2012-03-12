@@ -26,5 +26,8 @@ __m128d qexp(__m128d x);
  * Return the error function \f$\erf(x) = \frac{2}{\sqrt\pi}\int_0^x e^-t^2 dt\f$
  */
 double qerf(double x);
+#ifdef __SSE2__
+__m128d qerf(__m128d x);
+#endif
 
 #endif // QUILLMATH_HH
