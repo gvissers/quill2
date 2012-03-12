@@ -9,10 +9,8 @@
 #include <memory>
 #include "CGTOShellPair.hh"
 #include "EriCoefs.hh"
+#include "Fms.hh"
 #include "constants.hh"
-
-// Forward declaration
-struct Fms;
 
 class CGTOShellQuad
 {
@@ -160,6 +158,7 @@ public:
 					Eigen::Dynamic,
 					1 > > > > KKWExpression;
 
+	//! Constructor
 	CGTOShellQuad(const CGTOShellPair& pAB, const CGTOShellPair& pCD);
 
 	//! Return the total number of primitive combinations in this quartet
@@ -203,10 +202,13 @@ public:
 	{
 		return ColArray::MapAligned(_pAB.P(i).data(), _pAB.size());
 	}
-	//! Return the distance from \a x to the first weighted center
-	DXPExpression dxP(int i, double x) const
+	/*!
+	 * \brief Return the distance from the first shell to the weighted
+	 *    center in the first pair.
+	 */
+	DXPExpression dAP(int i) const
 	{
-		return P(i) - x;
+		return P(i) - _pAB.centerA(i);
 	}
 	/*!
 	 * \brief Return the distance in dimension \a i from the weighted center
@@ -221,10 +223,13 @@ public:
 	{
 		return RowArray::MapAligned(_pCD.P(i).data(), _pCD.size());
 	}
-	//! Return the distance from \a x to the second weighted center
-	DXQExpression dxQ(int i, double x) const
+	/*!
+	 * \brief Return the distance from the first shell to the weighted
+	 *    center in the second pair.
+	 */
+	DXQExpression dCQ(int i) const
 	{
-		return Q(i) - x;
+		return Q(i) - _pCD.centerA(i);
 	}
 	/*!
 	 * \brief Return the distance in dimension \a i from the weighted center
@@ -290,6 +295,13 @@ public:
 			* RowArray::MapAligned(_pCD.weights().data(), _pCD.size())).sum();
 	}
 
+	/*!
+	 * \brief Determine the positional symmetry of the shell quartet
+	 *    consisting of the pairs \a pAB and \a pCD.
+	 */
+	static PositionSymmetry symmetry(const CGTOShellPair& pAB,
+		const CGTOShellPair& pCD);
+
 private:
 	//! The first pair of shells in this quartet
 	const CGTOShellPair& _pAB;
@@ -315,8 +327,6 @@ private:
 	mutable Eigen::ArrayXXd _ints;
 	//! Whether the electron repulsion integrals have been computed
 	mutable bool _have_eri;
-
-	void elecRepPrim1d_abcd(int i, EriCoefs& coefs) const;
 	
 	double eri_xx(int lx1, int lx2, const EriCoefs& Cx, const Fms& fms,
 		Eigen::ArrayXXd& Ctot) const;
@@ -330,6 +340,9 @@ private:
 	double eri_20(const EriCoefs::AllMBlock& Cxl, const Fms& fms) const;
 	double eri_11(const EriCoefs::AllMBlock& Cxl, const EriCoefs::AllMBlock& Cyl,
 		const Fms& fms, Eigen::ArrayXXd& Ctot) const;
+
+	void elecRepPrim1d_abcd(int i, EriCoefs& coefs) const;
+
 	void setEri() const;
 
 	double& eri(int lx1, int ly1, int lz1, int lx2, int ly2, int lz2) const
@@ -337,6 +350,7 @@ private:
 		return _ints((lx1*(_lAB+1) + ly1)*(_lAB+1) + lz1,
 			(lx2*(_lCD+1) + ly2)*(_lCD+1) + lz2);
 	}
+
 	double eri(int lx1, int ly1, int lz1,
 		int lx2, int ly2, int lzC,
 		int lzD) const;

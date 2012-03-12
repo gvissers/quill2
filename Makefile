@@ -21,10 +21,10 @@ LDFLAGS = -L /home/ge/Programs/lithium/lib -lli_base \
 
 OBJS = main.o Basis.o BasisSet.o boys.o BFQuadPool.o CGTO.o CGTOPair.o \
 	CGTOQuad.o CGTOShell.o CGTOShellList.o CGTOShellPair.o CGTOShellQuad.o \
-	CGTOSpecPair.o CommentFilter.o DIIS.o Dispatcher.o Element.o FmCoefs.o \
-	Geometry.o HartreeFock.o IndentFilter.o JobFilter.o LineIStream.o \
-	manipulators.o PeriodicTable.o quillmath.o support.o XYZMatrix.o \
-	ZMatrix.o
+	CGTOSpecPair.o CommentFilter.o DIIS.o Dispatcher.o \
+	Element.o FmCoefs.o Geometry.o HartreeFock.o IndentFilter.o \
+	JobFilter.o LineIStream.o manipulators.o PeriodicTable.o quillmath.o \
+	support.o XYZMatrix.o ZMatrix.o
 
 .PHONY: doc
 

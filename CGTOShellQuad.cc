@@ -1,50 +1,15 @@
 #include <Exception.hh>
 #include "CGTOShellQuad.hh"
 #include "MultiArray.hh"
-#include "boys.hh"
-
-struct Fms: public MultiArray
-{
-	Fms(int maxm, const Eigen::ArrayXXd& T, const Eigen::ArrayXXd& KKW):
-		MultiArray(T.rows(), T.cols(), maxm+1)
-	{
-		Eigen::ArrayXXd expmT = (-T).qexp();
-		(*this)[maxm] = T.boys(maxm, expmT);
-		for (int m = maxm-1; m >= 0; --m)
-			(*this)[m] = (expmT + 2*T*(*this)[m+1]) / (2*m+1);
-		for (int m = maxm; m >= 0; --m)
-			(*this)[m] *= KKW;
-	}
-};
 
 CGTOShellQuad::CGTOShellQuad(const CGTOShellPair& pAB, const CGTOShellPair& pCD):
 	_pAB(pAB), _pCD(pCD),
+	_pos_sym(symmetry(pAB, pCD)),
 	_lAB(pAB.lsum()), _lCD(pCD.lsum()), _lsum(_lAB+_lCD),
 	_data(_pAB.size(), _pCD.size(), 4),
 	_ints((_lAB+1)*(_lAB+1)*(_lAB+1), (_lCD+1)*(_lCD+1)*(_lCD+1)),
 	_have_eri(false)
 {
-	if (_pAB.samePositionId())
-	{
-		if (_pCD.samePositionId())
-		{
-			_pos_sym = _pAB.positionIdA() == _pCD.positionIdA()
-				? POS_SYM_AAAA : POS_SYM_AACC;
-		}
-		else
-		{
-			_pos_sym = POS_SYM_AACD;
-		}
-	}
-	else if (_pCD.samePositionId())
-	{
-		_pos_sym = POS_SYM_ABCC;
-	}
-	else
-	{
-		_pos_sym = POS_SYM_ABCD;
-	}
-
 	_data[0] = Q(0).replicate(_pAB.size(), 1).colwise() - P(0);
 	_data[1] = Q(1).replicate(_pAB.size(), 1).colwise() - P(1);
 	_data[2] = Q(2).replicate(_pAB.size(), 1).colwise() - P(2);
@@ -64,13 +29,13 @@ void CGTOShellQuad::elecRepPrim1d_abcd(int i, EriCoefs& coefs) const
 		if (l2 == 1)
 		{
 			// C_0,0,1,0
-			coefs[idx++].rowwise() = dxQ(i, _pCD.centerA(i));
+			coefs[idx++].rowwise() = dCQ(i);
 			coefs[idx] = dQW(i);
 		}
 		else
 		{
 			// C_1,0,0,0
-			coefs[idx++].colwise() = dxP(i, _pAB.centerA(i));
+			coefs[idx++].colwise() = dAP(i);
 			coefs[idx] = dPW(i);
 		}
 		return;
@@ -79,7 +44,7 @@ void CGTOShellQuad::elecRepPrim1d_abcd(int i, EriCoefs& coefs) const
 	{
 		if (l2 == 2)
 		{
-			auto dCQi = dxQ(i, _pCD.centerA(i));
+			auto dCQi = dCQ(i);
 			auto dQWi = dQW(i);
 
 			// C_0,0,1,0
@@ -92,9 +57,9 @@ void CGTOShellQuad::elecRepPrim1d_abcd(int i, EriCoefs& coefs) const
 		}
 		else if (l2 == 1)
 		{
-			auto dCQi = dxQ(i, _pCD.centerA(i));
+			auto dCQi = dCQ(i);
 			auto dQWi = dQW(i);
-			auto dAPi = dxP(i, _pAB.centerA(i));
+			auto dAPi = dAP(i);
 			auto dPWi = dPW(i);
 
 			// C_0,0,1,0
@@ -111,7 +76,7 @@ void CGTOShellQuad::elecRepPrim1d_abcd(int i, EriCoefs& coefs) const
 		}
 		else
 		{
-			auto dAPi = dxP(i, _pAB.centerA(i));
+			auto dAPi = dAP(i);
 			auto dPWi = dPW(i);
 
 			// C_1,0,0,0
@@ -127,7 +92,7 @@ void CGTOShellQuad::elecRepPrim1d_abcd(int i, EriCoefs& coefs) const
 
 	if (l2 > 0)
 	{
-		auto dCQi = dxQ(i, _pCD.centerA(i));
+		auto dCQi = dCQ(i);
 		auto inv_eta = hInvWidthsCD();
 		auto dQWi = dQW(i);
 		auto rho2 = this->rho2();
@@ -160,7 +125,7 @@ void CGTOShellQuad::elecRepPrim1d_abcd(int i, EriCoefs& coefs) const
 
 	if (l1 > 0)
 	{
-		auto dAPi = dxP(i, _pAB.centerA(i));
+		auto dAPi = dAP(i);
 		auto inv_zeta = hInvWidthsAB();
 		Eigen::ArrayXXd dPWi = dPW(i);
 		auto rho1 = this->rho1();
@@ -344,7 +309,7 @@ void CGTOShellQuad::setEri() const
 	Eigen::ArrayXXd T = widthsReduced()
 		* (dPQ(0).square() + dPQ(1).square() + dPQ(2).square());
 	Fms fms(_lsum, T, KKW());
-	
+
 	eri(0, 0, 0, 0, 0, 0) = mulWeights(fms[0]);
 	if (_lsum == 0)
 	{
@@ -523,4 +488,21 @@ double CGTOShellQuad::eri(int lxA, int lyA, int lzA, int lxB, int lyB, int lzB,
 			- _pAB.dAB(0) * eri(lxA, lyA, lzA, lxB-1, lyB, lzB, lxC, lyC, lzC, lxD, lyD, lzD);
 	}
 	return eri(lxA+lxB, lyA+lyB, lzA+lzB, lxC, lyC, lzC, lxD, lyD, lzD);
+}
+
+CGTOShellQuad::PositionSymmetry CGTOShellQuad::symmetry(const CGTOShellPair& pAB,
+	const CGTOShellPair& pCD)
+{
+	if (pAB.samePositionId())
+	{
+		if (pCD.samePositionId())
+			return pAB.positionIdA() == pCD.positionIdA()
+				? POS_SYM_AAAA : POS_SYM_AACC;
+		return POS_SYM_AACD;
+	}
+	else if (pCD.samePositionId())
+	{
+		return POS_SYM_ABCC;
+	}
+	return POS_SYM_ABCD;
 }
