@@ -21,6 +21,13 @@ __m128d qexp(__m128d x);
 #endif
 
 /*!
+ * \brief Natural logarithm
+ *
+ * Return the natural logarithm of \a x.
+ */
+double qlog(double x);
+
+/*!
  * \brief Error function
  *
  * Return the error function \f$\erf(x) = \frac{2}{\sqrt\pi}\int_0^x e^-t^2 dt\f$

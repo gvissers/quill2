@@ -2,7 +2,7 @@
 #include <cmath>
 #include "quillmath.hh"
 
-// qexp(), qerf() based on code from Cephes, http://netlib.org/cephes
+// qexp(), qlog(), qerf() based on code from Cephes, http://netlib.org/cephes
 
 static const double MAXLOG =  7.09782712893383996843e2;
 static const double MINLOG = -7.08396418532264106224e2;
@@ -19,6 +19,34 @@ static const double EXP_Q[] = {
 	2.52448340349684104192e-3,
 	2.27265548208155028766e-1,
 	2.00000000000000000009e0,
+};
+
+static const double LOG_P[] = {
+	1.01875663804580931796e-4,
+	4.97494994976747001425e-1,
+	4.70579119878881725854e0,
+	1.44989225341610930846e1,
+	1.79368678507819816313e1,
+	7.70838733755885391666e0,
+};
+static const double LOG_Q[] = {
+	/* 1.00000000000000000000E0, */
+	1.12873587189167450590e1,
+	4.52279145837532221105e1,
+	8.29875266912776603211e1,
+	7.11544750618563894466e1,
+	2.31251620126765340583e1,
+};
+static const double LOG_R[] = {
+	-7.89580278884799154124e-1,
+	1.63866645699558079767e1,
+	-6.41409952958715622951e1,
+};
+static const double LOG_S[] = {
+	/* 1.00000000000000000000e0,*/
+	-3.56722798256324312549e1,
+	3.12093766372244180303e2,
+	-7.69691943550460008604e2,
 };
 
 static const double ERFC_P[] = {
@@ -128,6 +156,78 @@ double qexp(double x)
 
 	/* multiply by power of 2 */
 	return scalbn(x, n);
+}
+
+double qlog(double x)
+{
+	int e;
+	double y, z;
+
+	if (std::isnan(x))
+		return x;
+	if (std::isinf(x) == 1)
+		return x;
+	if (x == 0)
+		return -std::numeric_limits<double>::infinity();
+	if (x < 0)
+		return  std::numeric_limits<double>::quiet_NaN();
+
+	/* separate mantissa from exponent */
+	/* Note, frexp is used so that denormal numbers
+	* will be handled properly.
+	*/
+	x = std::frexp(x, &e);
+
+	/* logarithm using log(x) = z + z**3 P(z)/Q(z),
+	* where z = 2(x-1)/x+1)
+	*/
+	if (e > 2 || e < -2)
+	{
+		if (x < M_SQRT1_2)
+		{ /* 2( 2x-1 )/( 2x+1 ) */
+			--e;
+			z = x - 0.5;
+			y = 0.5 * z + 0.5;
+		}
+		else
+		{ /*  2 (x-1)/(x+1)   */
+			z = x - 0.5;
+			z -= 0.5;
+			y = 0.5 * x + 0.5;
+		}
+		x = z / y;
+
+		/* rational form */
+		z = x * x;
+		z = x * (z * evalPoly(z, LOG_R, 2) / evalPoly1(z, LOG_S, 3));
+		y = e;
+		z -= y * 2.121944400546905827679e-4;
+		z += x;
+		z += e * 0.693359375;
+		return z;
+	}
+
+	/* logarithm using log(1+x) = x - .5x**2 + x**3 P(x)/Q(x) */
+	if (x < M_SQRT1_2)
+        {
+		--e;
+		x = 2*x - 1.0; /*  2x - 1  */
+        }
+	else
+        {
+		x = x - 1.0;
+        }
+
+	/* rational form */
+	z = x * x;
+	y = x * (z * evalPoly(x, LOG_P, 5) / evalPoly(x, LOG_Q, 5));
+	if (e)
+		y -= e * 2.121944400546905827679e-4;
+	y -= 0.5*z;   /*  y - 0.5 * z  */
+	z = x + y;
+	if (e)
+		z += e * 0.693359375;
+	return z;
 }
 
 static double qerfc_xgt1(double x)
