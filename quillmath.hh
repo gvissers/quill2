@@ -26,6 +26,9 @@ __m128d qexp(__m128d x);
  * Return the natural logarithm of \a x.
  */
 double qlog(double x);
+#ifdef __SSE2__
+__m128d qlog(__m128d x);
+#endif
 
 /*!
  * \brief Error function

@@ -104,7 +104,9 @@ static const double ERF_U[] = {
 	4.92673942608635921086e4
 };
 
-static inline double evalPoly(double x, const double *C, int n)
+namespace {
+
+inline double evalPoly(double x, const double *C, int n)
 {
 	double p = *C;
 	for (++C; n > 0; --n, ++C)
@@ -112,13 +114,15 @@ static inline double evalPoly(double x, const double *C, int n)
 	return p;
 }
 
-static inline double evalPoly1(double x, const double *C, int n)
+inline double evalPoly1(double x, const double *C, int n)
 {
 	double p = x + *C;
 	for (--n, ++C; n > 0; --n, ++C)
 		p = x*p + *C;
 	return p;
 }
+
+} // namespace
 
 double qexp(double x)
 {
@@ -170,7 +174,7 @@ double qlog(double x)
 	if (x == 0)
 		return -std::numeric_limits<double>::infinity();
 	if (x < 0)
-		return  std::numeric_limits<double>::quiet_NaN();
+		return std::numeric_limits<double>::quiet_NaN();
 
 	/* separate mantissa from exponent */
 	/* Note, frexp is used so that denormal numbers
@@ -209,18 +213,18 @@ double qlog(double x)
 
 	/* logarithm using log(1+x) = x - .5x**2 + x**3 P(x)/Q(x) */
 	if (x < M_SQRT1_2)
-        {
+	{
 		--e;
 		x = 2*x - 1.0; /*  2x - 1  */
-        }
+	}
 	else
-        {
+	{
 		x = x - 1.0;
-        }
+	}
 
 	/* rational form */
 	z = x * x;
-	y = x * (z * evalPoly(x, LOG_P, 5) / evalPoly(x, LOG_Q, 5));
+	y = x * (z * evalPoly(x, LOG_P, 5) / evalPoly1(x, LOG_Q, 5));
 	if (e)
 		y -= e * 2.121944400546905827679e-4;
 	y -= 0.5*z;   /*  y - 0.5 * z  */
@@ -262,7 +266,9 @@ double qerf(double x)
 }
 
 #ifdef __SSE2__
-static inline __m128d evalPoly(__m128d x, const double *C, int n)
+namespace {
+
+inline __m128d evalPoly(__m128d x, const double *C, int n)
 {
 	__m128d p = _mm_set1_pd(*C);
 	for (++C; n > 0; --n, ++C)
@@ -270,12 +276,73 @@ static inline __m128d evalPoly(__m128d x, const double *C, int n)
 	return p;
 }
 
-static inline __m128d evalPoly1(__m128d x, const double *C, int n)
+inline __m128d evalPoly1(__m128d x, const double *C, int n)
 {
 	__m128d p = _mm_add_pd(x, _mm_set1_pd(*C));
 	for (--n, ++C; n > 0; --n, ++C)
 		p = _mm_add_pd(_mm_mul_pd(x, p), _mm_set1_pd(*C));
 	return p;
+}
+
+inline __m128d qabs(__m128d x)
+{
+	return _mm_andnot_pd(_mm_set1_pd(-0.0), x);
+}
+
+inline __m128d select(__m128d mask, __m128d a, __m128d b)
+{
+	return _mm_or_pd(_mm_and_pd(mask, a), _mm_andnot_pd(mask, b));
+}
+
+inline __m128i select(__m128i mask, __m128i a, __m128i b)
+{
+	return _mm_or_si128(_mm_and_si128(mask, a), _mm_andnot_si128(mask, b));
+}
+
+} // namespace
+
+__m128d qfrexp(__m128d x, __m128i& exp)
+{
+	__m128i expmask = _mm_set1_epi64x(0x7ff0000000000000LL);
+	__m128i expoff = _mm_set1_epi64x(0x3fe0000000000000LL);
+	__m128i ix, denorm_mask;
+	__m128d spec_mask, denorm_scale, fx;
+
+	// extract exponent bits
+	exp = _mm_and_si128(_mm_castpd_si128(x), expmask);
+
+	// check if number is zero, inf, or NaN
+	spec_mask = _mm_castsi128_pd(
+		_mm_shuffle_epi32(_mm_cmpeq_epi32(exp, expmask),
+		_MM_SHUFFLE(3, 3, 1, 1)));          // +-inf or NaN
+	spec_mask = _mm_or_pd(spec_mask,
+		_mm_cmpeq_pd(x, _mm_setzero_pd())); // zero
+
+	// Scale denormalized numbers. This will also scale zero and adjust its
+	// exponent, but that is fixed at the end where the exponent is set
+	// to zero.
+	denorm_mask = _mm_shuffle_epi32(_mm_cmpeq_epi32(exp, _mm_setzero_si128()),
+		_MM_SHUFFLE(3, 3, 1, 1));
+	denorm_scale = select(_mm_castsi128_pd(denorm_mask),
+		_mm_set1_pd(0x1p54), _mm_set1_pd(1));
+	fx = _mm_mul_pd(x, denorm_scale);
+	
+	// Extract exponent, subtract exponent offset, and adjust for denorm scaling
+	ix = _mm_castpd_si128(fx);
+	exp = _mm_and_si128(ix, expmask);
+	exp = _mm_srl_epi64(exp, _mm_cvtsi32_si128(52));         // e0, 0, e1, 0
+	exp = _mm_sub_epi64(exp,
+		select(denorm_mask, _mm_set1_epi64x(0x3fe + 54), _mm_set1_epi64x(0x3fe)));
+
+	// Set exponent in fraction to zero
+	ix = _mm_andnot_si128(expmask, ix);
+	ix = _mm_or_si128(expoff, ix);
+	fx = _mm_castsi128_pd(ix);
+
+	// Restore 0, inf and NaN, and set the corresponding exponents to zero
+	exp = select(_mm_castpd_si128(spec_mask), _mm_setzero_si128(), exp);
+	exp = _mm_shuffle_epi32(exp, _MM_SHUFFLE(3, 1, 2, 0));
+	return select(spec_mask, x, fx);
 }
 
 __m128d qexp(__m128d x)
@@ -316,16 +383,110 @@ __m128d qexp(__m128d x)
 	x = _mm_mul_pd(x, _mm_castsi128_pd(n));
 
 	// Set result for too high values of x to positive infinity
-	x = _mm_or_pd(_mm_and_pd(maxmask, x),
-		_mm_andnot_pd(maxmask, _mm_set1_pd(std::numeric_limits<double>::infinity())));
+	x = select(maxmask, x, _mm_set1_pd(std::numeric_limits<double>::infinity()));
 	// Set result for too low values of x to zero
 	return _mm_and_pd(minmask, x);
+}
+
+namespace {
+
+__m128d qlog_PQ(__m128d x, __m128i e)
+{
+	/* logarithm using log(1+x) = x - .5x**2 + x**3 P(x)/Q(x) */
+
+	__m128d mask = _mm_cmplt_pd(x, _mm_set1_pd(M_SQRT1_2));
+	x = select(mask, _mm_mul_pd(x, _mm_set1_pd(2)), x);
+	x = _mm_sub_pd(x, _mm_set1_pd(1));
+	__m128i emask = _mm_shuffle_epi32(_mm_castpd_si128(mask), _MM_SHUFFLE(2, 0, 3, 1));
+	e = _mm_sub_epi32(e, select(emask, _mm_set1_epi32(1), _mm_setzero_si128()));
+	__m128d ee = _mm_cvtepi32_pd(e);
+
+	__m128d z = _mm_mul_pd(x, x);
+	__m128d y = _mm_mul_pd(
+		x,
+		_mm_div_pd(
+			_mm_mul_pd(z, evalPoly(x, LOG_P, 5)),
+			evalPoly1(x, LOG_Q, 5)));
+	y = _mm_sub_pd(y, _mm_mul_pd(ee, _mm_set1_pd(2.121944400546905827679e-4)));
+	y = _mm_sub_pd(y, _mm_mul_pd(z, _mm_set1_pd(0.5)));
+	z = _mm_add_pd(_mm_add_pd(x, y), _mm_mul_pd(ee, _mm_set1_pd(0.693359375)));
+	return z;
+}
+
+__m128d qlog_RS(__m128d x, __m128i e)
+{
+	/* logarithm using log(x) = z + z**3 P(z)/Q(z),
+	 * where z = 2(x-1)/x+1)
+	 */
+	__m128d half = _mm_set1_pd(0.5);
+	__m128d mask = _mm_cmplt_pd(x, _mm_set1_pd(M_SQRT1_2));
+	__m128d z = _mm_sub_pd(x, select(mask, half, _mm_set1_pd(1)));
+	__m128d y = _mm_add_pd(_mm_mul_pd(select(mask, z, x), half), half);
+	__m128i emask = _mm_shuffle_epi32(_mm_castpd_si128(mask), _MM_SHUFFLE(2, 0, 3, 1));
+	e = _mm_sub_epi32(e, select(emask, _mm_set1_epi32(1), _mm_setzero_si128()));
+	__m128d ee = _mm_cvtepi32_pd(e);
+	x = _mm_div_pd(z, y);
+	
+	z = _mm_mul_pd(x, x);
+	y = _mm_mul_pd(
+		x,
+		_mm_div_pd(
+			_mm_mul_pd(z, evalPoly(z, LOG_R, 2)),
+			evalPoly1(z, LOG_S, 3)));
+	y = _mm_sub_pd(y, _mm_mul_pd(ee, _mm_set1_pd(2.121944400546905827679e-4)));
+	z = _mm_add_pd(_mm_add_pd(x, y), _mm_mul_pd(ee, _mm_set1_pd(0.693359375)));
+	return z;
+}
+	
+} // namespace
+
+__m128d qlog(__m128d x)
+{
+	double inf = std::numeric_limits<double>::infinity();
+	__m128d specmask, negmask, zeromask, specval, lnx;
+	__m128i ix, e, mask;
+
+	// x == inf or x == NaN. This also matches -inf, but that will be
+	// overwritten in the next test
+	ix = _mm_castpd_si128(_mm_andnot_pd(_mm_set1_pd(-0.0), x));
+	ix = _mm_xor_si128(_mm_set1_epi32(0xffffffff),
+		_mm_cmplt_epi32(ix, _mm_castpd_si128(_mm_set1_pd(inf))));
+	ix = _mm_shuffle_epi32(ix, _MM_SHUFFLE(3, 3, 1, 1));
+	specmask = _mm_castsi128_pd(ix);
+	specval = x;
+	// x < 0
+	negmask = _mm_cmplt_pd(x, _mm_setzero_pd());
+	specmask = _mm_or_pd(specmask, negmask);
+	specval = select(negmask, _mm_set1_pd(std::numeric_limits<double>::quiet_NaN()),
+		specval);
+	// x == 0
+	zeromask = _mm_cmpeq_pd(x, _mm_setzero_pd());
+	specmask = _mm_or_pd(specmask, zeromask);
+	specval = select(zeromask, _mm_set1_pd(-inf), specval);
+
+	/* separate mantissa from exponent
+	 * Note, frexp is used so that denormal numbers
+	 * will be handled properly.
+	 */
+	x = qfrexp(x, e);
+
+	mask = _mm_or_si128(_mm_cmplt_epi32(e, _mm_set1_epi32(-2)),
+		_mm_cmpgt_epi32(e, _mm_set1_epi32(2)));
+	mask = _mm_shuffle_epi32(mask, _MM_SHUFFLE(1, 1, 0, 0));
+	int mbits = _mm_movemask_epi8(mask);
+	if (mbits == 0)
+		lnx = qlog_PQ(x, e);
+	if (mbits == 0xffff)
+		lnx = qlog_RS(x, e);
+	lnx = select(_mm_castsi128_pd(mask), qlog_RS(x, e), qlog_PQ(x, e));
+
+	return select(specmask, specval, lnx);
 }
 
 static __m128d qerfc_xgt1(__m128d x)
 {
 	__m128d p, q;
-	__m128d ax = _mm_andnot_pd(_mm_set1_pd(-0.0), x);
+	__m128d ax = qabs(x);
 	__m128d mask = _mm_cmplt_pd(x, _mm_set1_pd(8));
 	int mbits = _mm_movemask_pd(mask);
 	if (mbits == 0)
@@ -344,21 +505,21 @@ static __m128d qerfc_xgt1(__m128d x)
 		__m128d q1 = evalPoly1(ax, ERFC_S, 6);
 		__m128d p2 = evalPoly(ax, ERFC_P, 8);
 		__m128d q2 = evalPoly1(ax, ERFC_Q, 8);
-		p = _mm_or_pd(_mm_andnot_pd(mask, p1), _mm_and_pd(mask, p2));
-		q = _mm_or_pd(_mm_andnot_pd(mask, q1), _mm_and_pd(mask, q2));
+		p = select(mask, p2, p1);
+		q = select(mask, q2, q1);
 	}
 
 	__m128d mxx = _mm_xor_pd(_mm_set1_pd(-0.0), _mm_mul_pd(x, x));
 	__m128d y = _mm_div_pd(_mm_mul_pd(qexp(mxx), p), q);
 	__m128d ty = _mm_sub_pd(_mm_set1_pd(2), y);
 	mask = _mm_cmpge_pd(x, _mm_setzero_pd());
-	y = _mm_or_pd(_mm_and_pd(mask, y), _mm_andnot_pd(mask, ty));
+	y = select(mask, y, ty);
 	return y;
 }
 
 __m128d qerf(__m128d x)
 {
-	__m128d ax = _mm_andnot_pd(_mm_set1_pd(-0.0), x);
+	__m128d ax = qabs(x);
 	__m128d one = _mm_set1_pd(1);
 	__m128d mask = _mm_cmpgt_pd(ax, one);
 	int mbits = _mm_movemask_pd(mask);
@@ -378,7 +539,7 @@ __m128d qerf(__m128d x)
 		__m128d el = _mm_div_pd(_mm_mul_pd(x, evalPoly(xx, ERF_T, 4)),
 			evalPoly1(xx, ERF_U, 5));
 		__m128d eg = _mm_sub_pd(one, qerfc_xgt1(x));
-		return _mm_or_pd(_mm_and_pd(mask, eg), _mm_andnot_pd(mask, el));
+		return select(mask, eg, el);
 	}
 }
 #endif
