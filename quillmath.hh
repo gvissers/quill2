@@ -40,4 +40,11 @@ double qerf(double x);
 __m128d qerf(__m128d x);
 #endif
 
+/*!
+ * \brief Log gamma function
+ *
+ * Return the natural logarithm of the absolute value of the Gamma function.
+ */
+double qlgamma(double x);
+
 #endif // QUILLMATH_HH

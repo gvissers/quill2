@@ -1,11 +1,13 @@
 #include <limits>
 #include <cmath>
 #include "quillmath.hh"
+#include "constants.hh"
 
 // qexp(), qlog(), qerf() based on code from Cephes, http://netlib.org/cephes
 
 static const double MAXLOG =  7.09782712893383996843e2;
 static const double MINLOG = -7.08396418532264106224e2;
+static const double MAXLGM = 2.556348e305;
 
 static const double EXP_C1 = 6.93145751953125e-1; // C1+C2 = log(2)
 static const double EXP_C2 = 1.42860682030941723212e-6;
@@ -103,6 +105,33 @@ static const double ERF_U[] = {
 	2.26290000613890934246e4,
 	4.92673942608635921086e4
 };
+
+static const double LGAMMA_A[] = {
+	8.11614167470508450300e-4,
+	-5.95061904284301438324e-4,
+	7.93650340457716943945e-4,
+	-2.77777777730099687205e-3,
+	8.33333333333331927722e-2
+};
+static const double LGAMMA_B[] = {
+	-1.37825152569120859100e3,
+	-3.88016315134637840924e4,
+	-3.31612992738871184744e5,
+	-1.16237097492762307383e6,
+	-1.72173700820839662146e6,
+	-8.53555664245765465627e5
+};
+static const double LGAMMA_C[] = {
+	/* 1.00000000000000000000e0, */
+	-3.51815701436523470549e2,
+	-1.70642106651881159223e4,
+	-2.20528590553854454839e5,
+	-1.13933444367982507207e6,
+	-2.53252307177582951285e6,
+	-2.01889141433532773231e6
+};
+
+int qsigngam;
 
 namespace {
 
@@ -234,7 +263,10 @@ double qlog(double x)
 	return z;
 }
 
-static double qerfc_xgt1(double x)
+namespace
+{
+
+double qerfc_xgt1(double x)
 {
 	double mxx = -x*x;
 	if (mxx < MINLOG)
@@ -257,12 +289,107 @@ static double qerfc_xgt1(double x)
 	return x < 0 ? 2-y : y;
 }
 
+} // namespace
+
 double qerf(double x)
 {
 	if (std::abs(x) > 1)
 		return 1 - qerfc_xgt1(x);
 	double xx = x*x;
 	return x * evalPoly(xx, ERF_T, 4) / evalPoly1(xx, ERF_U, 5);
+}
+
+
+double qlgamma(double x)
+{
+	double p, q, u, w, z;
+	int i;
+
+	qsigngam = 1;
+	if (std::isnan(x))
+		return x;
+	if (!std::isfinite(x))
+		return std::numeric_limits<double>::infinity();
+
+	if (x < -34.0)
+	{
+		q = -x;
+		w = qlgamma(q); /* note this modifies qsigngam! */
+		p = floor(q);
+		if (p == q)
+			return std::numeric_limits<double>::infinity();	
+
+		i = p;
+		if ((i & 1) == 0)
+			qsigngam = -1;
+		else
+			qsigngam = 1;
+		z = q - p;
+		if( z > 0.5 )
+		{
+			p += 1.0;
+			z = p - q;
+		}
+		z = q * std::sin(M_PI * z);
+		if (z == 0.0)
+			return std::numeric_limits<double>::infinity();
+
+		z = Constants::log_pi - qlog(z) - w;
+		return z;
+	}
+
+	if (x < 13.0)
+	{
+		z = 1.0;
+		p = 0.0;
+		u = x;
+		while (u >= 3.0)
+		{
+			p -= 1.0;
+			u = x + p;
+			z *= u;
+		}
+		while (u < 2.0)
+		{
+			if (u == 0.0)
+				return std::numeric_limits<double>::infinity();
+			z /= u;
+			p += 1.0;
+			u = x + p;
+		}
+		if (z < 0.0)
+		{
+			qsigngam = -1;
+			z = -z;
+		}
+		else
+		{
+			qsigngam = 1;
+		}
+		if (u == 2.0)
+			return qlog(z);
+
+		p -= 2.0;
+		x += p;
+		p = x * evalPoly(x, LGAMMA_B, 5) / evalPoly1(x, LGAMMA_C, 6);
+		return qlog(z) + p;
+	}
+
+	if (x > MAXLGM)
+		return qsigngam * std::numeric_limits<double>::infinity();
+
+	q = (x - 0.5) * qlog(x) - x + Constants::log_sqrt_2pi;
+	if (x > 1.0e8)
+		return q;
+
+	p = 1.0 / (x * x);
+	if (x >= 1000.0)
+		q += ((   7.9365079365079365079365e-4 * p
+			- 2.7777777777777777777778e-3) *p
+			+ 0.0833333333333333333333) / x;
+	else
+		q += evalPoly(p, LGAMMA_A, 4) / x;
+	return q;
 }
 
 #ifdef __SSE2__
