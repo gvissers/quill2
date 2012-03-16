@@ -10,6 +10,7 @@
 #include "CGTOShellPair.hh"
 #include "EriCoefs.hh"
 #include "Fms.hh"
+#include "AngMomPairIterator.hh"
 #include "constants.hh"
 
 class CGTOShellQuad
@@ -262,7 +263,7 @@ public:
 	 * Multiply the contributions to an integral \a C of each primitive pair
 	 * with the weights of the primitives, and sum the results to compute
 	 * the integral over the contraction.
-	 * \param C the primitve integrals
+	 * \param C the primitive integrals
 	 */
 	template <typename Derived>
 	double mulWeights(const Eigen::ArrayBase<Derived>& C) const
@@ -270,6 +271,7 @@ public:
 		return ((C.colwise() * ColArray::MapAligned(_pAB.weights().data(), _pAB.size())).colwise().sum()
 			* RowArray::MapAligned(_pCD.weights().data(), _pCD.size())).sum();
 	}
+//	double mulWeights(const Eigen::ArrayXXd& C) const;
 
 	/*!
 	 * \brief Determine the positional symmetry of the shell quartet
@@ -311,7 +313,7 @@ private:
 	double eri_xx(int lx1, int ly1, int lx2, int ly2,
 		const EriCoefs& Cx, const EriCoefs& Cy,
 		const Fms& fms, Eigen::ArrayXXd& Cm, Eigen::ArrayXXd& Ctot) const;
-	double eri_xx(int lx1, int ly1, int lz1, int lx2, int ly2, int lz2,
+	double eri_xx(const AngMomPairIterator& iter,
 		const EriCoefs& Cx, const EriCoefs& Cy, const EriCoefs& Cz,
 		const Fms& fms, Eigen::ArrayXXd& Cm, Eigen::ArrayXXd& Ctot) const;
 	double eri_10(const EriCoefs::AllMBlock& Cxl, const Fms& fms) const;
@@ -327,6 +329,11 @@ private:
 	{
 		return _ints((lx1*(_lAB+1) + ly1)*(_lAB+1) + lz1,
 			(lx2*(_lCD+1) + ly2)*(_lCD+1) + lz2);
+	}
+	double& eri(const AngMomPairIterator& iter) const
+	{
+		return eri(iter.lx1(), iter.ly1(), iter.lz1(),
+			iter.lx2(), iter.ly2(), iter.lz2());
 	}
 
 	double eri(int lx1, int ly1, int lz1,

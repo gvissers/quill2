@@ -1,6 +1,5 @@
 #include <Exception.hh>
 #include "CGTOShellQuad.hh"
-#include "MultiArray.hh"
 
 CGTOShellQuad::CGTOShellQuad(const CGTOShellPair& pAB, const CGTOShellPair& pCD):
 	_pAB(pAB), _pCD(pCD),
@@ -28,6 +27,12 @@ CGTOShellQuad::CGTOShellQuad(const CGTOShellPair& pAB, const CGTOShellPair& pCD)
 		_data[9] = (dPQ(2) * invWidthsSum()).colwise() * (-widthsAB());
 	}
 }
+
+//double CGTOShellQuad::mulWeights(const Eigen::ArrayXXd& C) const
+//{
+//	return ((C.colwise() * ColArray::MapAligned(_pAB.weights().data(), _pAB.size())).colwise().sum()
+//		* RowArray::MapAligned(_pCD.weights().data(), _pCD.size())).sum();
+//}
 
 void CGTOShellQuad::elecRepPrim1d_abcd(int i, EriCoefs& coefs) const
 {
@@ -245,22 +250,23 @@ double CGTOShellQuad::eri_xx(int lx1, int ly1, int lx2, int ly2,
 	return mulWeights(Ctot);
 }
 
-double CGTOShellQuad::eri_xx(int lx1, int ly1, int lz1, int lx2, int ly2, int lz2,
+double CGTOShellQuad::eri_xx(const AngMomPairIterator& iter,
 	const EriCoefs& Cx, const EriCoefs& Cy, const EriCoefs& Cz,
 	const Fms& fms, Eigen::ArrayXXd& Cm, Eigen::ArrayXXd& Ctot) const
 {
-	int lx = lx1 + lx2, ly = ly1 + ly2, lz = lz1 + lz2;
-	if (lx == 0)
-		return eri_xx(ly1, lz1, ly2, lz2, Cy, Cz, fms, Cm, Ctot);
-	if (ly == 0)
-		return eri_xx(lx1, lz1, lx2, lz2, Cx, Cz, fms, Cm, Ctot);
-	if (lz == 0)
-		return eri_xx(lx1, ly1, lx2, ly2, Cx, Cy, fms, Cm, Ctot);
+	int lx = iter.lx(), ly = iter.ly(), lz = iter.lz();
 	
-	int m = lx + ly + lz;
-	EriCoefs::AllMBlock Cxl = Cx.allM(lx1, lx2);
-	EriCoefs::AllMBlock Cyl = Cy.allM(ly1, ly2);
-	EriCoefs::AllMBlock Czl = Cz.allM(lz1, lz2);
+	if (lx == 0)
+		return eri_xx(iter.ly1(), iter.lz1(), iter.ly2(), iter.lz2(), Cy, Cz, fms, Cm, Ctot);
+	if (ly == 0)
+		return eri_xx(iter.lx1(), iter.lz1(), iter.lx2(), iter.lz2(), Cx, Cz, fms, Cm, Ctot);
+	if (lz == 0)
+		return eri_xx(iter.lx1(), iter.ly1(), iter.lx2(), iter.ly2(), Cx, Cy, fms, Cm, Ctot);
+	
+	int m = iter.ltot();
+	EriCoefs::AllMBlock Cxl = Cx.allM(iter.lx1(), iter.lx2());
+	EriCoefs::AllMBlock Cyl = Cy.allM(iter.ly1(), iter.ly2());
+	EriCoefs::AllMBlock Czl = Cz.allM(iter.lz1(), iter.lz2());
 	Ctot = fms[m] * Cxl[lx] * Cyl[ly] * Czl[lz]
 		+ fms[m-1] * (Cxl[lx-1] * Cyl[ly] * Czl[lz]
 			+ Cxl[lx] * (Cyl[ly-1] * Czl[lz] + Cyl[ly] * Czl[lz-1]));
@@ -320,16 +326,15 @@ void CGTOShellQuad::setEri() const
 	}
 
 	int n1 = _pAB.size(), n2 = _pCD.size();
-	int lsum1 = _pAB.lsum(), lsum2 = _pCD.lsum();
-	EriCoefs Cx(lsum1, lsum2, n1, n2);
-	EriCoefs Cy(lsum1, lsum2, n1, n2);
-	EriCoefs Cz(lsum1, lsum2, n1, n2);
+	EriCoefs Cx(_lAB, _lCD, n1, n2);
+	EriCoefs Cy(_lAB, _lCD, n1, n2);
+	EriCoefs Cz(_lAB, _lCD, n1, n2);
 
 	elecRepPrim1d_abcd(0, Cx);
 	elecRepPrim1d_abcd(1, Cy);
 	elecRepPrim1d_abcd(2, Cz);
 
-	if (lsum1 >= 1)
+	if (_lAB >= 1)
 	{
 		eri(1, 0, 0, 0, 0, 0) = eri_10(Cx.allM(1, 0), fms);
 		eri(0, 1, 0, 0, 0, 0) = eri_10(Cy.allM(1, 0), fms);
@@ -340,7 +345,7 @@ void CGTOShellQuad::setEri() const
 			return;
 		}
 	}
-	if (lsum2 >= 1)
+	if (_lCD >= 1)
 	{
 		eri(0, 0, 0, 1, 0, 0) = eri_10(Cx.allM(0, 1), fms);
 		eri(0, 0, 0, 0, 1, 0) = eri_10(Cy.allM(0, 1), fms);
@@ -353,7 +358,7 @@ void CGTOShellQuad::setEri() const
 	}
 
 	Eigen::ArrayXXd Ctot(n1, n2);
-	if (lsum1 >= 2)
+	if (_lAB >= 2)
 	{
 		eri(2, 0, 0, 0, 0, 0) = eri_20(Cx.allM(2, 0), fms);
 		eri(1, 1, 0, 0, 0, 0) = eri_11(Cx.allM(1, 0), Cy.allM(1, 0), fms, Ctot);
@@ -367,7 +372,7 @@ void CGTOShellQuad::setEri() const
 			return;
 		}
 	}
-	if (lsum1 >= 1 && lsum2 >= 1)
+	if (_lAB >= 1 && _lCD >= 1)
 	{
 		eri(1, 0, 0, 1, 0, 0) = eri_20(Cx.allM(1, 1), fms);
 		eri(1, 0, 0, 0, 1, 0) = eri_11(Cx.allM(1, 0), Cy.allM(0, 1), fms, Ctot);
@@ -384,7 +389,7 @@ void CGTOShellQuad::setEri() const
 			return;
 		}
 	}
-	if (lsum2 >= 2)
+	if (_lCD >= 2)
 	{
 		eri(0, 0, 0, 2, 0, 0) = eri_20(Cx.allM(0, 2), fms);
 		eri(0, 0, 0, 1, 1, 0) = eri_11(Cx.allM(0, 1), Cy.allM(0, 1), fms, Ctot);
@@ -402,25 +407,9 @@ void CGTOShellQuad::setEri() const
 	Eigen::ArrayXXd Cm(n1, n2);
 	for (int l = 3; l <= _lsum; ++l)
 	{
-		for (int l1 = lsum1; l1 >= std::max(l-lsum2, 0); --l1)
-		{
-			int l2 = l - l1;
-			for (int lx1 = l1; lx1 >= 0; --lx1)
-			{
-				for (int lx2 = l2; lx2 >= 0; --lx2)
-				{
-					for (int ly1 = l1-lx1; ly1 >= 0; --ly1)
-					{
-						int lz1 = l1-lx1-ly1;
-						for (int ly2 = l2-lx2; ly2 >= 0; --ly2)
-						{
-							int lz2 = l2-lx2-ly2;
-							eri(lx1, ly1, lz1, lx2, ly2, lz2) = eri_xx(lx1, ly1, lz1, lx2, ly2, lz2, Cx, Cy, Cz, fms, Cm, Ctot);
-						}
-					}
-				}
-			}
-		}
+		AngMomPairIterator iter(l, _lAB, _lCD);
+		for ( ; !iter.end(); ++iter)
+			eri(iter) = eri_xx(iter, Cx, Cy, Cz, fms, Cm, Ctot);
 	}
 
 	_have_eri = true;

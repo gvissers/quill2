@@ -34,7 +34,8 @@ int main()
 
 		BasisSet set;
 		//std::ifstream is("basis_sets/STO-3G.molcas");
-		std::ifstream is("basis_sets/6-31G**.turbomole");
+		//std::ifstream is("basis_sets/6-31G**.turbomole");
+		std::ifstream is("basis_sets/aug-cc-pVDZ.turbomole");
 		if (!is.good())
 			throw Li::Exception("Failed to open basis set");
 		//set.scan<BasisSet::Molcas>(is);
