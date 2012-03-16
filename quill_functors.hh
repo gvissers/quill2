@@ -52,7 +52,7 @@ struct functor_traits< scalar_qerf_op<Scalar> >
 {
 	enum
 	{
-		Cost = 60 * NumTraits<Scalar>::MulCost,
+		Cost = 50 * NumTraits<Scalar>::MulCost,
 #ifdef __SSE2__
 		PacketAccess = true
 #else
@@ -82,6 +82,13 @@ struct scalar_boys_with_exp_op
 	{
 		return Fm(_m, a, expma);
 	}
+#ifdef __SSE2__
+	template <typename Packet>
+	const Packet packetOp(const Packet& a, const Packet& expma) const
+	{
+		return Fm(_m, a, expma);
+	}
+#endif
 	int _m;
 };
 template <typename Scalar>
@@ -90,7 +97,11 @@ struct functor_traits< scalar_boys_with_exp_op<Scalar> >
 	enum
 	{
 		Cost = 50 * NumTraits<Scalar>::MulCost,
+#ifdef __SSE2__
+		PacketAccess = true
+#else
 		PacketAccess = false
+#endif
 	};
 };
 
@@ -109,7 +120,17 @@ template <typename Scalar>
 struct scalar_boys_op
 {
 	scalar_boys_op(int m): _m(m) {}
-	const Scalar operator()(const Scalar& a) const { return Fm(_m, a); }
+	const Scalar operator()(const Scalar& a) const
+	{
+		return Fm(_m, a);
+	}
+#ifdef __SSE2__
+	template <typename Packet>
+	const Packet packetOp(const Packet& a) const
+	{
+		return Fm(_m, a);
+	}
+#endif
 	int _m;
 };
 template <typename Scalar>
@@ -119,7 +140,11 @@ struct functor_traits< scalar_boys_op<Scalar> >
 	{
 		Cost = functor_traits < scalar_boys_with_exp_op<Scalar> >::Cost
 			+ functor_traits< scalar_exp_op<Scalar> >::Cost,
+#ifdef __SSE2__
+		PacketAccess = true
+#else
 		PacketAccess = false
+#endif
 	};
 };
 

@@ -235,11 +235,8 @@ double CGTOShellQuad::eri_xx(int lx1, int ly1, int lx2, int ly2,
 		Cm.setZero();
 		int mxmax = std::min(m, lx);
 		int mxmin = std::max(m-ly, 0);
-		for (int mx = mxmax; mx >= mxmin; --mx)
-		{
-			int my = m-mx;
+		for (int mx = mxmax, my = m-mxmax ; mx >= mxmin; --mx, ++my)
 			Cm += Cxl[mx] * Cyl[my];
-		}
 		Ctot += Cm * fms[m];
 	}
 	Ctot += (Cxl[1] * Cyl[0] + Cxl[0] * Cyl[1]) * fms[1]
@@ -275,11 +272,8 @@ double CGTOShellQuad::eri_xx(int lx1, int ly1, int lz1, int lx2, int ly2, int lz
 		{
 			int mymax = std::min(m-mx, ly);
 			int mymin = std::max(m-mx-lz, 0);
-			for (int my = mymax; my >= mymin; --my)
-			{
-				int mz = m-mx-my;
+			for (int my = mymax, mz = m-mx-mymax; my >= mymin; --my, ++mz)
 				Cm += Cxl[mx] * Cyl[my] * Czl[mz];
-			}
 		}
 		Ctot += fms[m] * Cm;
 	}

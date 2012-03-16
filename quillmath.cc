@@ -3,11 +3,13 @@
 #include "quillmath.hh"
 #include "constants.hh"
 
-// qexp(), qlog(), qerf() based on code from Cephes, http://netlib.org/cephes
+// qexp(), qlog(), qerf(), qlgamma() based on code from Cephes,
+// http://netlib.org/cephes
 
 static const double MAXLOG =  7.09782712893383996843e2;
 static const double MINLOG = -7.08396418532264106224e2;
 static const double MAXLGM = 2.556348e305;
+static const double MAXSIN = 1.073741824e9;
 
 static const double EXP_C1 = 6.93145751953125e-1; // C1+C2 = log(2)
 static const double EXP_C2 = 1.42860682030941723212e-6;
@@ -106,6 +108,26 @@ static const double ERF_U[] = {
 	4.92673942608635921086e4
 };
 
+static const double COS_DP1 = 7.85398125648498535156e-1;
+static const double COS_DP2 = 3.77489470793079817668e-8;
+static const double COS_DP3 = 2.69515142907905952645e-15;
+static const double SIN_C[] = {
+	1.58962301576546568060e-10,
+	-2.50507477628578072866e-8,
+	2.75573136213857245213e-6,
+	-1.98412698295895385996e-4,
+	8.33333333332211858878e-3,
+	-1.66666666666666307295e-1
+};
+static const double COS_C[] = {
+	-1.13585365213876817300e-11,
+	2.08757008419747316778e-9,
+	-2.75573141792967388112e-7,
+	2.48015872888517045348e-5,
+	-1.38888888888730564116e-3,
+	4.16666666666665929218e-2
+};
+
 static const double LGAMMA_A[] = {
 	8.11614167470508450300e-4,
 	-5.95061904284301438324e-4,
@@ -132,6 +154,9 @@ static const double LGAMMA_C[] = {
 };
 
 int qsigngam;
+#ifdef __SSE2__
+__m128d qsigngamp;
+#endif
 
 namespace {
 
@@ -299,6 +324,30 @@ double qerf(double x)
 	return x * evalPoly(xx, ERF_T, 4) / evalPoly1(xx, ERF_U, 5);
 }
 
+namespace
+{
+
+double qlgamma_sin(double x)
+{
+	// Sine function for 0 <= x <= pi/2, based on Cephes code.
+
+	double xx, y;
+	/* Extended precision modular arithmetic */
+	if (x < M_PI_4)
+	{
+		xx = x * x;
+		y = x + x * xx * evalPoly(xx, SIN_C, 5);
+	}
+	else
+	{
+		xx = ((x - 2 * COS_DP1) - 2 * COS_DP2) - 2 * COS_DP3;
+		xx = xx * xx;
+		y = 1.0 - 0.5*xx + xx * xx * evalPoly(xx, COS_C, 5);
+	}
+	return y;
+}
+
+} // namespace
 
 double qlgamma(double x)
 {
@@ -325,12 +374,12 @@ double qlgamma(double x)
 		else
 			qsigngam = 1;
 		z = q - p;
-		if( z > 0.5 )
+		if (z > 0.5)
 		{
 			p += 1.0;
 			z = p - q;
 		}
-		z = q * std::sin(M_PI * z);
+		z = q * qlgamma_sin(M_PI * z);
 		if (z == 0.0)
 			return std::numeric_limits<double>::infinity();
 
@@ -376,7 +425,7 @@ double qlgamma(double x)
 	}
 
 	if (x > MAXLGM)
-		return qsigngam * std::numeric_limits<double>::infinity();
+		return std::numeric_limits<double>::infinity();
 
 	q = (x - 0.5) * qlog(x) - x + Constants::log_sqrt_2pi;
 	if (x > 1.0e8)
@@ -411,14 +460,9 @@ inline __m128d evalPoly1(__m128d x, const double *C, int n)
 	return p;
 }
 
-inline __m128d qabs(__m128d x)
+inline __m128d qsign(__m128d x)
 {
-	return _mm_andnot_pd(_mm_set1_pd(-0.0), x);
-}
-
-inline __m128d select(__m128d mask, __m128d a, __m128d b)
-{
-	return _mm_or_pd(_mm_and_pd(mask, a), _mm_andnot_pd(mask, b));
+	return _mm_and_pd(_mm_set1_pd(-0.0), x);
 }
 
 inline __m128i select(__m128i mask, __m128i a, __m128i b)
@@ -575,7 +619,7 @@ __m128d qlog(__m128d x)
 
 	// x == inf or x == NaN. This also matches -inf, but that will be
 	// overwritten in the next test
-	ix = _mm_castpd_si128(_mm_andnot_pd(_mm_set1_pd(-0.0), x));
+	ix = _mm_castpd_si128(qabs(x));
 	ix = _mm_xor_si128(_mm_set1_epi32(0xffffffff),
 		_mm_cmplt_epi32(ix, _mm_castpd_si128(_mm_set1_pd(inf))));
 	ix = _mm_shuffle_epi32(ix, _MM_SHUFFLE(3, 3, 1, 1));
@@ -610,7 +654,10 @@ __m128d qlog(__m128d x)
 	return select(specmask, specval, lnx);
 }
 
-static __m128d qerfc_xgt1(__m128d x)
+namespace
+{
+
+__m128d qerfc_xgt1(__m128d x)
 {
 	__m128d p, q;
 	__m128d ax = qabs(x);
@@ -644,6 +691,8 @@ static __m128d qerfc_xgt1(__m128d x)
 	return y;
 }
 
+} // namespace
+
 __m128d qerf(__m128d x)
 {
 	__m128d ax = qabs(x);
@@ -669,4 +718,128 @@ __m128d qerf(__m128d x)
 		return select(mask, eg, el);
 	}
 }
+
+namespace
+{
+
+inline __m128d qlgamma_sin_sp(__m128d x)
+{
+	__m128d xx = _mm_mul_pd(x, x);
+	__m128d p = evalPoly(xx, SIN_C, 5);
+	return _mm_add_pd(x, _mm_mul_pd(_mm_mul_pd(x, xx), p));
+}
+
+inline __m128d qlgamma_sin_cp(__m128d x)
+{
+	__m128d xx = _mm_sub_pd(x, _mm_set1_pd(2 * COS_DP1));
+	xx = _mm_sub_pd(xx, _mm_set1_pd(2 * COS_DP2));
+	xx = _mm_sub_pd(xx, _mm_set1_pd(2 * COS_DP3));
+	xx = _mm_mul_pd(xx, xx);
+	__m128d p = evalPoly(xx, COS_C, 5);
+	__m128d y = _mm_sub_pd(_mm_set1_pd(1), _mm_mul_pd(_mm_set1_pd(0.5), xx));
+	return _mm_add_pd(y, _mm_mul_pd(_mm_mul_pd(xx, xx), p));
+}
+
+inline __m128d qlgamma_sin(__m128d x)
+{
+	__m128d mask = _mm_cmplt_pd(x, _mm_set1_pd(M_PI_4));
+	int mbits = _mm_movemask_pd(mask);
+	if (mbits == 0)
+		return qlgamma_sin_cp(x);
+	if (mbits == 3)
+		return qlgamma_sin_sp(x);
+	return select(mask, qlgamma_sin_sp(x), qlgamma_sin_cp(x));
+}
+
+inline __m128d qlgamma_xge13(__m128d x)
+{
+	__m128d q = _mm_mul_pd(_mm_sub_pd(x, _mm_set1_pd(0.5)), qlog(x));
+	q = _mm_add_pd(_mm_sub_pd(q, x), _mm_set1_pd(Constants::log_sqrt_2pi));
+	__m128d p = _mm_div_pd(_mm_set1_pd(1), _mm_mul_pd(x, x));
+	q = _mm_add_pd(q, _mm_div_pd(evalPoly(p, LGAMMA_A, 4), x));
+	return q;
+}
+
+__m128d qlgamma_xgem34_xlt13(__m128d x, __m128d rangemask)
+{
+	__m128d zero = _mm_setzero_pd();
+	__m128d one = _mm_set1_pd(1);
+	__m128d z = one;
+	__m128d p = zero;
+	__m128d u = x;
+
+	// Set elements that are out of range to 2.5. That prevents them from
+	// interfering with the two loops below.
+	x = select(rangemask, x, _mm_set1_pd(2.5));
+	
+	__m128d lim = _mm_set1_pd(3);
+	__m128d mask = _mm_cmpge_pd(u, lim);
+	while (_mm_movemask_pd(mask))
+	{
+		p = _mm_sub_pd(p, _mm_and_pd(mask, one));
+		u = _mm_add_pd(x, p);
+		z = select(mask, _mm_mul_pd(z, u), z);
+		mask = _mm_cmpge_pd(u, lim);
+	}
+
+	__m128d div = one;
+	lim = _mm_set1_pd(2);
+	mask = _mm_cmplt_pd(u, lim);
+	while (_mm_movemask_pd(mask))
+	{
+		div = select(mask, _mm_mul_pd(div, u), div);
+		p = _mm_add_pd(p, _mm_and_pd(mask, one));
+		u = _mm_add_pd(x, p);
+		mask = _mm_cmplt_pd(u, lim);
+	}
+	z = _mm_div_pd(z, div);
+
+	p = _mm_sub_pd(p, lim);
+	x = _mm_add_pd(x, p);
+	p = _mm_div_pd(_mm_mul_pd(x, evalPoly(x, LGAMMA_B, 5)), evalPoly1(x, LGAMMA_C, 6));
+	p = _mm_add_pd(p, qlog(qabs(z)));
+
+	return p;
+}
+
+inline __m128d qlgamma_xltm34(__m128d x)
+{
+	unsigned int round_mode = _MM_GET_ROUNDING_MODE();
+	__m128d q = qabs(x);
+	__m128d w = qlgamma_xge13(q);
+	_MM_SET_ROUNDING_MODE(_MM_ROUND_NEAREST);
+	__m128d p = _mm_cvtepi32_pd(_mm_cvtpd_epi32(q));
+	_MM_SET_ROUNDING_MODE(round_mode);
+
+	__m128d z = _mm_mul_pd(qabs(_mm_sub_pd(q, p)), _mm_set1_pd(M_PI));
+	z = _mm_mul_pd(q, qlgamma_sin(z));
+
+	z = _mm_sub_pd(_mm_sub_pd(_mm_set1_pd(Constants::log_pi), qlog(z)), w);
+	return z;
+}
+
+inline __m128d qlgamma_xgem34(__m128d x)
+{
+	__m128d mask = _mm_cmplt_pd(x, _mm_set1_pd(13));
+	int mbits = _mm_movemask_pd(mask);
+	if (mbits == 0)
+		return qlgamma_xge13(x);
+	if (mbits == 3)
+		return qlgamma_xgem34_xlt13(x, mask);
+	return select(mask, qlgamma_xgem34_xlt13(x, mask), qlgamma_xge13(x));
+}
+
+} //namespace
+
+__m128d qlgamma(__m128d x)
+{
+	__m128d mask = _mm_cmplt_pd(x, _mm_set1_pd(-34));
+	int mbits = _mm_movemask_pd(mask);
+	if (mbits == 0)
+		return qlgamma_xgem34(x);
+	if (mbits == 3)
+		return qlgamma_xltm34(x);
+	return select(mask, qlgamma_xltm34(x), qlgamma_xgem34(x));
+}
+
 #endif

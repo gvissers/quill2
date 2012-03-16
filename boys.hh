@@ -22,6 +22,9 @@
  * known, and saves the need to recompute it.
  */
 double Fm(int m, double t, double expmt);
+#ifdef __SSE2__
+__m128d Fm(int m, __m128d t, __m128d expmt);
+#endif
 
 namespace
 {
@@ -41,6 +44,12 @@ double Fm(int m, double t)
 {
 	return ::Fm(m, t, qexp(-t));
 }
+#ifdef __SSE2__
+__m128d Fm(int m, __m128d t)
+{
+	return ::Fm(m, t, qexp(_mm_xor_pd(_mm_set1_pd(-0.0), t)));
+}
+#endif
 
 } // namespace
 
