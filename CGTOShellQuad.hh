@@ -256,7 +256,8 @@ public:
 	{
 		if (!_have_eri)
 			setEri();
-		return eri(lxA, lyA, lzA, lxB, lyB, lzB, lxC, lyC, lzC, lxD, lyD, lzD);
+		return eri(lxA+lxB, lyA+lyB, lzA+lzB, lxB, lyB, lzB,
+			lxC+lxD, lyC+lyD, lzC+lzD, lxD, lyD, lzD);
 	}
 
 	/*!
@@ -337,25 +338,25 @@ private:
 	}
 
 	double eri(int lx1, int ly1, int lz1,
-		int lx2, int ly2, int lzC,
+		int lx2, int ly2, int lz2,
 		int lzD) const;
 	double eri(int lx1, int ly1, int lz1,
-		int lx2, int lyC, int lzC,
+		int lx2, int ly2, int lz2,
 		int lyD, int lzD) const;
 	double eri(int lx1, int ly1, int lz1,
-		int lxC, int lyC, int lzC,
+		int lx2, int ly2, int lz2,
 		int lxD, int lyD, int lzD) const;
-	double eri(int lx1, int ly1, int lzA,
+	double eri(int lx1, int ly1, int lz1,
 		int lzB,
-		int lxC, int lyC, int lzC,
+		int lx2, int ly2, int lz2,
 		int lxD, int lyD, int lzD) const;
-	double eri(int lx1, int lyA, int lzA,
+	double eri(int lx1, int ly1, int lz1,
 		int lyB, int lzB,
-		int lxC, int lyC, int lzC,
+		int lx2, int ly2, int lz2,
 		int lxD, int lyD, int lzD) const;
-	double eri(int lxA, int lyA, int lzA,
+	double eri(int lx1, int ly1, int lz1,
 		int lxB, int lyB, int lzB,
-		int lxC, int lyC, int lzC,
+		int lx2, int ly2, int lz2,
 		int lxD, int lyD, int lzD) const;
 };
 
