@@ -58,10 +58,11 @@ struct ParseError: public Li::Exception
 struct InvalidIndex: public Li::Exception
 {
 	//! Constructor
-	InvalidIndex(int i): Exception()
+	template <typename T>
+	InvalidIndex(T t): Exception()
 	{
 		std::ostringstream os;
-		os << "Invalid index " << i;
+		os << "Invalid index " << t;
 		setMsg(os.str());
 	}
 	//! Constructor

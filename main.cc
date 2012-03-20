@@ -2,6 +2,7 @@
 #include <iomanip>
 #include "PeriodicTable.hh"
 #include "CGTOShellList.hh"
+#include "Job.hh"
 #include "Geometry.hh"
 #include "io/manipulators.hh"
 #include "BasisSet.hh"
@@ -13,24 +14,39 @@
 #include "boys.hh"
 #include "HartreeFock.hh"
 
-int main()
+void printUsage(const std::string& name)
 {
+	std::cerr << "Usage: " << name << " <job-file>\n";
+}
+
+int main(int argc, const char* argv[])
+{
+	if (argc != 2)
+	{
+		printUsage(argv[0]);
+		return 1;
+	}
+	
 	try
 	{
 		PeriodicTable table("data/elements.dat");
 		CGTOShellList shells;
 		IndentingOStream os(std::cout);
 
-		std::string job("C 0 0 0\nH 1 1 1\nH -1 -1 1\nH -1 1 -1\nH 1 -1 -1");
-		//std::string job("H 0.7 0 0\nH -0.7 0 0");
-		std::istringstream iss(job);
-		JobIStream jis(iss);
+		std::ifstream fin(argv[1]);
+		if (!fin.good())
+		{
+			std::cerr << "Failed to open job file \"" << argv[1] << "\"\n";
+			return 1;
+		}
+		JobIStream jis(fin);
+		Job job(jis);
+		fin.close();
 
-		Geometry geom;
-		jis >> geom;
-		os << geom << "\n";
-		//geom.toPrincipalAxes();
-		//os << geom << "\n";
+ 		Geometry geom = job.get<Geometry>("geometry");
+ 		os << geom << "\n";
+ 		geom.toPrincipalAxes();
+ 		os << geom << "\n";
 
 		BasisSet set;
 		//std::ifstream is("basis_sets/STO-3G.molcas");
@@ -81,16 +97,6 @@ int main()
 
 		IndentingOStream os(std::cout);
 		os << geom << "\n";
-*/
-/*
-		Eigen::Vector3d weights, widths;
-		weights << 0.15432897, 0.53532814, 0.44463454;
-		widths << 6.36242139, 1.15892300, 0.31364979;
-
-		CGTO<0,0,0> bf(weights, widths, Eigen::Vector3d::Zero());
-		IndentingOStream os(std::cout);
-		os << bf << "\n";
-		os << bf.eval(Eigen::Vector3d::Ones());
 */
 	}
 	catch (const Li::Exception& e)

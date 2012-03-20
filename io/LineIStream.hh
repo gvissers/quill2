@@ -156,7 +156,7 @@ inline LineIStream& getline(LineIStream& jis)
  *
  * Stream manipulator for line extraction for a LineIStream. The difference
  * with the getline manipulator is that expectline will throw an UnexpectedEOF
- * excpetion when no more lines are available.
+ * exception when no more lines are available.
  * \param jis The LineIStream from which to extract the next line
  * \return The updated input stream
  * \exception UnexpectedEOF when no more lines are available

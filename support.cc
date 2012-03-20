@@ -2,6 +2,16 @@
 #include <algorithm>
 #include "support.hh"
 
+std::string lower(const std::string& str)
+{
+	std::locale loc;
+	std::string res;
+	std::transform(str.begin(), str.end(), std::back_inserter(res),
+		std::bind(std::tolower<char>, _1, loc));
+
+	return res;
+}
+
 std::string ucFirst(const std::string& str)
 {
 	if (str.empty()) return std::string();

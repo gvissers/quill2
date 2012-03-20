@@ -40,7 +40,7 @@ std::string LineIStream::nextLine()
 			throw ReadFailure();
 		_line_nr++;
 		if (!line.empty())
-			return line;
+			return line + '\n';
 	}
 }
 

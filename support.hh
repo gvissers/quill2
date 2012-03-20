@@ -64,6 +64,14 @@ std::string& rtrim(std::string& str, Cond cond)
 }
 
 /*!
+ * \brief Create a string in lower case
+ *
+ * Create a copy of \a str in lower case
+ * \param str The string to transform
+ * \return the same string in lower case
+ */
+std::string lower(const std::string& str);
+/*!
  * \brief Create a string with only the first character upper case
  *
  * Create a copy of \a str, where the first character is capitalized, and
