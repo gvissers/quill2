@@ -1,6 +1,7 @@
 # /
 /*.d
 /*.o
+callgrind.out.*
 
 # /basis_sets/
 /basis_sets/cookies.dat
