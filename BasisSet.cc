@@ -1,6 +1,7 @@
 #include <sstream>
-#include <cstdio>
+#include <fstream>
 #include <util.hh>
+#include <filesystem.hh>
 #include "BasisSet.hh"
 #include "Deleter.hh"
 #include "CGTODef.hh"
@@ -243,9 +244,40 @@ void BasisSet::readElement<BasisSet::Molcas>(FilteringLineIStream<CommentFilter>
 	}
 }
 
-template<>
-void BasisSet::scan<BasisSet::Auto>(std::istream& is)
+void BasisSet::scan(std::istream& is, Format hint)
 {
+	switch (hint)
+	{
+		case Dalton:
+			if (tryScan<Dalton>(is))
+				return;
+			break;
+		case Molcas:
+			if (tryScan<Molcas>(is))
+				return;
+			break;
+		case Molpro:
+			if (tryScan<Molpro>(is))
+				return;
+			break;
+		case Turbomole:
+			if (tryScan<Turbomole>(is))
+				return;
+			break;
+		default:
+			/* nothing */ ;
+	}
+
+	if (tryScan<Dalton>(is))
+		return;
+	if (tryScan<Molcas>(is))
+		return;
+	if (tryScan<Molpro>(is))
+		return;
+	if (tryScan<Turbomole>(is))
+		return;
+
+	throw ParseError(0, Auto, "Failed to parse basis set in any format");
 }
 
 template<>
@@ -345,11 +377,6 @@ void BasisSet::scan<BasisSet::Molcas>(std::istream& is)
 	}
 }
 
-void BasisSet::scan(std::istream& is)
-{
-	scan<Auto>(is);
-}
-
 std::ostream& BasisSet::print(std::ostream& os) const
 {
 	os << "BasisSet (\n" << indent;
@@ -430,3 +457,45 @@ AbstractBFDef* BasisSet::contractedGaussian(int l,
 	}
 }
 
+bool BasisSet::findAndScan(const std::string& name, const std::string& dir)
+{
+	std::string lcname = lower(name);
+	for (Li::DirectoryIterator it(dir); !it.end(); ++it)
+	{
+		std::string fname = *it;
+		std::string fullname = Li::joinPath(dir, fname);
+		if (!Li::isRegularFile(fullname))
+			continue;
+
+		std::string ext = lower(Li::getExtension(fname));
+		std::string base = lower(fname.substr(0, fname.size()-ext.size()));
+		if (base == lcname)
+		{
+			Format hint = Auto;
+			if (ext == ".dalton")
+				hint = Dalton;
+			else if (ext == ".molcas")
+				hint = Molcas;
+			else if (ext == ".molpro")
+				hint = Molpro;
+			else if (ext == ".turbomole")
+				hint = Turbomole;
+
+			std::ifstream is(fullname);
+			try
+			{
+				scan(is, hint);
+				is.close();
+				std::cout << "Read basis set from file " << fullname  << "\n";
+				return true;
+			}
+			catch (const ParseError&)
+			{
+				/* ignore and continue with the next file name */
+			}
+			is.close();
+		}
+	}
+
+	return false;
+}

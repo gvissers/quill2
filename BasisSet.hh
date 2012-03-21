@@ -89,9 +89,13 @@ class BasisSet
 		 *
 		 * Try to read the basis set definition from input stream \a is,
 		 * trying to determine the format from the file contents.
-		 * \param is     The input stream to read from
+		 * \param is   The input stream to read from
+		 * \param hint Hint about the format used. This format will be
+		 *    tried first, if it fails, the other formats are tried.
 		 */
-		void scan(std::istream& is);
+		void scan(std::istream& is, Format hint=Auto);
+
+		bool findAndScan(const std::string& name, const std::string& dir);
 
 		//! Clear this basis set, removing all basis function definitions
 		void clear();
@@ -99,6 +103,9 @@ class BasisSet
 	private:
 		//! Map from element name to basis function
 		BFMap _elements;
+
+		template <Format format>
+		bool tryScan(std::istream& is);
 
 		//! Read an element definition in format \a format
 		template <Format format>
@@ -180,6 +187,23 @@ struct BasisSet::NoFunctions: public Li::Exception
 	NoFunctions(const std::string& elem):
 		Exception("No basis functions defined for element \""  + elem + "\"") {}
 };
+
+template <BasisSet::Format format>
+bool BasisSet::tryScan(std::istream& is)
+{
+	std::istream::pos_type pos = is.tellg();
+	clear();
+	try
+	{
+		scan<format>(is);
+		return true;
+	}
+	catch (const ParseError&)
+	{
+		is.seekg(pos);
+		return false;
+	}
+}
 
 namespace {
 
