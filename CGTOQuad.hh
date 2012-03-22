@@ -43,7 +43,7 @@ public:
 		return _shell_quad.getEri(lA(0), lA(1), lA(2),
 			lB(0), lB(1), lB(2),
 			lC(0), lC(1), lC(2),
-			lD(0), lD(1), lD(2)) * _norm;
+			lD(0), lD(1), lD(2));
 	}
 
 	//! Return the angular momentum in the \a i direction for the first orbital
@@ -89,12 +89,10 @@ protected:
 	template <typename Derived>
 	double mulWeights(const Eigen::ArrayBase<Derived>& C) const
 	{
-		return _shell_quad.mulWeights(C) * _norm;
+		return _shell_quad.mulWeights(C);
 	}
 
 private:
-	//! Normalization factor for two-electron integrals
-	double _norm;
 	//! The combined index of this quartet's shells in the CGTOShellList
 	int _ishell_quad;
 	//! The shells for this quartet of orbitals

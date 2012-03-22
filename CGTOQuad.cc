@@ -13,7 +13,6 @@ static const CGTOPair& secondPair(const CGTOPair& pp, const CGTOPair& qq)
 
 CGTOQuad::CGTOQuad(const CGTOPair& pp, const CGTOPair& qq):
 	AbstractBFQuad(firstPair(pp, qq), secondPair(pp, qq)),
-	_norm(pp.norm() * qq.norm()),
 	_ishell_quad(CGTOShellList::pairIndex(p().ishellPair(), q().ishellPair())),
 	_shell_quad(CGTOShellList::singleton().quad(_ishell_quad)) {}
 

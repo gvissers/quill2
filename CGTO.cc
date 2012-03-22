@@ -9,7 +9,6 @@ std::ostream& CGTO::print(std::ostream& os) const
 {
 	os << "CGTO (\n" << indent;
 	os << "angular momentum: " << lx() << ", " << ly() << ", " << lz() << "\n";
-	os << "norm: " << _norm << "\n";
 	os << "shell:\n" << indent << shell() << "\n" << dedent;
 	os << dedent << ")";
 	return os;

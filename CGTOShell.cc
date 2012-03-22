@@ -18,6 +18,6 @@ void CGTOShell::scaleWeights()
 	Eigen::ArrayXd alpha = 2 * widths() / M_PI;
 	alpha *= alpha.sqrt();
 	for (int l = 0; l < lsum(); ++l)
-		alpha *= 4 * widths();
+		alpha *= 4 * widths() / (2*l+1);
 	_weights *= alpha.sqrt();
 }

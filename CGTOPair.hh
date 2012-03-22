@@ -28,7 +28,6 @@ public:
 	//! Constructor
 	CGTOPair(const CGTO& f, const CGTO& g):
 		AbstractBFPair(cid, f, g),
-		_norm(f.norm() * g.norm()),
 		_ishell_pair(CGTOShellList::pairIndex(f.ishell(), g.ishell())),
 		_shell_pair(CGTOShellList::singleton().pair(_ishell_pair)) {}
 
@@ -42,9 +41,6 @@ public:
 	{
 		return static_cast< const CGTO& >(AbstractBFPair::g());
 	}
-
-	//! Return normalization factor for integrals
-	double norm() const { return _norm; }
 
 	//! Return the index of this pair in the CGTOShellList
 	int ishellPair() const { return _ishell_pair; }
@@ -210,7 +206,6 @@ protected:
 	 */
 	CGTOPair(size_t cid, const CGTO& f, const CGTO& g):
 		AbstractBFPair(cid, f, g),
-		_norm(f.norm() * g.norm()),
 		_ishell_pair(CGTOShellList::pairIndex(f.ishell(), g.ishell())),
 		_shell_pair(CGTOShellList::singleton().pair(_ishell_pair)) {}
 
@@ -223,12 +218,10 @@ protected:
 	template <typename Derived>
 	double mulWeights(const Eigen::ArrayBase<Derived>& C) const
 	{
-		return _shell_pair.mulWeights(C) * _norm;
+		return _shell_pair.mulWeights(C);
 	}
 
 private:
-	//! Normalization factor for integrals
-	double _norm;
 	//! The combined index of this pair's shells in the CGTOShellList
 	int _ishell_pair;
 	//! The shells for this pair of orbitals

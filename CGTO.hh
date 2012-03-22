@@ -37,16 +37,7 @@ public:
 	 */
 	CGTO(const Eigen::Vector3i& ls, int ishell):
 		AbstractBF(cid), _ls(ls), _ishell(ishell),
-		_shell(CGTOShellList::singleton().shell(ishell))
-	{
-		_norm = 1;
-		for (int i = 0; i < 3; ++i)
-		{
-			for (int l = 1; l < ls(i); ++l)
-				_norm /= 2*l + 1;
-		}
-		_norm = std::sqrt(_norm);
-	}
+		_shell(CGTOShellList::singleton().shell(ishell)) {}
 
 	//! Return the number of primitives in this contraction
 	int size() const { return shell().size(); }
@@ -62,8 +53,6 @@ public:
 	int l(int i) const { return _ls[i]; }
 	//! Return the total angular momentum
 	int lsum() const { return _ls.sum(); }
-	//! Return the normalization factor for this contraction
-	double norm() const { return _norm; }
 	//! Return the index of this orbital's shell in the CGTOShellList
 	int ishell() const { return _ishell; }
 	//! Return the shell of this orbital
@@ -112,22 +101,11 @@ protected:
 	 */
 	CGTO(size_t cid, const Eigen::Vector3i& ls, int ishell):
 		AbstractBF(cid), _ls(ls), _ishell(ishell),
-		_shell(CGTOShellList::singleton().shell(ishell))
-	{
-		_norm = 1;
-		for (int i = 0; i < 3; ++i)
-		{
-			for (int l = 1; l < ls(i); ++l)
-				_norm /= 2*l + 1;
-		}
-		_norm = std::sqrt(_norm);
-	}
+		_shell(CGTOShellList::singleton().shell(ishell)) {}
 
 private:
 	//! The angular momentum quantum numbers
 	Eigen::Vector3i _ls;
-	//! Scale factor for normalization
-	double _norm;
 	//! Index of this orbital's shell in the CGTOShellList
 	int _ishell;
 	//! The shell parameters: widths, weights, and position
