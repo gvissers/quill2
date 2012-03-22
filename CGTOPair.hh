@@ -46,9 +46,9 @@ public:
 	const CGTOShellPair& shellPair() const { return _shell_pair; }
 
 	//! Compute the overlap between the two orbitals in this pair
-	virtual double overlap() const;
+	double overlap() const;
 	//! Compute the kinetic energy integral between the two orbitals in this pair
-	virtual double kineticEnergy() const;
+	double kineticEnergy() const;
 	/*!
 	 * \brief Compute one-electron integrals
 	 *
@@ -57,7 +57,7 @@ public:
 	 * \param S Place to store the overlap
 	 * \param T Place to store the kinetic energy
 	 */
-	virtual void oneElectron(double& S, double& T) const;
+	void oneElectron(double& S, double& T) const;
 	/*!
 	 * \brief Compute nuclear attraction integrals
 	 * 
@@ -67,7 +67,7 @@ public:
 	 * \param nuc_pos    The positions of the nuclei
 	 * \param nuc_charge The nuclear charges
 	 */
-	virtual double nuclearAttraction(const Eigen::MatrixXd& nuc_pos,
+	double nuclearAttraction(const Eigen::MatrixXd& nuc_pos,
 		const Eigen::VectorXd& nuc_charge) const;
 
 	/*!
@@ -196,19 +196,7 @@ public:
 		}
 	}
 
-protected:
-	/*!
-	 * \brief Constructor
-	 *
-	 * Create a new pair of contracted gaussian type orbitals \a f and \a g.
-	 * This constructor is called by specialized child classes, that pass
-	 * their own class ID \a cid.
-	 */
-	CGTOPair(size_t cid, const CGTO& f, const CGTO& g):
-		AbstractBFPair(cid, f, g),
-		_shell_pair(CGTOShellList::singleton().pair(f.shell(), g.shell()))
-		{}
-
+private:
 	/*!
 	 * Multiply the contributions to an integral \a C of each primitive pair
 	 * with the weights of the primitives, and sum the results to compute
@@ -221,7 +209,6 @@ protected:
 		return _shell_pair.mulWeights(C);
 	}
 
-private:
 	//! The shells for this pair of orbitals
 	CGTOShellPair _shell_pair;
 

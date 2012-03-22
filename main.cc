@@ -57,7 +57,7 @@ int main(int argc, const char* argv[])
 		}
 
 		Basis basis;
-		set.expand(geom, &basis);
+		set.expand(geom, basis);
 		os << basis << "\n";
 
 		Eigen::IOFormat format(8);

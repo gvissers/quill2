@@ -9,7 +9,7 @@
 #include "Eigen/Dense"
 #include "AbstractBFDef.hh"
 #include "CGTOShellList.hh"
-#include "CGTODefExpander.hh"
+#include "io/manipulators.hh"
 
 /*!
  * \brief Contracted Gaussian Type Orbital
@@ -60,11 +60,11 @@ class CGTODef: public AbstractBFDef
 		 * \param basis The basis to which the functions are added
 		 */
 		void expand(int ipos, const Eigen::Vector3d& pos,
-			Basis *basis) const
+			Basis& basis) const
 		{
 			const CGTOShell& shell = CGTOShellList::singleton().addShell(
 				l, _weights, _widths, ipos, pos);
-			CGTODefExpander<l, 0, 0>::exec(shell, basis);
+			shell.expand(basis);
 		}
 
 		/*!
@@ -93,36 +93,6 @@ CGTODef<l>::CGTODef(const std::vector< std::pair<double, double> >& ww):
 		_weights[i] = ww[i].first;
 		_widths[i] = ww[i].second;
 	}
-}
-
-template <>
-void CGTODef<0>::expand(int ipos, const Eigen::Vector3d& pos,
-	Basis* basis) const
-{
-	const CGTOShell& shell = CGTOShellList::singleton().addShell(0,
-		_weights, _widths, ipos, pos);
-#if LMAX_SPECIALIZED >= 0
-	basis->add(new CGTOSpec<0, 0, 0>(shell));
-#else
-	basis->add(new CGTO(Eigen::Vector3i(0, 0, 0), shell));
-#endif
-}
-
-template <>
-void CGTODef<1>::expand(int ipos, const Eigen::Vector3d& pos,
-	Basis* basis) const
-{
-	const CGTOShell& shell = CGTOShellList::singleton().addShell(1,
-		_weights, _widths, ipos, pos);
-#if LMAX_SPECIALIZED >= 1
-	basis->add(new CGTOSpec<1, 0, 0>(shell));
-	basis->add(new CGTOSpec<0, 1, 0>(shell));
-	basis->add(new CGTOSpec<0, 0, 1>(shell));
-#else
-	basis->add(new CGTO(Eigen::Vector3i(1, 0, 0), shell));
-	basis->add(new CGTO(Eigen::Vector3i(0, 1, 0), shell));
-	basis->add(new CGTO(Eigen::Vector3i(0, 0, 1), shell));
-#endif
 }
 
 template <unsigned int l>

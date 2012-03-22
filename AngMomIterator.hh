@@ -30,12 +30,14 @@ public:
 	 */
 	bool end() const { return lx() < 0; }
 
+	//! Return the current angular momentum
+	const Eigen::Array3i& ls() const { return _ls; }
 	//! Return the current angular momentum in the \f$x\f$ dimension
-	int lx() const { return _lx; }
+	int lx() const { return _ls.x(); }
 	//! Return the current angular momentum in the \f$y\f$ dimension
-	int ly() const { return _ly; }
+	int ly() const { return _ls.y(); }
 	//! Return the current angular momentum in the \f$x\f$ dimension
-	int lz() const { return _lz; }
+	int lz() const { return _ls.z(); }
 	//! Return the total angular momentum we are iterating over.
 	int ltot() const { return _ltot; }
 
@@ -45,9 +47,9 @@ public:
 	void reset(int ltot)
 	{
 		_ltot = ltot;
-		_lx = ltot;
-		_ly = 0;
-		_lz = 0;
+		_ls.x() = ltot;
+		_ls.y() = 0;
+		_ls.z() = 0;
 	}
 
 	/*!
@@ -58,16 +60,16 @@ public:
 	 */
 	AngMomIterator& operator++()
 	{
-		if (_ly > 0)
+		if (_ls.y() > 0)
 		{
-			--_ly;
-			++_lz;
+			--_ls.y();
+			++_ls.z();
 		}
 		else
 		{
-			--_lx;
-			_ly = _lz+1;
-			_lz = 0;
+			--_ls.x();
+			_ls.y() = _ls.z()+1;
+			_ls.z() = 0;
 		}
 		return *this;
 	}
@@ -75,12 +77,8 @@ public:
 private:
 	//! The total angular momentum iterated over
 	int _ltot;
-	//! The angular momentum in the \f$x\f$ dimension
-	int _lx;
-	//! The angular momentum in the \f$y\f$ dimension
-	int _ly;
-	//! The angular momentum in the \f$z\f$ dimension
-	int _lz;
+	//! The angular momentum distributed over the three dimensions
+	Eigen::Array3i _ls;
 };
 
 #endif // ANGMOMITERATOR_HH

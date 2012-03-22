@@ -31,7 +31,7 @@ struct AbstractBFDef
 	 * \param basis The basis to which the functions are added
 	 */
 	virtual void expand(int ipos, const Eigen::Vector3d& pos,
-		Basis *basis) const = 0;
+		Basis& basis) const = 0;
 
 	/*!
 	 * \brief Print a basis function definition

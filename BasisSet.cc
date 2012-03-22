@@ -10,7 +10,7 @@
 #include "support.hh"
 #include "io/manipulators.hh"
 
-void BasisSet::expand(const Geometry& geom, Basis *basis) const
+void BasisSet::expand(const Geometry& geom, Basis& basis) const
 {
 	for (int i = 0; i < geom.size(); i++)
 	{

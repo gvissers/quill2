@@ -1,10 +1,19 @@
 #include <cmath>
 #include "CGTOShell.hh"
+#include "Basis.hh"
+#include "AngMomIterator.hh"
 #include "io/manipulators.hh"
+
+void CGTOShell::expand(Basis& basis) const
+{
+	for (AngMomIterator it(lsum()); !it.end(); ++it)
+		basis.add(new CGTO(it.ls(), *this));
+}
 
 std::ostream& CGTOShell::print(std::ostream& os) const
 {
 	os << "CGTOShell (\n" << indent;
+	os << "angular momentum: " << lsum() << "\n";
 	os << "center: " << center().transpose() << "\n";
 	os << "primitives:\n" << indent;
 	for (int i = 0; i < widths().size(); i++)

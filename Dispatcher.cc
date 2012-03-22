@@ -1,5 +1,4 @@
 #include "Dispatcher.hh"
-#include "DispatcherFiller.hh"
 #include "AbstractBF.hh"
 #include "limits.hh"
 #include "exceptions.hh"
@@ -9,13 +8,11 @@ STATIC_SINGLETON_OBJECT(Dispatcher);
 Dispatcher::Dispatcher(): Li::Singleton<Dispatcher, true>(),
 	_hasher(), _pair_funs()
 {
-#if LMAX_SPECIALIZED >= 0
-	PairMapFiller<Limits::lmax_specialized, Limits::lmax_specialized>::fill();
-#endif
 	size_t id = classID<CGTO>();
 	setPairCreator(id, id, CGTOPair::create);
 
-	QuadMapFiller<Limits::lmax_specialized, Limits::lmax_specialized>::fill();
+	id = classID<CGTOPair>();
+	setQuadCreator(id, id, CGTOQuad::create);
 }
 
 AbstractBFPair* Dispatcher::pair(const AbstractBF& f, const AbstractBF& g) const

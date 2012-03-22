@@ -35,13 +35,13 @@ public:
 	 * \param ls     Angular momentum of the orbital
  	 * \param shell  This orbital's shell
 	 */
-	CGTO(const Eigen::Vector3i& ls, const CGTOShell& shell):
+	CGTO(const Eigen::Array3i& ls, const CGTOShell& shell):
 		AbstractBF(cid), _ls(ls), _shell(shell) {}
 
 	//! Return the number of primitives in this contraction
 	int size() const { return shell().size(); }
 	//! Return the angular momentum quantum numbers
-	const Eigen::Vector3i& ls() const { return _ls; }
+	const Eigen::Array3i& ls() const { return _ls; }
 	//! Return the angular momentum in the \f$x\f$ direction
 	int lx() const { return _ls.x(); }
 	//! Return the angular momentum in the \f$y\f$ direction
@@ -73,7 +73,7 @@ public:
 	 * \param os The output stream to write to
 	 * \return The updated output stream
 	 */
-	virtual std::ostream& print(std::ostream& os) const;
+	std::ostream& print(std::ostream& os) const;
 
 	/*!
 	 * \brief Evaluate this CGTO
@@ -84,24 +84,9 @@ public:
 	 */
 	double eval(const Eigen::Vector3d& pos) const;
 
-protected:
-	/*!
-	 * \brief Constructor
-	 *
-	 * Create a new contraction of primitive Gaussian type orbitals with
-	 * angular momentum quantum numbers \a ls on position \a center. This
-	 * contructor is used by child classes that pass their own class ID
-	 * for specialized integral calculations.
-	 * \param cid    Class ID of the child class
-	 * \param ls     Angular momentum of the orbital
- 	 * \param shell  This orbital's shell
-	 */
-	CGTO(size_t cid, const Eigen::Vector3i& ls, const CGTOShell& shell):
-		AbstractBF(cid), _ls(ls), _shell(shell) {}
-
 private:
 	//! The angular momentum quantum numbers
-	Eigen::Vector3i _ls;
+	Eigen::Array3i _ls;
 	//! The shell parameters: widths, weights, and position
 	const CGTOShell& _shell;
 

@@ -8,6 +8,9 @@
 
 #include <Eigen/Core>
 
+// Forward declaration
+class Basis;
+
 class CGTOShell
 {
 public:
@@ -51,6 +54,14 @@ public:
 	const Eigen::Vector3d& center() const { return _center; }
 	//! Return the \a i coordinate of the center of this shell
 	double center(int i) const { return _center[i]; }
+
+	/*!
+	 * \brief Expand this shell
+	 *
+	 * Expand this shell, adding all functions in it to the basis.
+	 * \param basis The basis being constructed
+	 */
+	void expand(Basis& basis) const;
 
 	/*!
 	 * \brief Print this CGTOShell

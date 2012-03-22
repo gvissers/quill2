@@ -2,7 +2,7 @@
 #include "Dispatcher.hh"
 #include "boys.hh"
 
-const size_t CGTOPair::cid = size_t(-1);
+const size_t CGTOPair::cid = Dispatcher::singleton().classID<CGTOPair>();
 
 void CGTOPair::overlapPrim1D(int i, Eigen::ArrayXXd& Sp) const
 {

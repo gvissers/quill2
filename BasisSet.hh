@@ -62,7 +62,7 @@ class BasisSet
 		 * \param geom  The geometry of the system
 		 * \param basis The basis set to fill
 		 */
-		void expand(const Geometry& geom, Basis *basis) const;
+		void expand(const Geometry& geom, Basis& basis) const;
 
 		/*!
 		 * \brief Print a basis set
