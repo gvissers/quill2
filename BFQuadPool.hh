@@ -22,8 +22,7 @@
 class BFQuadPool
 {
 	//! The size of a single slot
-	static const size_t elem_size = 16 * ((MaxQuadSize<Limits::lmax_specialized,
-		Limits::lmax_specialized>::size + 15) / 16);
+	static const size_t elem_size = 16 * ((MaxQuadSize::size + 15) / 16);
 	//! The number of quads per chunk
 	static const size_t elems_per_chunk = 1023;
 

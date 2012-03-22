@@ -8,7 +8,6 @@
 
 #include "CGTOQuad.hh"
 
-template <int l1, int l2>
 struct MaxQuadSize
 {
 	static const size_t size = sizeof(CGTOQuad);
