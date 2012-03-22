@@ -15,19 +15,21 @@ const CGTOShell& CGTOShellList::addShell(int l, const Eigen::ArrayXd& weights,
 	return *sh;
 }
 
-int CGTOShellList::addPair(const CGTOShell& shA, const CGTOShell& shB)
+const CGTOShellPair& CGTOShellList::addPair(const CGTOShell& shA,
+	const CGTOShell& shB)
 {
-	CGTOShellPair *p = new CGTOShellPair(shA, shB);
+	CGTOShellPair *p = new CGTOShellPair(nrPairs(), shA, shB);
 	for (int ij = 0; ij < nrPairs(); ++ij)
 		addQuad(*p, pair(ij));
 	addQuad(*p, *p);
 	_pairs.push_back(ShellPairPtr(p));
-	return nrPairs()-1;
+	return *p;
 }
 
-int CGTOShellList::addQuad(const CGTOShellPair& pAB, const CGTOShellPair& pCD)
+const CGTOShellQuad& CGTOShellList::addQuad(const CGTOShellPair& pAB,
+	const CGTOShellPair& pCD)
 {
 	CGTOShellQuad *q = new CGTOShellQuad(pAB, pCD);
 	_quads.push_back(ShellQuadPtr(q));
-	return nrQuads()-1;
+	return *q;
 }

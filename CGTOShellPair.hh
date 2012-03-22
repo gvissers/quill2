@@ -17,11 +17,13 @@ public:
 	 *
 	 * Create a new pair of shells \a shA and \a shB
 	 */ 
-	CGTOShellPair(const CGTOShell& shA, const CGTOShell& shB);
+	CGTOShellPair(int index, const CGTOShell& shA, const CGTOShell& shB);
 
 	//! Return the number of primitive combinations in this pair
 	int size() const { return widthsSum().size(); }
-	
+
+	//! Return the index of this shell pair in the CGTOShellList
+	int index() const { return _index; }
 	//! Return the total angular momentum of the swo shells combined
 	int lsum() const { return _lsum; }
 	//! Return the unnormalized weights of the primitive combinations
@@ -94,6 +96,8 @@ public:
 	}
 
 private:
+	//! Index of this pair in the CGTOShellList
+	int _index;
 	//! First shell in this pair
 	const CGTOShell& _shA;
 	//! Second shell in this pair

@@ -37,7 +37,7 @@ struct CGTOSpec: public CGTO
 	 * Create a new contraction of primitive Gaussian type orbitals
 	 * on position \a center.
 	 * \param weights The weights of the primitives in the contraction
-	 * \param ishell  Index of this orbital's shell in the CGTOShellList
+	 * \param shell   This orbital's shell
 	 */
 	CGTOSpec(const CGTOShell& shell):
 		CGTO(cid, Eigen::Vector3i(tlx, tly, tlz), shell) {}

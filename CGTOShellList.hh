@@ -35,6 +35,10 @@ public:
 		return *_shells[i];
 	}
 
+	const CGTOShellPair& pair(const CGTOShell& shA, const CGTOShell& shB)
+	{
+		return pair(shA.index(), shB.index());
+	}
 	const CGTOShellPair& pair(int i, int j)
 	{
 		return pair(pairIndex(i, j));
@@ -44,15 +48,23 @@ public:
 		return *_pairs[ij];
 	}
 
+	const CGTOShellQuad& quad(const CGTOShellPair& pA, const CGTOShellPair& pB)
+	{
+		return quad(pA.index(), pB.index());
+	}
 	const CGTOShellQuad& quad(int i, int j, int k, int l)
 	{
-		return quad(pairIndex(pairIndex(i, j), pairIndex(k, l)));
+		return quad(pairIndex(i, j), pairIndex(k, l));
+	}
+	const CGTOShellQuad& quad(int ij, int kl)
+	{
+		return quad(pairIndex(ij, kl));
 	}
 	const CGTOShellQuad& quad(int ijkl)
 	{
 		return *_quads[ijkl];
 	}
-
+		
 	static int pairIndex(int i, int j)
 	{
 		if (i < j)
@@ -65,8 +77,8 @@ private:
 	ShellPairList _pairs;
 	ShellQuadList _quads;
 
-	int addPair(const CGTOShell& shA, const CGTOShell& shB);
-	int addQuad(const CGTOShellPair& pAB, const CGTOShellPair& pCD);
+	const CGTOShellPair& addPair(const CGTOShell& shA, const CGTOShell& shB);
+	const CGTOShellQuad& addQuad(const CGTOShellPair& pAB, const CGTOShellPair& pCD);
 };
 
 #endif // CGTOSHELLIST_HH

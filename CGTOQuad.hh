@@ -93,8 +93,6 @@ protected:
 	}
 
 private:
-	//! The combined index of this quartet's shells in the CGTOShellList
-	int _ishell_quad;
 	//! The shells for this quartet of orbitals
 	const CGTOShellQuad& _shell_quad;
 };

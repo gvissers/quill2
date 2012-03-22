@@ -28,8 +28,8 @@ public:
 	//! Constructor
 	CGTOPair(const CGTO& f, const CGTO& g):
 		AbstractBFPair(cid, f, g),
-		_ishell_pair(CGTOShellList::pairIndex(f.ishell(), g.ishell())),
-		_shell_pair(CGTOShellList::singleton().pair(_ishell_pair)) {}
+		_shell_pair(CGTOShellList::singleton().pair(f.shell(), g.shell()))
+		{}
 
 	//! Return the first orbital in the pair
 	const CGTO& f() const
@@ -42,8 +42,8 @@ public:
 		return static_cast< const CGTO& >(AbstractBFPair::g());
 	}
 
-	//! Return the index of this pair in the CGTOShellList
-	int ishellPair() const { return _ishell_pair; }
+	//! Return the pair of orbitals shells
+	const CGTOShellPair& shellPair() const { return _shell_pair; }
 
 	//! Compute the overlap between the two orbitals in this pair
 	virtual double overlap() const;
@@ -206,8 +206,8 @@ protected:
 	 */
 	CGTOPair(size_t cid, const CGTO& f, const CGTO& g):
 		AbstractBFPair(cid, f, g),
-		_ishell_pair(CGTOShellList::pairIndex(f.ishell(), g.ishell())),
-		_shell_pair(CGTOShellList::singleton().pair(_ishell_pair)) {}
+		_shell_pair(CGTOShellList::singleton().pair(f.shell(), g.shell()))
+		{}
 
 	/*!
 	 * Multiply the contributions to an integral \a C of each primitive pair
@@ -222,8 +222,6 @@ protected:
 	}
 
 private:
-	//! The combined index of this pair's shells in the CGTOShellList
-	int _ishell_pair;
 	//! The shells for this pair of orbitals
 	CGTOShellPair _shell_pair;
 

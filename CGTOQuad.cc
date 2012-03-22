@@ -3,18 +3,17 @@
 
 static const CGTOPair& firstPair(const CGTOPair& pp, const CGTOPair& qq)
 {
-	return pp.ishellPair() < qq.ishellPair() ? qq : pp;
+	return pp.shellPair().index() < qq.shellPair().index() ? qq : pp;
 }
 
 static const CGTOPair& secondPair(const CGTOPair& pp, const CGTOPair& qq)
 {
-	return pp.ishellPair() < qq.ishellPair() ? pp : qq;
+	return pp.shellPair().index() < qq.shellPair().index() ? pp : qq;
 }
 
 CGTOQuad::CGTOQuad(const CGTOPair& pp, const CGTOPair& qq):
-	AbstractBFQuad(firstPair(pp, qq), secondPair(pp, qq)),
-	_ishell_quad(CGTOShellList::pairIndex(p().ishellPair(), q().ishellPair())),
-	_shell_quad(CGTOShellList::singleton().quad(_ishell_quad)) {}
+ 	AbstractBFQuad(firstPair(pp, qq), secondPair(pp, qq)),
+	_shell_quad(CGTOShellList::singleton().quad(pp.shellPair(), qq.shellPair())) {}
 
 AbstractBFQuad* CGTOQuad::create(const AbstractBFPair& p,
 	const AbstractBFPair& q, BFQuadPool& pool)

@@ -1,7 +1,8 @@
 #include "CGTOShellPair.hh"
 #include "quillmath.hh"
 
-CGTOShellPair::CGTOShellPair(const CGTOShell& shA, const CGTOShell& shB):
+CGTOShellPair::CGTOShellPair(int index, const CGTOShell& shA, const CGTOShell& shB):
+	_index(index),
 	_shA(shA), _shB(shB),
 	_weights(shA.weights().replicate(1, shB.size()).rowwise()
 		* shB.weights().transpose()),
