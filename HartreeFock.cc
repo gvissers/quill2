@@ -2,19 +2,19 @@
 #include <Eigen/Dense>
 #include <Exception.hh>
 #include "HartreeFock.hh"
-#include "DIIS.hh"
+#include "HFConverger.hh"
 #include "exceptions.hh"
 
 const int HartreeFock::default_max_iter = 100;
 const double HartreeFock::default_tolerance = 1.e-10;
 
 HartreeFock::HartreeFock(): _max_iter(default_max_iter),
-	_tolerance(default_tolerance), _status(),
+	_tolerance(default_tolerance), _conv_method("diis"),  _status(),
 	_orbitals(), _orb_ener(), _density() {}
 
 HartreeFock::HartreeFock(const Basis& basis, const Geometry& geometry,
 	int multiplicity, bool restricted): _max_iter(default_max_iter),
-	_tolerance(default_tolerance), _status(),
+	_tolerance(default_tolerance), _conv_method("diis"), _status(),
 	_orbitals(), _orb_ener(), _density()
 {
 	iterate(basis, geometry, multiplicity, restricted);
@@ -33,17 +33,16 @@ void HartreeFock::iterate(const Basis& basis, const Geometry& geometry,
 	Eigen::MatrixXd H = basis.kineticEnergy()
 		+ basis.nuclearAttraction(geometry.positions(), geometry.charges());
 	const Eigen::MatrixXd& S = basis.overlap();
-	const Eigen::MatrixXd& X = basis.ortho();
 
 	if (restricted)
-		iterateRestricted(basis, H, S, X, nuc_rep);
+		iterateRestricted(basis, H, S, nuc_rep);
 	else
-		iterateUnrestricted(basis, H, S, X, nuc_rep);
+		iterateUnrestricted(basis, H, S, nuc_rep);
 }
 
 void HartreeFock::iterateRestricted(const Basis& basis,
 	const Eigen::MatrixXd& H, const Eigen::MatrixXd& S,
-	const Eigen::MatrixXd& X, double nuc_rep)
+	double nuc_rep)
 {
 	calcOrbitals(H, S);
 
@@ -53,7 +52,8 @@ void HartreeFock::iterateRestricted(const Basis& basis,
 	std::cout << "Energy: " << _energy << "\n";
 
 	Eigen::MatrixXd J, K;
-	DIIS diis(basis.size());
+	HFConverger::Ptr converger = HFConverger::create(_conv_method, *this,
+		basis);
 	for (int iter = 0; iter < _max_iter; ++iter)
 	{
 		double last_energy = _energy;
@@ -63,7 +63,7 @@ void HartreeFock::iterateRestricted(const Basis& basis,
 		_energy = (H + 0.5*(J - 0.5*K)).cwiseProduct(D).sum() + nuc_rep;
 		std::cout << std::setw(3) << iter << " "
 			<< std::setw(20) << std::setprecision(15) << std::fixed << _energy << " "
-			<< std::setw(13) << std::setprecision(6) << std::scientific << diis.error()
+			<< std::setw(13) << std::setprecision(6) << std::scientific << converger->error()
 			<< "\n";
 		//std::cout << "orbital energies: " << _orb_ener.transpose() << "\n";
 
@@ -74,7 +74,7 @@ void HartreeFock::iterateRestricted(const Basis& basis,
 		}
 
 		Eigen::MatrixXd F = H + J - 0.5*K;
-		diis.step(F, D, S, X, _energy);
+		converger->step(F, _energy);
 		calcOrbitals(F, S);
 	}
 	
@@ -83,7 +83,7 @@ void HartreeFock::iterateRestricted(const Basis& basis,
 
 void HartreeFock::iterateUnrestricted(const Basis& basis,
 	const Eigen::MatrixXd& H, const Eigen::MatrixXd& S,
-	const Eigen::MatrixXd& X, double nuc_rep)
+	double nuc_rep)
 {
 	int nr_func = basis.size();
 
@@ -93,7 +93,8 @@ void HartreeFock::iterateUnrestricted(const Basis& basis,
 	std::cout << "Energy: " << _energy << "\n";
 
 	Eigen::MatrixXd Ja, Ka, Jb, Kb;
-	DIIS diis(nr_func);
+	HFConverger::Ptr converger = HFConverger::create(_conv_method, *this,
+		basis);
 	for (int iter = 0; iter < _max_iter; ++iter)
 	{
 		double last_energy = _energy;
@@ -109,7 +110,7 @@ void HartreeFock::iterateUnrestricted(const Basis& basis,
 
 		std::cout << std::setw(3) << iter << " "
 			<< std::setw(20) << std::setprecision(15) << std::fixed << _energy << " "
-			<< std::setw(13) << std::setprecision(6) << std::scientific << diis.error() << "\n";
+			<< std::setw(13) << std::setprecision(6) << std::scientific << converger->error() << "\n";
 		//std::cout << "orbital energies: " << _orb_ener.transpose() << "\n";
 
 		if (std::abs(_energy - last_energy) < _tolerance)
@@ -120,7 +121,7 @@ void HartreeFock::iterateUnrestricted(const Basis& basis,
 
 		Eigen::MatrixXd Fa = H + Ja + Jb - Ka;
 		Eigen::MatrixXd Fb = H + Ja + Jb - Kb;
-		diis.step(Fa, Da, Fb, Db, S, X, _energy);
+		converger->step(Fa, Fb, _energy);
 		calcOrbitals(Fa, Fb, S);
 	}
 

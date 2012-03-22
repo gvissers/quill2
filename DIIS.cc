@@ -10,6 +10,7 @@ void DIIS::step(Eigen::MatrixXd& F, const Eigen::MatrixXd& D,
 	{
 		if (_err_vecs_used == 0)
 		{
+			_size = F.rows();
 			_err_vecs.resize((_size-1)*_size/2, 10);
 		}
 		else
@@ -68,6 +69,7 @@ void DIIS::step(Eigen::MatrixXd& Fa, const Eigen::MatrixXd& Da,
 	{
 		if (_err_vecs_used == 0)
 		{
+			_size = Fa.rows();
 			_err_vecs.resize((_size-1)*_size, 10);
 		}
 		else

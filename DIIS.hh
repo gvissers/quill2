@@ -27,7 +27,7 @@ public:
 	 * Create a new DIIS object, for a basis of size \a size.
 	 * \param size The size of the matrices (basis set size).
 	 */
-	DIIS(int size): _size(size), _err_vecs_used(0), _err_vecs(), _values(),
+	DIIS(): _size(0), _err_vecs_used(0), _err_vecs(), _values(),
 		_started(false), _max_err(0) {}
 
 	/*!

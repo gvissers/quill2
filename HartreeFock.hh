@@ -84,12 +84,16 @@ public:
 	void setMaxIterations(int max_iter) { _max_iter = max_iter; }
 	//! Set the convergence limit in total energy
 	void setTolerance(double tolerance) { _tolerance = tolerance; }
+	//! Set the convergence accelerator to use
+	void setConverger(const std::string& method) { _conv_method = method; }
 
 private:
 	//! The maximum number of SCF iterations
 	int _max_iter;
 	//! The convergence limit in total energy
 	double _tolerance;
+	//! The convergence method to used
+	std::string _conv_method;
 
 	//! The state of the calculation
 	std::bitset<NR_FLAGS> _status;
@@ -121,8 +125,8 @@ private:
 	 * \param S       The overlap matrix
 	 * \param nuc_rep The nuclear repulsion energy of the system
 	 */
-	void iterateRestricted(const Basis& basis, const Eigen::MatrixXd& H,
-		const Eigen::MatrixXd& S, const Eigen::MatrixXd& X,
+	void iterateRestricted(const Basis& basis,
+		const Eigen::MatrixXd& H, const Eigen::MatrixXd& S,
 		double nuc_rep);
 	/*!
 	 * \brief Do a spin-unrestricted calculation
@@ -133,8 +137,8 @@ private:
 	 * \param S       The overlap matrix
 	 * \param nuc_rep The nuclear repulsion energy of the system
 	 */
-	void iterateUnrestricted(const Basis& basis, const Eigen::MatrixXd& H,
-		const Eigen::MatrixXd& S, const Eigen::MatrixXd& X,
+	void iterateUnrestricted(const Basis& basis,
+		const Eigen::MatrixXd& H, const Eigen::MatrixXd& S,
 		double nuc_rep);
 
 	/*!
