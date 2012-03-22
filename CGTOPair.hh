@@ -10,6 +10,7 @@
 #include <Eigen/Core>
 #include "AbstractBFPair.hh"
 #include "CGTO.hh"
+#include "MultiArray.hh"
 #include "constants.hh"
 
 /*!
@@ -130,6 +131,11 @@ public:
 	{
 		return _shell_pair.gaussReduced();
 	}
+	//! Return half the inverse widths sums, \f$\frac{1}{2(\alpha+\beta)}\f$
+	const Eigen::ArrayXXd& hInvWidths() const
+	{
+		return _shell_pair.hInvWidths();
+	}
 	//! Return the first orbital center
 	const Eigen::Vector3d& centerA() const
 	{
@@ -219,7 +225,7 @@ private:
 	//! Integrate the coefficients for nuclear attraction integrals over dimension \a i.
 	void nucAttrPrim1D(int i, const Eigen::ArrayXXd& theta,
 		const Eigen::ArrayXXd& Pi, const Eigen::ArrayXXd& dPC,
-		std::vector<Eigen::ArrayXXd>& res) const;
+		MultiArray& res) const;
 };
 
 #endif // CGTOPAIR_HH

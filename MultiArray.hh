@@ -35,6 +35,9 @@ public:
 		_nn(pkt_size * ((_n1*_n2+pkt_size-1) / pkt_size)),
 		_A(_nn, m) {}
 
+	//! Return the number of sub-arrays in this MultiArray
+	int blocks() const { return _A.cols(); }
+
 	//! Return the \a m'th sub-array, writable
 	Block operator[](int m)
 	{
@@ -46,7 +49,16 @@ public:
 		return Eigen::ArrayXXd::MapAligned(_A.data()+m*_nn, _n1, _n2);
 	}
 
+	//! Copy \a count sub-arrays from \a arr into this array
+	void copy(int m, const MultiArray& arr, int am, int count)
+	{
+		_A.block(0, m, _nn, count) = arr._A.block(0, am, _nn, count);
+	}
+
 private:
+	MultiArray(int n1, int n2, int nn, Eigen::ArrayXXd A):
+		_n1(n1), _n2(n2), _nn(nn), _A(A) {}
+
 	//! The number of rows in each sub-array
 	int _n1;
 	//! The number of columns in each sub-array

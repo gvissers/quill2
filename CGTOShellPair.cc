@@ -21,3 +21,4 @@ CGTOShellPair::CGTOShellPair(int index, const CGTOShell& shA, const CGTOShell& s
 			/ widthsSum();
 	}
 }
+

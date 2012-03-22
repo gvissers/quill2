@@ -167,16 +167,16 @@ void CGTOPair::oneElecPrim1D(int i, Eigen::ArrayXXd& Sp,
 	Tp = cT.back();
 }
 
-void CGTOPair::nucAttrPrim1D(int i, const Eigen::ArrayXXd& theta,
+void CGTOPair::nucAttrPrim1D(int i, const Eigen::ArrayXXd& zeta,
 	const Eigen::ArrayXXd& Pi, const Eigen::ArrayXXd& dPC,
-	std::vector<Eigen::ArrayXXd>& res) const
+	MultiArray& res) const
 {
-	int rows = theta.rows();
-	int cols = theta.cols();
+	int rows = zeta.rows();
+	int cols = zeta.cols();
 	int lAB = lsum(i);
 	if (lAB == 0)
 	{
-		res.assign(1, Eigen::ArrayXXd::Ones(rows, cols));
+		res[0] = Eigen::ArrayXXd::Ones(rows, cols);
 		return;
 	}
 	
@@ -191,30 +191,32 @@ void CGTOPair::nucAttrPrim1D(int i, const Eigen::ArrayXXd& theta,
 	Eigen::ArrayXXd dPA = (Pi - xA).replicate(1, cols/Pi.cols());
 	if (lAB == 1)
 	{
-		res.resize(2);
 		res[0] = dPA;
 		res[1] = -dPC;
 		return;
 	}
 
-	std::vector< std::vector<Eigen::ArrayXXd> > As(lAB+1);
+	MultiArray As(rows, cols, (lAB+1)*(lAB+2)/2);
 	// A_0,0
-	As[0].push_back(Eigen::ArrayXXd::Ones(rows, cols));
+	As[0*1/2+0].setOnes();
 	// A_1,0
-	As[1].push_back(dPA);
-	As[1].push_back(-dPC);
+	As[1*2/2+0] = dPA;
+	As[1*2/2+1] = -dPC;
 	// A_a,0
 	for (int iA = 1; iA < lAB; ++iA)
 	{
-		As[iA+1].push_back(dPA*As[iA][0] + 0.5*iA*As[iA-1][0]/theta);
+		int basem = (iA-1)*iA/2;
+		int base0 = basem + iA;
+		int basep = base0 + iA + 1;
+		As[basep+0] = dPA*As[base0+0] + iA*As[basem+0]*zeta;
 		for (int m = 1; m < iA; ++m)
 		{
-			As[iA+1].push_back(dPA*As[iA][m] - dPC*As[iA][m-1]
-				+ 0.5*iA*(As[iA-1][m]-As[iA-1][m-1])/theta);
+			As[basep+m] = dPA*As[base0+m] - dPC*As[base0+m-1]
+				+ iA*(As[basem+m]-As[basem+m-1])*zeta;
 		}
-		As[iA+1].push_back(dPA*As[iA][iA] - dPC*As[iA][iA-1]
-			- 0.5*iA*As[iA-1][iA-1]/theta);
-		As[iA+1].push_back(-dPC*As[iA][iA]);
+		As[basep+iA] = dPA*As[base0+iA] - dPC*As[base0+iA-1]
+			- iA*As[basem+iA-1]*zeta;
+		As[basep+iA+1] = -dPC*As[base0+iA];
 	}
 
 	double dAB = xB - xA;
@@ -222,12 +224,14 @@ void CGTOPair::nucAttrPrim1D(int i, const Eigen::ArrayXXd& theta,
 	{
 		for (int iA = lAB; iA >= lA+iB; iA--)
 		{
+			int basem = (iA-1)*iA/2;
+			int base0 = basem + iA;
 			for (int m = 0; m < iA; m++)
-				As[iA][m] -= dAB * As[iA-1][m];
+				As[base0+m] -= dAB * As[basem+m];
 		}
 	}
 
-	res.swap(As.back());
+	res.copy(0, As, lAB*(lAB+1)/2, lAB+1);
 }
 
 double CGTOPair::overlap() const
@@ -270,11 +274,13 @@ double CGTOPair::nuclearAttraction(const Eigen::MatrixXd& nuc_pos,
 {
 	int nr_nuc = nuc_pos.cols();
 	int nr_rows = f().size(), nr_cols = g().size();
-	Eigen::ArrayXXd theta = widthsSum().replicate(1, nr_nuc);
+	Eigen::ArrayXXd zeta = hInvWidths().replicate(1, nr_nuc);
 	Eigen::ArrayXXd Pi;
 	Eigen::ArrayXXd U = Eigen::ArrayXXd::Zero(nr_rows, nr_cols*nr_nuc);
 	Eigen::ArrayXXd dPC(nr_rows, nr_cols*nr_nuc);
-	std::vector<Eigen::ArrayXXd> Axyz[3];
+	MultiArray Ax(nr_rows, nr_cols*nr_nuc, lsum(0)+1);
+	MultiArray Ay(nr_rows, nr_cols*nr_nuc, lsum(1)+1);
+	MultiArray Az(nr_rows, nr_cols*nr_nuc, lsum(2)+1);
 
 	for (int i = 0; i < 3; i++)
 	{
@@ -283,17 +289,20 @@ double CGTOPair::nuclearAttraction(const Eigen::MatrixXd& nuc_pos,
 			dPC.block(0, iC*nr_cols, nr_rows, nr_cols) = Pi - nuc_pos(i, iC);
 		U += dPC.square();
 
-		nucAttrPrim1D(i, theta, Pi, dPC, Axyz[i]);
+		if (i == 0)
+			nucAttrPrim1D(i, zeta, Pi, dPC, Ax);
+		else if (i == 1)
+			nucAttrPrim1D(i, zeta, Pi, dPC, Ay);
+		else
+			nucAttrPrim1D(i, zeta, Pi, dPC, Az);
 	}
-	U *= theta;
+	U *= widthsSum().replicate(1, nr_nuc);
 
 	Eigen::Vector3i lsAB = f().ls() + g().ls();
 	int lsABsum = lsAB.sum();
 
-	Eigen::ArrayXXd F = U.boys(lsABsum);
-	Eigen::ArrayXXd expmU = (-U).qexp();
-	Eigen::ArrayXXd Am = Axyz[0][lsAB.x()] * Axyz[1][lsAB.y()]
-		* Axyz[2][lsAB.z()] * F;
+	Fms fms(lsABsum, U);
+	Eigen::ArrayXXd Am = Ax[lsAB.x()] * Ay[lsAB.y()] * Az[lsAB.z()] * fms[lsABsum];
 	Eigen::ArrayXXd A = Eigen::ArrayXXd::Zero(nr_rows, nr_cols);
 	for (int iC = 0; iC < nr_nuc; ++iC)
 		A += -nuc_charge[iC] * Am.block(0, iC*nr_cols, nr_rows, nr_cols);
@@ -301,20 +310,17 @@ double CGTOPair::nuclearAttraction(const Eigen::MatrixXd& nuc_pos,
 	for (int m = lsABsum-1; m >= 0; --m)
 	{
 		Am.setZero();
-		for (int ix = 0; ix <= std::min(m, lsAB.x()); ++ix)
+		for (int mx = std::min(m, lsAB.x()); mx >= 0; --mx)
 		{
-			for (int iy = 0; iy <= std::min(m-ix, lsAB.y()); ++iy)
+			int mymax = std::min(m-mx, lsAB.y());
+			int mymin = std::max(m-mx-lsAB.z(), 0);
+			for (int my = mymax; my >= mymin; --my)
 			{
-				int iz = m - ix - iy;
-				if (iz <= lsAB.z())
-				{
-					Am += Axyz[0][ix] * Axyz[1][iy]
-						* Axyz[2][iz];
-				}
+				int mz = m - mx - my;
+				Am += Ax[mx] * Ay[my] * Az[mz];
 			}
 		}
-		F = (expmU + 2*U*F) / (2*m+1);
-		Am *= F;
+		Am *= fms[m];
 
 		for (int iC = 0; iC < nr_nuc; ++iC)
 		{
