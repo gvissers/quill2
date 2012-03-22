@@ -127,8 +127,8 @@ void CGTOShellQuad::elecRepPrim1d_abcd(int i, EriCoefs& coefs) const
 			{
 				coefs[idx] =
 					  coefs[idx-iC-1].rowwise()*dCQi
-					+ coefs[idx-2*iC-1].rowwise()*(iC*inv_eta)
 					+ coefs[idx-iC-2]*dQWi
+					+ coefs[idx-2*iC-1].rowwise()*(iC*inv_eta)
 					- coefs[idx-2*iC-2]*rho2*iC;
 			}
 			coefs[idx] =
@@ -150,8 +150,15 @@ void CGTOShellQuad::elecRepPrim1d_abcd(int i, EriCoefs& coefs) const
 		auto inv_sum = 0.5 * invWidthsSum();
 
 		int n2 = (_lCD+1)*(_lCD+2)/2;
+		// C_1,0,0,0
+		coefs[idx] = coefs[idx-n2].colwise()*dAPi;
+		++idx;
+		coefs[idx] = coefs[idx-n2-1]*dPWi;
+		++idx;
+		++n2;
+		
 		// C_1,0,c,0
-		for (int iC = 0; iC <= _lCD; ++iC, ++n2)
+		for (int iC = 1; iC <= _lCD; ++iC, ++n2)
 		{
 			coefs[idx] = coefs[idx-n2].colwise()*dAPi;
 			++idx;
@@ -166,9 +173,9 @@ void CGTOShellQuad::elecRepPrim1d_abcd(int i, EriCoefs& coefs) const
 			++idx;
 		}
 
-		// C_a,0,c,0
 		for (int iA = 1; iA < _lAB; ++iA)
 		{
+			// C_a,0,0,0
 			coefs[idx] =
 				  coefs[idx-n2].colwise()*dAPi
 				+ coefs[idx-2*n2+_lCD+1].colwise()*(iA*inv_zeta);
@@ -177,8 +184,8 @@ void CGTOShellQuad::elecRepPrim1d_abcd(int i, EriCoefs& coefs) const
 			{
 				coefs[idx] =
 					  coefs[idx-n2].colwise()*dAPi
-					+ coefs[idx-2*n2+_lCD+1].colwise()*(iA*inv_zeta)
 					+ coefs[idx-n2-1]*dPWi
+					+ coefs[idx-2*n2+_lCD+1].colwise()*(iA*inv_zeta)
 					- coefs[idx-2*n2+_lCD]*rho1*iA;
 			}
 			coefs[idx] =
@@ -190,6 +197,7 @@ void CGTOShellQuad::elecRepPrim1d_abcd(int i, EriCoefs& coefs) const
 			++idx;
 			++n2;
 
+			// C_a,0,c,0
 			for (int iC = 1; iC <= _lCD; ++iC, ++n2)
 			{
 				coefs[idx] =
@@ -200,8 +208,8 @@ void CGTOShellQuad::elecRepPrim1d_abcd(int i, EriCoefs& coefs) const
 				{
 					coefs[idx] =
 						  coefs[idx-n2].colwise()*dAPi
-						+ coefs[idx-2*n2+_lCD+1].colwise()*(iA*inv_zeta)
 						+ coefs[idx-n2-1]*dPWi
+						+ coefs[idx-2*n2+_lCD+1].colwise()*(iA*inv_zeta)
 						- coefs[idx-2*n2+_lCD]*rho1*iA
 						+ coefs[idx-n2-iC-iA-1]*inv_sum*iC;
 				}
