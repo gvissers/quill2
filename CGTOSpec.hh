@@ -64,7 +64,6 @@ std::ostream& CGTOSpec<tlx, tly, tlz>::print(std::ostream& os) const
 {
 	os << "CGTOSpec<" << tlx << ", " << tly << ", " << tlz << "> (\n" << indent;
 	os << "center: " << center().transpose() << "\n";
-	os << "norm: " << norm() << "\n";
 	os << "shell:\n" << indent << shell() << "\n" << dedent;
 	os << dedent << ")";
 	return os;
