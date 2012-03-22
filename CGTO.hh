@@ -35,9 +35,8 @@ public:
 	 * \param ls      Angular momentum of the orbital
  	 * \param ishell  Index of this orbital's shell in the CGTOShellList
 	 */
-	CGTO(const Eigen::Vector3i& ls, int ishell):
-		AbstractBF(cid), _ls(ls), _ishell(ishell),
-		_shell(CGTOShellList::singleton().shell(ishell)) {}
+	CGTO(const Eigen::Vector3i& ls, const CGTOShell& shell):
+		AbstractBF(cid), _ls(ls), _shell(shell) {}
 
 	//! Return the number of primitives in this contraction
 	int size() const { return shell().size(); }
@@ -54,7 +53,7 @@ public:
 	//! Return the total angular momentum
 	int lsum() const { return _ls.sum(); }
 	//! Return the index of this orbital's shell in the CGTOShellList
-	int ishell() const { return _ishell; }
+	int ishell() const { return _shell.index(); }
 	//! Return the shell of this orbital
 	const CGTOShell& shell() const { return _shell; }
 	//! Return the width of the \a i'th primitive
@@ -99,15 +98,12 @@ protected:
 	 * \param ls      Angular momentum of the orbital
  	 * \param ishell  Index of this orbital's shell in the CGTOShellList
 	 */
-	CGTO(size_t cid, const Eigen::Vector3i& ls, int ishell):
-		AbstractBF(cid), _ls(ls), _ishell(ishell),
-		_shell(CGTOShellList::singleton().shell(ishell)) {}
+	CGTO(size_t cid, const Eigen::Vector3i& ls, const CGTOShell& shell):
+		AbstractBF(cid), _ls(ls), _shell(shell) {}
 
 private:
 	//! The angular momentum quantum numbers
 	Eigen::Vector3i _ls;
-	//! Index of this orbital's shell in the CGTOShellList
-	int _ishell;
 	//! The shell parameters: widths, weights, and position
 	const CGTOShell& _shell;
 

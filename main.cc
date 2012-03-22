@@ -60,6 +60,8 @@ int main(int argc, const char* argv[])
 		set.expand(geom, &basis);
 		os << basis << "\n";
 
+		Eigen::IOFormat format(8);
+		
 		std::cout << CGTOShellList::singleton().nrShells() << " shells\n";
 		std::cout << CGTOShellList::singleton().nrPairs() << " shell pairs\n";
 		std::cout << CGTOShellList::singleton().nrQuads() << " shell quads\n";
@@ -67,8 +69,9 @@ int main(int argc, const char* argv[])
 		std::cout << Dispatcher::singleton().nrPairs() << " bf pairs\n";
 		std::cout << Dispatcher::singleton().nrQuads() << " bf quartets\n";
 		os << "diagonal of S: " << basis.overlap().diagonal() << "\n\n";
-		os << basis.overlap() << "\n\n" << basis.kineticEnergy() << "\n\n"
-			<< basis.nuclearAttraction(geom.positions(), geom.charges())
+		os << basis.overlap().format(format) << "\n\n"
+			<< basis.kineticEnergy().format(format) << "\n\n"
+			<< basis.nuclearAttraction(geom.positions(), geom.charges()).format(format)
 			<< "\n";
 
 		HartreeFock hf(basis, geom, 1);

@@ -11,16 +11,30 @@
 class CGTOShell
 {
 public:
-	//! Constructor
-	CGTOShell(int lsum, const Eigen::ArrayXd& weights,
+	/*!
+	 * \brief Constructor
+	 *
+	 * Create a new shell for contracted Gaussian type orbitals with total
+	 * angular momentum \a lsum, consisting of primitive Gaussians defined
+	 * by \a weights and \a widths, located on center \a center.
+	 * \param index   The index of this shell in the CGTOShellList
+	 * \param lsum    The total angular momentum of this shell
+	 * \param weights The weights of the primitives in the contraction
+	 * \param widths  The widths of the primitives
+	 * \param ipos    Position ID of the orbital's center
+	 * \param center  The orbital center
+	 */
+	CGTOShell(int index, int lsum, const Eigen::ArrayXd& weights,
 		const Eigen::ArrayXd& widths, int ipos,
 		const Eigen::Vector3d& center):
-		_lsum(lsum), _weights(weights), _widths(widths), _ipos(ipos),
-		_center(center) { scaleWeights(); }
+		_index(index), _lsum(lsum), _weights(weights), _widths(widths),
+		_ipos(ipos), _center(center) { scaleWeights(); }
 
 	//! Return the number of primitive widths in this shell
 	int size() const { return _widths.size(); }
 
+	//! Return this shell's index in the CGTOShellList
+	int index() const { return _index; }
 	//! Return the total angular momentum of the shell
 	int lsum() const { return _lsum; }
 	//! Return the weight of the \a i'th primitive
@@ -48,6 +62,8 @@ public:
 	std::ostream& print(std::ostream& os) const;
 
 private:
+	//! Index of this shell in the CGTOShellList
+	int _index;
 	//! The total angular momentum of the shell
 	int _lsum;
 	//! The widths of the primitive Gaussians

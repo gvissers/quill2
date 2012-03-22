@@ -27,7 +27,7 @@ public:
 	int nrPairs() const { return _pairs.size(); }
 	int nrQuads() const { return _quads.size(); }
 	
-	int addShell(int l, const Eigen::ArrayXd& weights,
+	const CGTOShell& addShell(int l, const Eigen::ArrayXd& weights,
 		const Eigen::ArrayXd& widths, int ipos,
 		const Eigen::Vector3d& center);
 	const CGTOShell& shell(int i)

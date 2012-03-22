@@ -63,7 +63,8 @@ void HartreeFock::iterateRestricted(const Basis& basis,
 		_energy = (H + 0.5*(J - 0.5*K)).cwiseProduct(D).sum() + nuc_rep;
 		std::cout << std::setw(3) << iter << " "
 			<< std::setw(20) << std::setprecision(15) << std::fixed << _energy << " "
-			<< std::setw(13) << std::setprecision(6) << std::scientific << diis.error() << "\n";
+			<< std::setw(13) << std::setprecision(6) << std::scientific << diis.error()
+			<< "\n";
 		//std::cout << "orbital energies: " << _orb_ener.transpose() << "\n";
 
 		if (std::abs(_energy - last_energy) < _tolerance)
